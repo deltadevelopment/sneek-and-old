@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Sneek</string>
+    <string name="more_txt">MORE</string>
+    <string name="cam_txt">TRAP</string>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="red">#80FF0000</color>
+    <color name="cyan">#42ffff</color>
+    <color name="yellow">#80FFFF00</color>
+    <color name="transparent">#80000000</color>
+</resources>
