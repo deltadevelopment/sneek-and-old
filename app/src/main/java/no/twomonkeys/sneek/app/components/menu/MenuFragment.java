@@ -1,25 +1,16 @@
 package no.twomonkeys.sneek.app.components.menu;
 
-import android.app.Fragment;
-import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.Callback;
-import no.twomonkeys.sneek.app.shared.DataHelper;
+import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 
 /**
  * Created by simenlie on 10.05.16.
@@ -136,7 +127,7 @@ public class MenuFragment extends android.support.v4.app.Fragment {
 
     public void changeFeed(int row) {
         //Store the current here
-        DataHelper.storeCurrentFeed(this.getActivity(), row);
+        DataHelper.storeCurrentFeed(row);
         swapColors();
     }
 
@@ -151,7 +142,7 @@ public class MenuFragment extends android.support.v4.app.Fragment {
     }
 
     public boolean isSelected(int row) {
-        int storedRow = DataHelper.currentFeed(this.getActivity());
+        int storedRow = DataHelper.currentFeed();
         if (storedRow == row) {
             return true;
         } else {

@@ -42,6 +42,7 @@ public class CameraFragment extends android.support.v4.app.Fragment {
     private int cameraId;
     private float dX;
     private int defaultWidth;
+    FrameLayout preview;
 
     @Override
     public void onResume() {
@@ -63,8 +64,8 @@ public class CameraFragment extends android.support.v4.app.Fragment {
         }
         // Create our Preview view and set it as the content of our activity.
         mPreview = new CameraPreview(this.getActivity(), mCamera);
-        FrameLayout preview = (FrameLayout) view.findViewById(R.id.camera_preview);
-        preview.addView(mPreview);
+        preview = (FrameLayout) view.findViewById(R.id.camera_preview);
+        //preview.addView(mPreview);
         //mCamera.stopPreview();
 
         recordBtn = (ImageButton) view.findViewById(R.id.button_capture);
@@ -90,6 +91,18 @@ public class CameraFragment extends android.support.v4.app.Fragment {
         getView().setX(result);
 
     }
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        preview.removeView(mPreview);
+        if(mCamera!=null){
+            mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
+
+            mCamera.release();
+            mCamera = null;
+        }
+    }
 
     public void startMove(float x) {
         dX = getView().getX() - x;
@@ -108,7 +121,10 @@ public class CameraFragment extends android.support.v4.app.Fragment {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                mCamera.startPreview();
+                if (mCamera != null){
+                    mCamera.startPreview();
+                }
+
             }
         });
         t.start();
@@ -118,7 +134,10 @@ public class CameraFragment extends android.support.v4.app.Fragment {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                mCamera.stopPreview();
+                if (mCamera != null){
+                    mCamera.stopPreview();
+                }
+
             }
         });
         t.start();

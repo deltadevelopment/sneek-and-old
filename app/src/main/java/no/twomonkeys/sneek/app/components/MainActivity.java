@@ -1,11 +1,14 @@
 package no.twomonkeys.sneek.app.components;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.gesture.GestureLibraries;
 import android.gesture.GestureLibrary;
 import android.gesture.GestureOverlayView;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GestureDetectorCompat;
@@ -25,12 +28,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +47,9 @@ import no.twomonkeys.sneek.app.components.feed.FeedAdapter;
 import no.twomonkeys.sneek.app.components.feed.TopBarFragment;
 import no.twomonkeys.sneek.app.components.menu.MenuFragment;
 import no.twomonkeys.sneek.app.shared.Callback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
+import no.twomonkeys.sneek.app.shared.models.StoryModel;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -61,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean menuIsVisible;
     private boolean cameraIsVisible;
     private ImageButton homeBtn;
+    private ImageButton placeholderBtn;
     private SwipeRefreshLayout refreshSwipeLayout;
     private VelocityTracker mTracker;
 
@@ -75,11 +86,13 @@ public class MainActivity extends AppCompatActivity {
 
     RelativeLayout wrapper;
     float wrapperDx;
+    float scrollDy;
+    boolean shouldAnimate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        DataHelper.setContext(this);
         //Orientation
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
@@ -94,9 +107,13 @@ public class MainActivity extends AppCompatActivity {
         RelativeLayout layout = (RelativeLayout) findViewById(R.id.root);
         wrapper = (RelativeLayout) findViewById(R.id.contentWrapper);
 
+
         overlayShadow = (FrameLayout) findViewById(R.id.overlayShadow);
         homeBtn = (ImageButton) findViewById(R.id.homeButton);
         homeBtn.setImageResource(R.drawable.triangle);
+        placeholderBtn = (ImageButton) findViewById(R.id.placeholderButton);
+        placeholderBtn.setImageResource(R.drawable.triangle);
+        placeholderBtn.setColorFilter(Color.parseColor("#27ffff"));
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
@@ -153,11 +170,12 @@ public class MainActivity extends AppCompatActivity {
                 switch (row) {
                     case 0: {
                         //Go to randoms feed
-
+                        refreshItems();
                         break;
                     }
                     case 1: {
                         //Go to stalking feed
+                        refreshItems();
                         break;
                     }
                     case 2: {
@@ -171,18 +189,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) layout.findViewById(R.id.recycleView);
         feedAdapter = new FeedAdapter(this);
         recyclerView.setAdapter(feedAdapter);
-
-        refreshSwipeLayout = (SwipeRefreshLayout) layout.findViewById(R.id.swipeRefreshLayout);
-
-        refreshSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // Refresh items
-                refreshItems();
-            }
-
-        });
-
 
         setup();
         canScroll = false;
@@ -200,10 +206,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent m) {
                 recyclerView.onTouchEvent(m);
-                //homeBtn.onTouchEvent(m);
-                //topBar.moreBtn.onTouchEvent(m);
-                //return mDetector.onTouchEvent(m);
-                //recyclerView.onTouchEvent(m);
                 recyclerView.setNestedScrollingEnabled(false);
                 handleTouch(m, v);
                 return true;
@@ -226,7 +228,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                Log.v(TAG, "hey" + dy);
                 overallXScroll = overallXScroll + dy;
 
                 mPrevY -= dy;
@@ -234,32 +235,100 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        refreshSwipeLayout.post(new Runnable() {
-            @Override
-            public void run() {
-                refreshSwipeLayout.setRefreshing(true);
-                refreshItems();
-            }
-        });
+        StoryModel storyModel = new StoryModel();
+
+        refreshItems();
     }
 
 
     //Refreshing
     void refreshItems() {
-        // Load items
-        // ...
+        recyclerView.animate().translationY(300).setDuration(150);
+        homeBtn.animate().alpha(0).setDuration(150);
+        placeholderBtn.animate().alpha(255).setDuration(150);
+        shouldAnimate = true;
+        animateLoader();
 
-        // Load complete
-        onItemsLoadComplete();
+        feedAdapter.updateData(new SimpleCallback() {
+            @Override
+            public void callbackCall() {
+                recyclerView.animate().translationY(0).setDuration(150);
+                homeBtn.animate().alpha(255).setDuration(150);
+                placeholderBtn.animate().alpha(0).setDuration(150);
+                placeholderBtn.setColorFilter(Color.parseColor("#27ffff"));
+                shouldAnimate = false;
+            }
+        });
     }
 
-    void onItemsLoadComplete() {
-        // Update the adapter and notify data set changed
-        // ...
+    void animateLoader() {
+        final String cyan = "#27ffff";
+        String magenta = "#fa00fa";
+        final String yellow = "#ffff00";
+        final String black = "#000000";
 
-        // Stop refresh animation
-        refreshSwipeLayout.setRefreshing(false);
+        animateToColor(magenta, new SimpleCallback() {
+            @Override
+            public void callbackCall() {
+                animateToColor(yellow, new SimpleCallback() {
+                    @Override
+                    public void callbackCall() {
+                        animateToColor(black, new SimpleCallback() {
+                            @Override
+                            public void callbackCall() {
+                                animateToColor(cyan, new SimpleCallback() {
+                                    @Override
+                                    public void callbackCall() {
+                                        animateLoader();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
     }
+
+    public void animateToColor(String color, final SimpleCallback scb) {
+
+        if (shouldAnimate) {
+            ObjectAnimator anim = ObjectAnimator.ofInt(placeholderBtn, "colorFilter", Color.parseColor(color));
+            anim.setInterpolator(new LinearInterpolator());
+            anim.setInterpolator(new AccelerateInterpolator());
+
+            anim.addListener(new Animator.AnimatorListener() {
+
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    // Do something.
+                    if (shouldAnimate) {
+                        scb.callbackCall();
+                    }
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+
+            });
+
+            anim.setDuration(250).start();
+        }
+    }
+
 
     void changeOpacity() {
         if (menuFragment.shouldChangeColor()) {
@@ -337,6 +406,7 @@ public class MainActivity extends AppCompatActivity {
                 menuFragment.startMove(m.getRawX());
                 cameraFragment.startMove(m.getRawX());
                 wrapperDx = wrapper.getX() - m.getRawX();
+                scrollDy = recyclerView.getY() - m.getRawX();
                 isScrolling = false;
                 canScroll = true;
                 doOnce = false;
@@ -366,6 +436,7 @@ public class MainActivity extends AppCompatActivity {
                 long diffInMs = new Date().getTime() - oldDate.getTime();
                 long diffInSec = TimeUnit.MILLISECONDS.toSeconds(diffInMs);
                 if (diffInMs < 100) {
+                    //Maybe also check y here?? so we can use this to see if the user drags in a menu or just scrolls
                     if (velX > 0) {
                         cameraSwipe = false;
                     } else {
@@ -392,6 +463,10 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     if (!menuIsVisible && !cameraIsVisible) {
                         canScroll = true;
+                        if (velY > 0) {
+                            refreshTry(m);
+                        }
+
                     }
                 }
 
@@ -404,7 +479,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     stopMoveCamera();
                 }
-
+                stopRefreshTry();
                 break;
             }
             case MotionEvent.ACTION_CANCEL:
@@ -415,9 +490,34 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     stopMoveCamera();
                 }
+                stopRefreshTry();
                 mTracker.recycle();
                 mTracker = null;
                 break;
+        }
+    }
+
+    public void refreshTry(MotionEvent m) {
+        if (recyclerView.computeVerticalScrollOffset() == 0) {
+            float result = m.getRawY() + scrollDy;
+            float result2 = ((result / 300) * 100) * 1.8f;
+            float percentage = (result / 300);
+
+            homeBtn.setAlpha(1 - percentage);
+            placeholderBtn.setAlpha(percentage);
+
+            float endResult = result - result2;
+            Log.v("RESULT", "res " + endResult + " ::: " + result2);
+
+            if (endResult < 300 && result >= 0) {
+                recyclerView.setY(endResult);
+            }
+        }
+    }
+
+    public void stopRefreshTry() {
+        if (recyclerView.getY() > 0) {
+            refreshItems();
         }
     }
 
@@ -529,7 +629,7 @@ public class MainActivity extends AppCompatActivity {
         cd.setAlpha(calculate(100));
         overlayShadow.setBackgroundDrawable(cd);
 
-        refreshSwipeLayout.setEnabled(false);
+        // refreshSwipeLayout.setEnabled(false);
         menuIsVisible = true;
         menuFragment.animateIn();
         topBar.animateOut();
@@ -542,7 +642,7 @@ public class MainActivity extends AppCompatActivity {
         ColorDrawable cd = new ColorDrawable(0xFF000000);
         cd.setAlpha(calculate(0));
         overlayShadow.setBackgroundDrawable(cd);
-        refreshSwipeLayout.setEnabled(true);
+        //refreshSwipeLayout.setEnabled(true);
         menuIsVisible = false;
         menuFragment.animateOut();
         topBar.animateIn();
@@ -556,7 +656,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void animateCameraIn() {
-        refreshSwipeLayout.setEnabled(false);
+        // refreshSwipeLayout.setEnabled(false);
         cameraIsVisible = true;
         cameraFragment.animateIn();
         //wrapper.setX(-wrapper.getWidth());
@@ -565,7 +665,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void animateCameraOut() {
         cameraFragment.stopCamera();
-        refreshSwipeLayout.setEnabled(true);
+        // refreshSwipeLayout.setEnabled(true);
         cameraIsVisible = false;
         cameraFragment.animateOut();
         wrapper.animate().translationX(0).setDuration(150);

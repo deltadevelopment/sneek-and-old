@@ -1,6 +1,5 @@
 package no.twomonkeys.sneek.app.components.menu;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -8,10 +7,9 @@ import android.graphics.Typeface;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import no.twomonkeys.sneek.R;
-import no.twomonkeys.sneek.app.shared.UIHelper;
+import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 
 /**
  * Created by simenlie on 10.05.16.
