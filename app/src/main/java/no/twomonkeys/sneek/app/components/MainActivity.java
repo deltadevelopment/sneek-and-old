@@ -11,6 +11,7 @@ import android.gesture.GestureOverlayView;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.VelocityTrackerCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -37,6 +38,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +49,7 @@ import no.twomonkeys.sneek.app.components.Camera.CameraFragment;
 import no.twomonkeys.sneek.app.components.feed.FeedAdapter;
 import no.twomonkeys.sneek.app.components.feed.TopBarFragment;
 import no.twomonkeys.sneek.app.components.menu.MenuFragment;
+import no.twomonkeys.sneek.app.components.story.StoryFragment;
 import no.twomonkeys.sneek.app.shared.Callback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
@@ -81,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String DEBUG_TAG = "Gestures";
     private boolean doOnce;
     private Date oldDate;
+    boolean lockMode;
 
     FrameLayout overlayShadow;
 
@@ -88,10 +93,32 @@ public class MainActivity extends AppCompatActivity {
     float wrapperDx;
     float scrollDy;
     boolean shouldAnimate;
+    StoryFragment storyFragment;
+    FragmentTransaction fragmentTransaction;
+    FragmentManager fragmentManager;
+
+
+    //New method
+    float touchActionDownX, touchActionDownY, touchActionMoveX, touchActionMoveY;
+    boolean touchActionMoveStatus;
+
+    float lastX;
+    boolean isRefreshing;
+
+    public enum Direction {
+        LEFT, RIGHT, UP, DOWN
+    }
+
+    Direction direction;
+    boolean lastScrolledLeft;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        Fresco.initialize(this);
         DataHelper.setContext(this);
         //Orientation
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -115,23 +142,16 @@ public class MainActivity extends AppCompatActivity {
         placeholderBtn.setImageResource(R.drawable.triangle);
         placeholderBtn.setColorFilter(Color.parseColor("#27ffff"));
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager = getSupportFragmentManager();
 
         //Object initialization
         menuFragment = (MenuFragment) fragmentManager.findFragmentById(R.id.menuFragment);
         cameraFragment = (CameraFragment) fragmentManager.findFragmentById(R.id.cameraFragment);
-/*
-        menuFragment.getView().setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent m) {
-                recyclerView.onTouchEvent(m);
-                recyclerView.setNestedScrollingEnabled(false);
-                handleTouch(m, v);
-                return true;
-            }
+        storyFragment = (StoryFragment) fragmentManager.findFragmentById(R.id.storyFragment);
 
-        });
-*/
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.hide(storyFragment);
+        fragmentTransaction.commit();
 
         topBar = (TopBarFragment) fragmentManager.findFragmentById(R.id.topBarFragment);
         topBar.callback = new Callback() {
@@ -190,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
         feedAdapter = new FeedAdapter(this);
         recyclerView.setAdapter(feedAdapter);
 
-        setup();
+
         canScroll = false;
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2) {
             @Override
@@ -200,8 +220,8 @@ public class MainActivity extends AppCompatActivity {
         };
 
         recyclerView.setLayoutManager(gridLayoutManager);
-
-
+        canScroll = true;
+/*
         menuFragment.getView().setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent m) {
@@ -212,7 +232,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+*/
 
+        setup();
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -231,11 +253,13 @@ public class MainActivity extends AppCompatActivity {
                 overallXScroll = overallXScroll + dy;
 
                 mPrevY -= dy;
-                topBar.drag(mPrevY, recyclerView.computeVerticalScrollOffset());
+                if (!isRefreshing){
+                    Log.v("SCROLL","offset " + " " + mPrevY +  " " +  recyclerView.computeVerticalScrollOffset());
+                    topBar.drag(mPrevY, recyclerView.computeVerticalScrollOffset());
+                }
+
             }
         });
-
-        StoryModel storyModel = new StoryModel();
 
         refreshItems();
     }
@@ -243,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Refreshing
     void refreshItems() {
+        isRefreshing = true;
         recyclerView.animate().translationY(300).setDuration(150);
         homeBtn.animate().alpha(0).setDuration(150);
         placeholderBtn.animate().alpha(255).setDuration(150);
@@ -257,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
                 placeholderBtn.animate().alpha(0).setDuration(150);
                 placeholderBtn.setColorFilter(Color.parseColor("#27ffff"));
                 shouldAnimate = false;
+                isRefreshing = false;
             }
         });
     }
@@ -354,15 +380,18 @@ public class MainActivity extends AppCompatActivity {
                 View child = recyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
 
 
-                if (child != null && mGestureDetector.onTouchEvent(motionEvent)) {
+                if (child != null) {
                     //Drawer.closeDrawers();
-                    if (!menuIsVisible) {
-                        Toast.makeText(MainActivity.this, "The Item Clicked is: " + recyclerView.getChildPosition(child), Toast.LENGTH_SHORT).show();
+                    if (!menuIsVisible && mGestureDetector.onTouchEvent(motionEvent)) {
+                        //Toast.makeText(MainActivity.this, "The Item Clicked is: " + recyclerView.getChildPosition(child), Toast.LENGTH_SHORT).show();
+                        Log.v("RECYCLERVIEW", "HITTING ? " + recyclerView.getChildPosition(child));
+                        StoryModel storyModel = feedAdapter.getFeedModel().getStories().get(recyclerView.getChildPosition(child));
+                        presentStory(storyModel);
                     }
 
                     //menuFragment.animateOut();
-                    animateOut();
-                    return true;
+                    // animateOut();
+                    return false;
 
                 }
 
@@ -382,123 +411,221 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    void handleTouch(MotionEvent m, View v) {
-        //final int action = m.getAction();
-        int index = m.getActionIndex();
-        int action = m.getActionMasked();
-        int pointerId = m.getPointerId(index);
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
 
-        switch (action & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN: {
-                if (mTracker == null) {
-                    // Retrieve a new VelocityTracker object to watch the velocity of a motion.
-                    mTracker = VelocityTracker.obtain();
-                } else {
-                    // Reset the velocity tracker back to its initial state.
-                    mTracker.clear();
-                }
-                // Add a user's movement to the tracker.
-                mTracker.addMovement(m);
+        return super.onTouchEvent(event);
+    }
 
-                x1 = m.getX();
-                y1 = m.getY();
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        View v = getCurrentFocus();
+        float threshold = 2.0f;
+        // Log.v(TAG,"Touched " + v);
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
                 isClick = true;
-                menuFragment.startMove(m.getRawX());
-                cameraFragment.startMove(m.getRawX());
-                wrapperDx = wrapper.getX() - m.getRawX();
-                scrollDy = recyclerView.getY() - m.getRawX();
-                isScrolling = false;
-                canScroll = true;
-                doOnce = false;
-                oldDate = new Date();
-                break;
-            }
-            case MotionEvent.ACTION_MOVE: {
-                mTracker.addMovement(m);
-                // When you want to determine the velocity, call
-                // computeCurrentVelocity(). Then call getXVelocity()
-                // and getYVelocity() to retrieve the velocity for each pointer ID.
-                mTracker.computeCurrentVelocity(1000);
-                // Log velocity of pixels per second
-                // Best practice to use VelocityTrackerCompat where possible.
-                float velX = VelocityTrackerCompat.getXVelocity(mTracker, pointerId);
-                float velY = VelocityTrackerCompat.getYVelocity(mTracker, pointerId);
-                //was here
+                touchActionDownX = (int) ev.getX();
+                touchActionDownY = (int) ev.getY();
+                touchActionMoveStatus = true;
 
+                //Testing
+                cameraFragment.startMove(ev.getRawX());
+                wrapperDx = wrapper.getX() - ev.getRawX();
+                menuFragment.startMove(ev.getRawX());
+                scrollDy = recyclerView.getY() - ev.getRawY();
+                //gameLoop.touchX = (int)ev.getX();
+                //gameLoop.touchY = (int)ev.getY();
+                // gameLoop.touchActionDown = true;
+                lastX = ev.getRawX();
+                break;
+
+            case MotionEvent.ACTION_POINTER_UP:
+
+                touchActionMoveStatus = true;
+
+                break;
+
+            case MotionEvent.ACTION_MOVE:
                 isClick = false;
-                x2 = m.getX();
-                y2 = m.getY();
-                dx = x2 - x1;
-                dy = y2 - y1;
-                dragY = draggingY();
-                mTracker.addMovement(m);
+                if (touchActionMoveStatus) {
+                    touchActionMoveX = (int) ev.getX();
+                    touchActionMoveY = (int) ev.getY();
 
-                long diffInMs = new Date().getTime() - oldDate.getTime();
-                long diffInSec = TimeUnit.MILLISECONDS.toSeconds(diffInMs);
-                if (diffInMs < 100) {
-                    //Maybe also check y here?? so we can use this to see if the user drags in a menu or just scrolls
-                    if (velX > 0) {
-                        cameraSwipe = false;
-                    } else {
-                        cameraSwipe = true;
+                    // I haven't tested this so you may have a few typos to correct.
+                    float ratioLeftRight = Math.abs(touchActionMoveX - touchActionDownX) / Math.abs(touchActionMoveY - touchActionDownY);
+                    float ratioUpDown = Math.abs(touchActionMoveY - touchActionDownY) / Math.abs(touchActionMoveX - touchActionDownX);
+
+                    Log.v("hell","oo " + ratioLeftRight);
+
+                    if (touchActionMoveX < touchActionDownX && ratioLeftRight > threshold) {
+                        Log.i("test", "Move Left");
+                        direction = Direction.LEFT;
+                        canScroll = false;
+                        touchActionMoveStatus = false;
+                    } else if (touchActionMoveX > touchActionDownX && ratioLeftRight > threshold) {
+                        Log.i("test", "Move Right");
+                        direction = Direction.RIGHT;
+                        canScroll = false;
+                        touchActionMoveStatus = false;
+                    } else if (touchActionMoveY < touchActionDownY && ratioUpDown > threshold) {
+                        Log.i("test", "Move Up");
+                        direction = Direction.UP;
                         if (!menuIsVisible && !cameraIsVisible) {
-                            cameraFragment.prepareCamera();
+                            canScroll = true;
                         }
-                        //prepare camera here
+                        touchActionMoveStatus = false;
+                    } else if (touchActionMoveY > touchActionDownY && ratioUpDown > threshold) {
+                        Log.i("test", "Move Down");
+                        direction = Direction.DOWN;
+                        if (!menuIsVisible && !cameraIsVisible) {
+                            canScroll = true;
+                        }
+                        touchActionMoveStatus = false;
                     }
-                }
 
-                if (!isScrolling) {
-                    if (shouldMoveMenu()) {
-                        moveMenu(m);
-                    } else {
-                        moveCamera(m);
-                    }
-                    canScroll = false;
                 }
-
-                if (dragY) {
-                    canScroll = false;
-                    // Use dx and dy to determine the direction
+                //check whether the user changed scroll direction while dragging
+                if (lastX > ev.getRawX()) {
+                    lastX = ev.getRawX();
+                    lastScrolledLeft = true;
                 } else {
-                    if (!menuIsVisible && !cameraIsVisible) {
-                        canScroll = true;
-                        if (velY > 0) {
-                            refreshTry(m);
-                        }
-
-                    }
+                    lastX = ev.getRawX();
+                    lastScrolledLeft = false;
                 }
-
+                move(ev);
                 break;
-            }
             case MotionEvent.ACTION_UP: {
-                Log.v("UP", "ACTIONUP");
-                if (shouldMoveMenu()) {
-                    stopMoveMenu();
+                if (isClick) {
+                    if (menuIsVisible) {
+                        animateOut();
+                    } else if (cameraIsVisible) {
+                        animateCameraOut();
+                    }
                 } else {
-                    stopMoveCamera();
+                    stopMovement(ev);
                 }
-                stopRefreshTry();
+
                 break;
             }
-            case MotionEvent.ACTION_CANCEL:
-                Log.v("CANCELED", "CANCELED");
-                // Return a VelocityTracker object back to be re-used by others.
-                if (shouldMoveMenu()) {
-                    stopMoveMenu();
-                } else {
-                    stopMoveCamera();
-                }
-                stopRefreshTry();
-                mTracker.recycle();
-                mTracker = null;
+        }
+
+
+        return super.dispatchTouchEvent(ev);
+    }
+
+    void stopMovement(MotionEvent m) {
+        stopRefreshTry();
+        switch (direction) {
+            case UP: {
+
                 break;
+            }
+            case DOWN: {
+
+                break;
+            }
+            case LEFT: {
+                if (menuIsVisible) {
+                    if (lastScrolledLeft) {
+                        animateOut();
+                    } else {
+                        animateIn();
+                    }
+
+                } else {
+                    if (lastScrolledLeft) {
+                        animateCameraIn();
+                    } else {
+                        animateCameraOut();
+                    }
+
+                }
+                break;
+            }
+            case RIGHT: {
+                if (cameraIsVisible) {
+                    if (lastScrolledLeft) {
+                        animateCameraIn();
+                    } else {
+                        animateCameraOut();
+                    }
+
+                } else {
+                    if (lastScrolledLeft) {
+                        animateOut();
+                    } else {
+                        animateIn();
+                    }
+
+                }
+                break;
+            }
         }
     }
 
+
+    void move(MotionEvent ev) {
+        switch (direction) {
+            case UP: {
+                moveUp(ev);
+                break;
+            }
+            case DOWN: {
+                moveDown(ev);
+                break;
+            }
+            case LEFT: {
+                moveLeft(ev);
+                break;
+            }
+            case RIGHT: {
+                moveRight(ev);
+                break;
+            }
+        }
+    }
+
+    void moveLeft(MotionEvent m) {
+        if (!menuIsVisible) {
+            moveCamera(m);
+        } else {
+            moveMenu(m);
+        }
+    }
+
+    void moveRight(MotionEvent m) {
+        if (!cameraIsVisible) {
+            moveMenu(m);
+        } else {
+            moveCamera(m);
+        }
+    }
+
+    void moveUp(MotionEvent motionEvent) {
+
+    }
+
+    void moveDown(MotionEvent m) {
+        refreshTry(m);
+    }
+
+    void presentStory(StoryModel storyModel) {
+        /*
+        if (!lockMode) {
+            fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.show(storyFragment);
+            fragmentTransaction.commit();
+            lockMode = true;
+            storyFragment.animateIn();
+        }
+        */
+    }
+
+
     public void refreshTry(MotionEvent m) {
         if (recyclerView.computeVerticalScrollOffset() == 0) {
+            isRefreshing = false;
             float result = m.getRawY() + scrollDy;
             float result2 = ((result / 300) * 100) * 1.8f;
             float percentage = (result / 300);
@@ -521,26 +648,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public boolean shouldMoveMenu() {
-        if (cameraSwipe) {
-            if (menuIsVisible) {
-                return true;
-            } else if (cameraIsVisible) {
-                return false;
-            } else {
-                return false;
-            }
-        } else {
-            if (menuIsVisible) {
-                return true;
-            } else if (cameraIsVisible) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-    }
-
     public void moveMenu(MotionEvent m) {
         menuFragment.dragRight(m.getRawX());
         changeOpacity();
@@ -548,13 +655,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void moveCamera(MotionEvent m) {
-        Log.v("camera", "move");
         cameraFragment.drag(m.getRawX());
 
         float result = m.getRawX() + wrapperDx;
 
+        if (result < 0) {
+            wrapper.setX(result);
+        }
 
-        wrapper.setX(result);
     }
 
     public void stopMoveMenu() {

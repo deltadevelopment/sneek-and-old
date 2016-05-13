@@ -58,10 +58,14 @@ public class TopBarFragment extends android.support.v4.app.Fragment {
 
     public void drag(float yPos, float position) {
         //Log.v("TOPBAR","YPOS : "  + yPos + " : " + position);
-        ViewGroup.MarginLayoutParams marginParams = new ViewGroup.MarginLayoutParams(getView().getLayoutParams());
-        marginParams.setMargins(marginParams.leftMargin, startTopbarMargin - (int) position, 0, 0);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(marginParams);
-        getView().setLayoutParams(layoutParams);
+        if (position != 0)
+        {
+            ViewGroup.MarginLayoutParams marginParams = new ViewGroup.MarginLayoutParams(getView().getLayoutParams());
+            marginParams.setMargins(marginParams.leftMargin, startTopbarMargin - (int) position, 0, 0);
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(marginParams);
+            getView().setLayoutParams(layoutParams);
+        }
+
     }
 
     public void updateAlpha(float alpha) {

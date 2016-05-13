@@ -26,6 +26,22 @@ public class MomentModel extends CRUDModel {
         story_id = integerFromObject(map.get("story_id"));
     }
 
+    public String getMedia_key() {
+        return media_key;
+    }
+
+    public String getMedia_url() {
+        return media_url;
+    }
+
+    public String getThumbnail_url() {
+        return thumbnail_url;
+    }
+
+    public String getCaption() {
+        return caption;
+    }
+
     public String getCreated_at() {
         return created_at;
     }

@@ -34,9 +34,18 @@ public class FeedModel extends CRUDModel {
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        width = size.x;
-        height = size.y;
 
+
+        //Get the full size of an iOS device
+        //750 width x 1334 height
+        float dimensionWidth = 750;
+        float dimensionHeight = 1334;
+
+        float percentageOfWidth = (dimensionHeight/dimensionWidth)*100;
+        float heightThen =  ((float) size.x * percentageOfWidth) / 100;
+        Log.v("FEEDMODEL", "Percentage of width " + percentageOfWidth + " " + heightThen);
+        width = size.x;
+        height = (int)heightThen;
 
         stories = new ArrayList<>();
     }
@@ -78,7 +87,7 @@ public class FeedModel extends CRUDModel {
                 }
             }
         }
-        Log.v("FEED","COUNT " + storiesTemp.size());
+        Log.v("FEED", "COUNT " + storiesTemp.size());
         stories = storiesTemp;
         // [self.stories addObject:storyModel];
     }

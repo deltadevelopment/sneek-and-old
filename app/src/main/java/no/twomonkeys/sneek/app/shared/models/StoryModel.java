@@ -88,6 +88,14 @@ public class StoryModel extends CRUDModel {
         }
     }
 
+    public MomentModel getCurrentMoment()
+    {
+        if (moments.size() > 0)
+        {
+            return moments.get(moments.size() - 1);
+        }
+        return null;
+    }
     public void fetch(final SimpleCallback scb) {
         NetworkHelper.sendRequest(NetworkHelper.userService.getStory(1), GenericContract.get_story(), onDataReturned(), scb);
     }

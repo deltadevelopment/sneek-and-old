@@ -2,6 +2,7 @@ package no.twomonkeys.sneek.app.components.feed;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.models.FeedModel;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
@@ -46,6 +48,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         });
     }
 
+    public FeedModel getFeedModel() {
+        return feedModel;
+    }
 
     @Override
     public FeedViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -71,7 +76,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         //
         FeedViewHolder holder = new FeedViewHolder(view, width, height);
 
-        lay.addView(holder.storyImageView);
+        //lay.addView(holder.storyImageView);
+        lay.addView(holder.draweeView);
         lay.addView(holder.usernameTxtView);
 
         return holder;
@@ -82,10 +88,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         Log.v("TEST", "ROW : " + position);
         StoryModel storyModel = feedModel.getStories().get(position);
 
+        Point cellSize = DataHelper.currentFeed() == 0 ? storyModel.getCellSize() : storyModel.getBigCellSize();
+
         GridLayout gridLayout = (GridLayout) view.findViewById(R.id.rowRoot);
         GridLayoutManager.LayoutParams layoutParams = (GridLayoutManager.LayoutParams) view.getLayoutParams();
-        layoutParams.width = storyModel.getCellSize().x;
-        layoutParams.height = storyModel.getCellSize().y;
+        layoutParams.width = cellSize.x;
+        layoutParams.height = cellSize.y;
         layoutParams.leftMargin = 0;
         layoutParams.rightMargin = 0;
         view.setLayoutParams(layoutParams);

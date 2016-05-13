@@ -76,6 +76,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="50dp" />
+    <fragment
+        android:id="@+id/storyFragment"
+        class="no.twomonkeys.sneek.app.components.story.StoryFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="0dp"
+        android:background="@color/red"/>
 
 
 </RelativeLayout>

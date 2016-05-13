@@ -3,6 +3,7 @@ package no.twomonkeys.sneek.app.components.feed;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -11,8 +12,14 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.facebook.drawee.generic.GenericDraweeHierarchy;
+import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
+import com.facebook.drawee.view.SimpleDraweeView;
+
 import no.twomonkeys.sneek.R;
+import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
+import no.twomonkeys.sneek.app.shared.models.MomentModel;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
 
 /**
@@ -22,6 +29,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
 
     TextView usernameTxtView;
     ImageView storyImageView;
+    SimpleDraweeView draweeView;
     Context c;
 
     public FeedViewHolder(View itemView, int width, int height) {
@@ -30,11 +38,18 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
 
         storyImageView = new ImageView(c);
         storyImageView.setImageResource(R.drawable.splash2);
+        storyImageView.setBackgroundColor(Color.parseColor("#939393"));
+
+
+        draweeView = new SimpleDraweeView(c);
+        GenericDraweeHierarchy hierarchy = draweeView.getHierarchy();
+        hierarchy.setPlaceholderImage(R.drawable.splash2);
+
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(200, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.height = height;
         params.width = width;
         params.setMargins(0, 10, 0, 0);
-        storyImageView.setLayoutParams(params);
+        draweeView.setLayoutParams(params);
 
         LinearLayout.LayoutParams params2 = new LinearLayout.LayoutParams(200, LinearLayout.LayoutParams.WRAP_CONTENT);
         //params2.width = width;
@@ -43,16 +58,14 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
         usernameTxtView.setBackgroundColor(c.getResources().getColor(R.color.white));
         usernameTxtView.setLayoutParams(params2);
         usernameTxtView.setTextColor(c.getResources().getColor(R.color.black));
-
-
     }
 
     public void updateTxt(StoryModel storyModel) {
         String txt = storyModel.getUserModel().getUsername().toUpperCase();
-        Rect storyFrame = storyModel.getFrame();
+        Rect storyFrame = DataHelper.currentFeed() == 0 ? storyModel.getFrame() : storyModel.getBigFrame();
 
         //storyImageView.setX(storyFrame.left);
-       // storyImageView.setY(storyFrame.top);
+        // storyImageView.setY(storyFrame.top);
 
         //x, y, width, height
         //left, top, right, bottom
@@ -60,9 +73,15 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
         RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(200, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params2.width = storyFrame.right;
         params2.height = storyFrame.bottom;
-        params2.setMargins(storyFrame.left, storyFrame.top, 0,0);
-        Log.v("WIDTH","width" +  storyFrame.width());
-        storyImageView.setLayoutParams(params2);
+        params2.setMargins(storyFrame.left, storyFrame.top, 0, 0);
+        Log.v("WIDTH", "width" + storyFrame.width());
+        draweeView.setLayoutParams(params2);
+        MomentModel momentModel = storyModel.getCurrentMoment();
+        if (momentModel.media_type == 0)
+        {
+            Uri uri = Uri.parse(momentModel.getMedia_url());
+            draweeView.setImageURI(uri);
+        }
 
 
         Rect bounds = UIHelper.sizeForView(usernameTxtView, txt);
@@ -75,7 +94,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
         //left, top, right, bottom
 
         usernameTxtView.setPadding(margin / 2, margin / 2, margin / 2, 0);
-        params.setMargins(margin + storyFrame.left + 10, margin + storyFrame.top, 0, 0);
+        params.setMargins(margin + storyFrame.left, margin + storyFrame.top, 0, 0);
         usernameTxtView.setLayoutParams(params);
         //usernameTxtView.setWidth(bounds.width() + 10);
     }
