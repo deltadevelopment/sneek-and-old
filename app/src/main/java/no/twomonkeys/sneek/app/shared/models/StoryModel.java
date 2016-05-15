@@ -97,7 +97,7 @@ public class StoryModel extends CRUDModel {
         return null;
     }
     public void fetch(final SimpleCallback scb) {
-        NetworkHelper.sendRequest(NetworkHelper.userService.getStory(1), GenericContract.get_story(), onDataReturned(), scb);
+        NetworkHelper.sendRequest(NetworkHelper.userService.getStory(user_id), GenericContract.get_story(), onDataReturned(), scb);
     }
 
     //Setters

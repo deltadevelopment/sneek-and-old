@@ -76,10 +76,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         //
         FeedViewHolder holder = new FeedViewHolder(view, width, height);
 
-        //lay.addView(holder.storyImageView);
-        lay.addView(holder.draweeView);
-        lay.addView(holder.usernameTxtView);
-
         return holder;
     }
 

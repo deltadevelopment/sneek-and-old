@@ -19,7 +19,7 @@ import retrofit2.Response;
 public class NetworkHelper {
 
     private static final String TAG = "NetworkHelper";
-    public static StoryApi userService = ServiceGenerator.createService(StoryApi.class, "319c97f6558736f5c4779fedeab191f6");
+    public static StoryApi userService = ServiceGenerator.createService(StoryApi.class, "f68022102ad2e2335904a5221f4e2a8d");
 
 
     public static void sendRequest(Call<ResponseModel> call, final Contract contract, final MapCallback mcb, final SimpleCallback scb) {
