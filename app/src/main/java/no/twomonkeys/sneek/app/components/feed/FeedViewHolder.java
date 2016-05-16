@@ -28,6 +28,7 @@ import com.facebook.imagepipeline.image.QualityInfo;
 import org.w3c.dom.Text;
 
 import no.twomonkeys.sneek.R;
+import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.models.MomentModel;
@@ -76,6 +77,8 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
         usernameTxtView.setBackgroundColor(c.getResources().getColor(R.color.white));
         usernameTxtView.setLayoutParams(params2);
         usernameTxtView.setTextColor(c.getResources().getColor(R.color.black));
+
+        itemView.setBackgroundColor(c.getColor(R.color.cyan));
     }
 
     public void updateTxt(StoryModel storyModel) {
@@ -98,13 +101,12 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
         loadingView.startAnimate();
         MomentModel momentModel = storyModel.getCurrentMoment();
 
-        if (momentModel.media_type == 0) {
-            Uri uri = Uri.parse(momentModel.getMedia_url());
-            loadImageFromUri(uri);
-        } else {
-            Uri uri = Uri.parse(momentModel.getThumbnail_url());
-            loadImageFromUri(uri);
-        }
+        momentModel.loadPhoto(draweeView, new SimpleCallback() {
+            @Override
+            public void callbackCall() {
+                loadingView.stopAnimation();
+            }
+        });
 
         Rect bounds = UIHelper.sizeForView(usernameTxtView, txt);
         int margin = UIHelper.dpToPx(c, 10);
@@ -119,59 +121,6 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
         params.setMargins(margin + storyFrame.left, margin + storyFrame.top, 0, 0);
         usernameTxtView.setLayoutParams(params);
         //usernameTxtView.setWidth(bounds.width() + 10);
+
     }
-
-    public void hideLoading() {
-        loadingView.stopAnimation();
-    }
-
-    public void loadImageFromUri(Uri uri) {
-        Log.v("Called", "called");
-        ControllerListener controllerListener = new BaseControllerListener<ImageInfo>() {
-            @Override
-            public void onFinalImageSet(
-                    String id,
-                    @Nullable ImageInfo imageInfo,
-                    @Nullable Animatable anim) {
-
-                hideLoading();
-                if (imageInfo == null) {
-                    return;
-                }
-                QualityInfo qualityInfo = imageInfo.getQualityInfo();
-                FLog.d("Final image received! " +
-                                "Size %d x %d",
-                        "Quality level %d, good enough: %s, full quality: %s",
-                        imageInfo.getWidth(),
-                        imageInfo.getHeight(),
-                        qualityInfo.getQuality(),
-                        qualityInfo.isOfGoodEnoughQuality(),
-                        qualityInfo.isOfFullQuality());
-            }
-
-            @Override
-            public void onIntermediateImageSet(String id, @Nullable ImageInfo imageInfo) {
-                // FLog.d("Intermediate image received")
-                Log.v("Img Re", "Recieved");
-            }
-
-            @Override
-            public void onFailure(String id, Throwable throwable) {
-                FLog.e(getClass(), throwable, "Error loading %s", id);
-            }
-        };
-
-        Log.v("URI IS", "uri " + uri);
-
-        DraweeController controller = Fresco.newDraweeControllerBuilder()
-                .setUri(uri)
-                .setTapToRetryEnabled(true)
-                .setOldController(draweeView.getController())
-                .setControllerListener(controllerListener)
-                .build();
-        draweeView.clearAnimation();
-        draweeView.setController(controller);
-    }
-
-
 }

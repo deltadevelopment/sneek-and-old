@@ -1,18 +1,32 @@
 package no.twomonkeys.sneek.app.components.story;
 
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.Layout;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.webkit.URLUtil;
+import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import com.facebook.common.logging.FLog;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -24,9 +38,26 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.image.QualityInfo;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+
 import no.twomonkeys.sneek.R;
+import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
+import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
 import no.twomonkeys.sneek.app.shared.models.MomentModel;
+import no.twomonkeys.sneek.app.shared.views.CaptionView;
 import no.twomonkeys.sneek.app.shared.views.LoadingFragment;
+import no.twomonkeys.sneek.app.shared.views.LoadingView;
+import no.twomonkeys.sneek.app.shared.views.ProgressIndicator;
+import no.twomonkeys.sneek.app.shared.views.SneekVideoView;
 
 /**
  * Created by simenlie on 13.05.16.
@@ -38,8 +69,22 @@ public class MomentFragment extends Fragment {
     public static final String ARG_OBJECT = "object";
     private static SimpleDraweeView draweeView;
     private MomentModel momentModel;
-    private LoadingFragment loadingFragment;
+    private LoadingView loadingView;
+    private SneekVideoView videoView;
     ControllerListener controllerListener;
+    private MediaController mediaControls;
+    private boolean isVisible;
+    private MediaPlayer mediaPlayer;
+    private Handler mHandler;
+    private File temp;
+    private int totalRead;
+    private boolean started;
+    private int mPlayerPosition;
+    VideoHelper videoHelper;
+    TextView momentCaption;
+    CaptionView captionView;
+    boolean hasLayedOut;
+
 
     public MomentFragment() {
 
@@ -63,91 +108,281 @@ public class MomentFragment extends Fragment {
 
         RelativeLayout layout = (RelativeLayout) rootView.findViewById(R.id.momentFragment);
         draweeView = (SimpleDraweeView) rootView.findViewById(R.id.draweeView);
-        FragmentManager fragmentManager = getChildFragmentManager();
-        loadingFragment = (LoadingFragment) fragmentManager.findFragmentById(R.id.loadingFragment);
+        loadingView = (LoadingView) rootView.findViewById(R.id.storyLoadingView);
+
+        videoView = (SneekVideoView) rootView.findViewById(R.id.momentVideoView);
+        videoView.setVisibility(View.INVISIBLE);
 
         GenericDraweeHierarchy hierarchy = draweeView.getHierarchy();
         hierarchy.setFadeDuration(0);
         hierarchy.setPlaceholderImage(R.drawable.splash2);
 
         Bundle bundle = getArguments();
-        loadingFragment.startAnimate();
+        loadingView.startAnimate();
 
         //here is your list array
         String[] myStrings = bundle.getStringArray("elist");
         Log.v("arr", "args" + getArguments());
+
+
+        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(200, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        //params2.width = width;
+        params2.height = UIHelper.dpToPx(getContext(), 30);
+        momentCaption = (TextView) rootView.findViewById(R.id.momentCaption);
+        momentCaption.setBackgroundColor(getContext().getResources().getColor(R.color.white));
+        momentCaption.setLayoutParams(params2);
+        momentCaption.setTextColor(getContext().getResources().getColor(R.color.black));
+
+        momentCaption.setVisibility(View.INVISIBLE);
+
+        captionView = (CaptionView) rootView.findViewById(R.id.captionView);
+
+
+
+
         updateView();
         return rootView;
     }
 
-    public void hideLoading() {
-        loadingFragment.stopAnimation();
-    }
 
     public void updateView() {
         if (momentModel != null && draweeView != null) {
+
             if (momentModel.media_type == 0) {
-                if (draweeView == null) {
-                    Log.v("MOMENT ", " NULL");
-                }
-                Uri uri = Uri.parse(momentModel.getMedia_url());
-                loadImageFromUri(uri);
+                momentModel.loadPhoto(draweeView, new SimpleCallback() {
+                    @Override
+                    public void callbackCall() {
+                        loadingView.stopAnimation();
+                    }
+                });
             } else {
-                Uri uri = Uri.parse(momentModel.getThumbnail_url());
-                loadImageFromUri(uri);
+                loadVideo();
+            }
+
+            updateCaption();
+        }
+    }
+
+    public void updateCaption() {
+        if (momentModel.getCaption() != "") {
+            final String caption = momentModel.getCaption();
+            momentCaption.setText(caption);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+            Rect bounds = UIHelper.sizeForView(momentCaption, caption);
+            int margin = UIHelper.dpToPx(getContext(), 10);
+            params.height = UIHelper.dpToPx(getContext(), 30);
+            params.width = bounds.width() + margin + 10;
+            //left, top, right, bottom
+
+            momentCaption.setPadding(margin / 2, margin / 2, margin / 2, 0);
+            params.setMargins(margin, margin, margin + UIHelper.dpToPx(getContext(), 50), 0);
+
+            momentCaption.setLayoutParams(params);
+            //momentCaption.getLayout().getLineStart(1);
+
+            ViewTreeObserver vto = momentCaption.getViewTreeObserver();
+            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (!hasLayedOut) {
+                        hasLayedOut = true;
+                        Layout layout = momentCaption.getLayout();
+                        Log.v("Line count is", "line count: " + layout.getLineStart(1));
+                        layoutCaption(layout.getLineCount(), layout.getLineStart(layout.getLineCount() - 1));
+                        captionView.updateCaption(layout.getLineCount(), layout.getLineStart(layout.getLineCount() - 1), caption);
+                    }
+                }
+            });
+        } else {
+            Log.v("CAPTION0", "IS NIL");
+            captionView.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    public void layoutCaption(int numberOfLines, int secondLineStart) {
+        if (numberOfLines > 1) {
+            String lineOne = momentCaption.getText().toString().substring(0, secondLineStart);
+            String lineTwo = momentCaption.getText().toString().substring(secondLineStart, momentCaption.getText().toString().length() - 1);
+            Log.v("PRInt", "lineone :" + lineOne + " line tow : " + lineTwo);
+        }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (this.isVisible()) {
+            if (!isVisibleToUser)   // If we are becoming invisible, then...
+            {
+                isVisible = false;
+                //pause or stop video
+                if (videoView != null) {
+                    //videoView.stopPlayback();
+                    videoView.pause();
+
+                }
+            }
+
+            if (isVisibleToUser) // If we are becoming visible, then...
+            {
+                //play your video
+                isVisible = true;
+                Log.v("STARING AGAIN", " DId start again");
+                //videoView.start();
+
+                videoView.resume();
             }
         }
-
     }
 
-    public void loadImageFromUri(Uri uri) {
-        Log.v("Called", "called");
-        controllerListener = new BaseControllerListener<ImageInfo>() {
-            @Override
-            public void onFinalImageSet(
-                    String id,
-                    @Nullable ImageInfo imageInfo,
-                    @Nullable Animatable anim) {
+    public void loadVideo() {
+        Log.v("Got here", "hello there");
 
-                hideLoading();
-                if (imageInfo == null) {
-                    return;
+        //set the media controller buttons
+        videoView.setVisibility(View.VISIBLE);
+        if (mediaControls == null) {
+            mediaControls = new MediaController(getContext());
+
+        }
+        // videoView.setMediaController(mediaControls);
+        Uri uri = Uri.parse(momentModel.getMedia_url());
+
+        //videoView.setVideoURI(uri);
+        //videoView.requestFocus();
+        videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                Log.v("Got here", "hello there");
+                mPlayerPosition = videoView.getCurrentPosition();
+                //videoView.setVideoPath(temp.getAbsolutePath());
+                // videoView.setVideoURI(uri);
+                videoView.resume();
+                videoView.requestFocus();
+                //mediaPlayer.seekTo(mPlayerPosition);
+                return true;
+            }
+        });
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                Log.v("Prepared", "prepared");
+                mediaPlayer = mp;
+                videoHelper.setMediaPlayer(mediaPlayer);
+                mp.setLooping(true);
+                loadingView.stopAnimation();
+                if (isVisible) {
+                    videoView.start();
                 }
-                QualityInfo qualityInfo = imageInfo.getQualityInfo();
-                FLog.d("Final image received! " +
-                                "Size %d x %d",
-                        "Quality level %d, good enough: %s, full quality: %s",
-                        imageInfo.getWidth(),
-                        imageInfo.getHeight(),
-                        qualityInfo.getQuality(),
-                        qualityInfo.isOfGoodEnoughQuality(),
-                        qualityInfo.isOfFullQuality());
             }
+        });
+        final MomentFragment self = this;
 
+        videoHelper = new VideoHelper(videoView, momentModel, getActivity());
+        videoHelper.loadVideo();
+
+        /*
+        Thread t = new Thread(new Runnable() {
             @Override
-            public void onIntermediateImageSet(String id, @Nullable ImageInfo imageInfo) {
-                // FLog.d("Intermediate image received")
-                Log.v("Img Re", "Recieved");
+            public void run() {
+                String urlStr = momentModel.getMedia_url();
+                URL url = null;
+                try {
+                    url = new URL(urlStr);
+                    //  final String path = getDataSource(url.openStream(), urlStr);
+                    temp = File.createTempFile("mediaplayertmp", "mp4");
+                    downloadUsingStream(urlStr, temp);
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+        });
+        t.start();
+*/
 
-            @Override
-            public void onFailure(String id, Throwable throwable) {
-                FLog.e(getClass(), throwable, "Error loading %s", id);
-            }
-        };
-
-        Log.v("URI IS", "uri " + uri);
-
-        DraweeController controller = Fresco.newDraweeControllerBuilder()
-                .setUri(uri)
-                .setTapToRetryEnabled(true)
-                .setOldController(draweeView.getController())
-                .setControllerListener(controllerListener)
-                .build();
-        draweeView.clearAnimation();
-        draweeView.setController(controller);
-        draweeView.setFadingEdgeLength(0);
-        // draweeView.setImageURI(uri);
+        //videoView.start();
     }
 
+    /*
+        private void downloadUsingStream(String urlStr, File file) throws IOException {
+            URL url = new URL(urlStr);
+            Log.v("STart", "is Starting");
+            BufferedInputStream bis = new BufferedInputStream(url.openStream());
+            FileOutputStream fis = new FileOutputStream(file);
+            byte[] buffer = new byte[1024];
+            int count = 0;
+            while ((count = bis.read(buffer, 0, 1024)) != -1) {
+                Log.v("Reading buffer", "Buffering");
+                totalRead += count;
+                if (totalRead > 200000) {
+                    if (!started) {
+                        Log.v("Starting VIDEO", " STARTED");
+                        playFromStream(file);
+                        started = true;
+                    } else {
+                        tryStartVideo();
+                    }
+                }
+
+                fis.write(buffer, 0, count);
+            }
+
+            fis.close();
+            bis.close();
+            onCompletion();
+        }
+
+        public void onCompletion() {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    mPlayerPosition = mediaPlayer.getCurrentPosition();
+                    try {
+                        mediaPlayer.reset();
+                        videoView.setVideoPath(temp.getAbsolutePath());
+                        mediaPlayer.seekTo(mPlayerPosition);
+                        mediaPlayer.setLooping(true);
+                        videoView.start();
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    } catch (IllegalStateException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+
+        }
+
+        public void playFromStream(final File file) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    videoView.setVideoPath(file.getAbsolutePath());
+                    // videoView.setVideoURI(uri);
+                    videoView.requestFocus();
+                }
+            });
+        }
+
+        public void tryStartVideo() {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    videoView.start();
+                }
+            });
+        }
+    */
+    public void stopVideo() {
+        if (videoView != null) {
+            videoView.pause();
+        }
+    }
 }

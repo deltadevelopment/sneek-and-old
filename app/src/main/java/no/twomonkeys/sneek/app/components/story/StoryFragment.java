@@ -1,5 +1,7 @@
 package no.twomonkeys.sneek.app.components.story;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -23,6 +25,7 @@ import no.twomonkeys.sneek.app.components.menu.MoreButton;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.helpers.DirectionHelper;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
+import no.twomonkeys.sneek.app.shared.views.IndicatorView;
 
 /**
  * Created by simenlie on 13.05.16.
@@ -37,10 +40,12 @@ public class StoryFragment extends android.support.v4.app.Fragment {
     float startY;
     public SimpleCallback callback;
     public StoryModel storyModel;
+    public int previousPageIndex;
     // When requested, this adapter returns a DemoObjectFragment,
     // representing an object in the collection.
     MomentAdapter mDemoCollectionPagerAdapter;
     ViewPager mViewPager;
+    IndicatorView indicatorView;
 
     @Nullable
     @Override
@@ -54,6 +59,8 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         startY = size.y;
         view.setY(startY);
 
+        indicatorView = (IndicatorView) view.findViewById(R.id.storyIndicatorView);
+
         rl.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -66,35 +73,6 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         return view;
     }
 
-    public void setStoryModel(StoryModel story) {
-        // ViewPager and its adapters use support library
-        // fragments, so use getSupportFragmentManager.
-        storyModel = story;
-        Log.v("USER", "user : " + story.getUserModel().getUsername());
-        storyModel.fetch(new SimpleCallback() {
-            @Override
-            public void callbackCall() {
-                initialize();
-                mDemoCollectionPagerAdapter.setMoments(storyModel.getMoments());
-                // mDemoCollectionPagerAdapter.getItem(mViewPager.getCurrentItem());
-            }
-        });
-    }
-
-    public void initialize() {
-        mDemoCollectionPagerAdapter = new MomentAdapter(getChildFragmentManager());
-        mViewPager = (ViewPager) view.findViewById(R.id.pager);
-        mViewPager.setAdapter(mDemoCollectionPagerAdapter);
-
-        mViewPager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                handleTouch(event);
-                mViewPager.onTouchEvent(event);
-                return true;
-            }
-        });
-    }
 
     public void handleTouch(MotionEvent ev) {
         float threshold = 2.0f;
@@ -159,8 +137,7 @@ public class StoryFragment extends android.support.v4.app.Fragment {
                     Log.v("IS CLICK", "CLICK CLIKC");
                     if (mViewPager.getCurrentItem() == storyModel.getMoments().size() - 1) {
                         animateOut();
-                    }
-                    else{
+                    } else {
                         mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1, false);
                     }
 
@@ -168,7 +145,7 @@ public class StoryFragment extends android.support.v4.app.Fragment {
                 } else {
                     if (direction == DirectionHelper.DOWN || direction == DirectionHelper.UP) {
                         if (lastScrolledUp) {
-                            animateIn();
+                            animateIn(null);
                         } else {
                             animateOut();
                         }
@@ -191,13 +168,149 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         }
     }
 
-    public void animateIn() {
-        view.animate().translationY(0).setDuration(250);
+
+    public void animateIn(final SimpleCallback scb) {
+        ObjectAnimator anim = ObjectAnimator.ofFloat(view, "translationY", 0);
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // Do something.
+                mViewPager.setVisibility(View.VISIBLE);
+                if (scb != null){
+                    scb.callbackCall();
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        anim.setDuration(250).start();
+
+        //view.animate().translationY(0).setDuration(250);
     }
 
     public void animateOut() {
-        view.animate().translationY(startY).setDuration(250);
-        callback.callbackCall();
+        MomentFragment momentFragment = mDemoCollectionPagerAdapter.getFragment(mViewPager.getCurrentItem());
+        if (momentFragment != null) {
+            momentFragment.stopVideo();
+        }
+        ObjectAnimator anim = ObjectAnimator.ofFloat(view, "translationY", startY);
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // Do something.
+                mViewPager.setVisibility(View.INVISIBLE);
+                callback.callbackCall();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        anim.setDuration(250).start();
+    }
+
+    public void setStoryModel(final StoryModel story) {
+        // ViewPager and its adapters use support library
+        // fragments, so use getSupportFragmentManager.
+        initialize();
+        animateIn(new SimpleCallback() {
+            @Override
+            public void callbackCall() {
+                storyModel = story;
+                Log.v("USER", "user : " + story.getUserModel().getUsername());
+                storyModel.fetch(new SimpleCallback() {
+                    @Override
+                    public void callbackCall() {
+                        mDemoCollectionPagerAdapter.setMoments(storyModel.getMoments());
+                        updateProgressWithPercent();
+                        // mDemoCollectionPagerAdapter.getItem(mViewPager.getCurrentItem());
+                    }
+                });
+            }
+        });
+    }
+
+    public void updateProgressWithPercent()
+    {
+        float pageCount = storyModel.getMoments().size();
+        //Log.v("PAGE","page " + mViewPager.getCurrentItem() + " " + pageCount);
+        float currentPage = (mViewPager.getCurrentItem() + 1);
+        float percent = (currentPage/pageCount)*100;
+        indicatorView.updateProgress(percent);
+    }
+
+    public void update(float v, int currentItem)
+    {
+        float pageCount = storyModel.getMoments().size();
+        //Log.v("PAGE","page " + mViewPager.getCurrentItem() + " " + pageCount);
+        float currentPage = currentItem + v;
+        if (currentPage <= mViewPager.getCurrentItem() + 2)
+        {
+            float percent = (currentPage/pageCount)*100;
+
+
+            indicatorView.updateProgress(percent);
+        }
+    }
+
+    public void initialize() {
+        mDemoCollectionPagerAdapter = new MomentAdapter(getChildFragmentManager());
+        mViewPager = (ViewPager) view.findViewById(R.id.pager);
+        mViewPager.setAdapter(mDemoCollectionPagerAdapter);
+        mViewPager.setVisibility(View.INVISIBLE);
+
+        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int i, float v, int i2) {
+                //updateProgressWithPercent();
+
+                update(v, i + 1);
+            }
+
+            @Override
+            public void onPageSelected(int i) {
+                previousPageIndex = i;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int i) {
+
+            }
+        });
+
+
+        mViewPager.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                handleTouch(event);
+                mViewPager.onTouchEvent(event);
+                return true;
+            }
+        });
     }
 
 

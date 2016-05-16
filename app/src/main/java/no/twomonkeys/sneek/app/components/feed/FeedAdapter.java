@@ -88,6 +88,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
 
         GridLayout gridLayout = (GridLayout) view.findViewById(R.id.rowRoot);
         GridLayoutManager.LayoutParams layoutParams = (GridLayoutManager.LayoutParams) view.getLayoutParams();
+
+        //x, y, width, height
+        //left, top, right, bottom
+
         layoutParams.width = cellSize.x;
         layoutParams.height = cellSize.y;
         layoutParams.leftMargin = 0;

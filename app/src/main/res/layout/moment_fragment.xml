@@ -8,17 +8,43 @@
     android:paddingBottom="0dp"
     android:paddingLeft="0dp"
     android:paddingRight="0dp"
-    android:paddingTop="0dp"
-    >
+    android:paddingTop="0dp">
+
     <com.facebook.drawee.view.SimpleDraweeView
         android:id="@+id/draweeView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    <fragment
-        android:id="@+id/loadingFragment"
-        class="no.twomonkeys.sneek.app.shared.views.LoadingFragment"
+
+
+    <no.twomonkeys.sneek.app.shared.views.SneekVideoView
+        android:id="@+id/momentVideoView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:layout_centerVertical="true"
+        android:background="@color/transparent"/>
+
+
+    <no.twomonkeys.sneek.app.shared.views.LoadingView
+        android:id="@+id/storyLoadingView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="horizontal"></no.twomonkeys.sneek.app.shared.views.LoadingView>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/myrect">
+    </TextView>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/momentCaption"/>
+    <no.twomonkeys.sneek.app.shared.views.CaptionView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/captionView">
+    </no.twomonkeys.sneek.app.shared.views.CaptionView>
 
 
 </RelativeLayout>

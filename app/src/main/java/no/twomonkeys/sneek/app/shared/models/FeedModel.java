@@ -141,8 +141,12 @@ public class FeedModel extends CRUDModel {
 
         story.setFrame(new Rect(xPos, (int) startY, storySize.x, storySize.y));
 
+
+        //x, y, width, height
+        //left, top, right, bottom
+
         //the cellsize should be up to twenty percent bigger height
-        story.setCellSize(new Point(isOdd == 1 ? storySize.x : storySize.y + xPos, (int) (storySize.y + twentyPercentage2)));
+        story.setCellSize(new Point(isOdd == 1 ? storySize.x : storySize.x + xPos, (int) (storySize.y + twentyPercentage2)));
     }
 
     public Point sizeForStory(int w, int h) {

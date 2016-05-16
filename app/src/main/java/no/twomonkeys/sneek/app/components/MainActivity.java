@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isScrolling;
     private boolean menuIsVisible;
     private boolean cameraIsVisible;
+    private boolean menuWasVisible;
     private boolean storyIsVisible;
     private ImageButton homeBtn;
     private ImageButton placeholderBtn;
@@ -159,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
             public void callbackCall() {
 
             }
+
             @Override
             public void callbackCall(int row) {
                 animateOut();
@@ -260,6 +262,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
                 View child = recyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
                 if (child != null && mGestureDetector.onTouchEvent(motionEvent)) {
+                    Log.v("MENU","IS menu visible?" + menuIsVisible + " " + cameraIsVisible);
                     if (!menuIsVisible && !cameraIsVisible) {
                         StoryModel storyModel = feedAdapter.getFeedModel().getStories().get(recyclerView.getChildPosition(child));
                         presentStory(storyModel);
@@ -285,7 +288,6 @@ public class MainActivity extends AppCompatActivity {
             storyFragment = storyFragment();
             storyFragment.setStoryModel(storyModel);
             lockMode = true;
-            storyFragment.animateIn();
             storyIsVisible = true;
             canScroll = false;
         }
@@ -293,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public StoryFragment storyFragment() {
-        StoryFragment storyFragment = (StoryFragment) fragmentManager.findFragmentById(R.id.storyFragment);
+        storyFragment = (StoryFragment) fragmentManager.findFragmentById(R.id.storyFragment);
         storyFragment.callback = new SimpleCallback() {
             @Override
             public void callbackCall() {
@@ -449,6 +451,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_UP: {
                     if (isClick) {
                         if (menuIsVisible) {
+                            Log.v("Animating "," OUUTUT");
                             animateOut();
                         } else if (cameraIsVisible) {
                             animateCameraOut();
@@ -581,8 +584,34 @@ public class MainActivity extends AppCompatActivity {
 
         menuFragment.animateOut();
         topBar.animateIn();
-        homeBtn.animate().alpha(255).setDuration(150);
-        menuIsVisible = false;
+        //homeBtn.animate().alpha(255).setDuration(150);
+
+        ObjectAnimator anim = ObjectAnimator.ofFloat(homeBtn, "alpha", 255);
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                menuIsVisible = false;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        anim.setDuration(150).start();
+
+
+
     }
 
     int calculate(int percentage) {
