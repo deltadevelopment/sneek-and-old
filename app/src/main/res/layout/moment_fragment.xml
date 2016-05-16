@@ -36,15 +36,45 @@
         android:layout_height="match_parent"
         android:background="@drawable/myrect">
     </TextView>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/momentCaption"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/white"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:padding="5dp"
+        android:textColor="@color/black"
+        android:id="@+id/updatedTxt"/>
+
     <no.twomonkeys.sneek.app.shared.views.CaptionView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/captionView">
     </no.twomonkeys.sneek.app.shared.views.CaptionView>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
+        android:text="MORE"
+        android:padding="5dp"
+        android:id="@+id/momentMoreBtn"/>
+
+    <no.twomonkeys.sneek.app.shared.views.MoreView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/momentMoreView">
+    </no.twomonkeys.sneek.app.shared.views.MoreView>
 
 
 </RelativeLayout>

@@ -77,8 +77,6 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
         usernameTxtView.setBackgroundColor(c.getResources().getColor(R.color.white));
         usernameTxtView.setLayoutParams(params2);
         usernameTxtView.setTextColor(c.getResources().getColor(R.color.black));
-
-        itemView.setBackgroundColor(c.getColor(R.color.cyan));
     }
 
     public void updateTxt(StoryModel storyModel) {

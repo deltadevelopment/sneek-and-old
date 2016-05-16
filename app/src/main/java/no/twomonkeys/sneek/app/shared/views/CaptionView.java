@@ -57,6 +57,8 @@ public class CaptionView extends RelativeLayout {
 
         textViewOne = (TextView) findViewById(R.id.textViewOne);
         textViewTwo = (TextView) findViewById(R.id.textViewTwo);
+        textViewOne.setTextSize(15);
+        textViewTwo.setTextSize(15);
 
         textViewOne.setBackgroundColor(getContext().getResources().getColor(R.color.black));
         textViewOne.setTextColor(getContext().getResources().getColor(R.color.white));
@@ -70,7 +72,7 @@ public class CaptionView extends RelativeLayout {
 
         if (numberOfLines > 1) {
             String lineOne = caption.substring(0, secondLineStart);
-            String lineTwo = caption.substring(secondLineStart, caption.length() - 1);
+            String lineTwo = caption.substring(secondLineStart, caption.length());
             layoutTextViews(textViewOne, lineOne, 0);
             layoutTextViews(textViewTwo, lineTwo, 100);
             textViewTwo.setVisibility(VISIBLE);

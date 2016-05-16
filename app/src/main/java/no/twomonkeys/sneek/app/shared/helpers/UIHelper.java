@@ -2,8 +2,11 @@ package no.twomonkeys.sneek.app.shared.helpers;
 
 import android.content.Context;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 /**
@@ -32,6 +35,25 @@ public class UIHelper {
         return bounds;
         //text_height = bounds.height();
         //text_width = bounds.width() + (margin * 2) + 10;
+    }
+
+    static public int screenWidth(Context context)
+    {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+
+        return size.x;
+    }
+    static public int screenHeight(Context context)
+    {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+
+        return size.y;
     }
 
 }
