@@ -4,14 +4,18 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Display;
@@ -27,8 +31,18 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.menu.MoreButton;
+import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
+import no.twomonkeys.sneek.app.shared.views.BoolCallback;
 
 /**
  * Created by simenlie on 11.05.16.
@@ -43,6 +57,11 @@ public class CameraFragment extends android.support.v4.app.Fragment {
     private float dX;
     private int defaultWidth;
     FrameLayout preview;
+    boolean previewIsRunning, flashIsOn, selfieIsOn;
+    CameraEditView cameraEditView;
+    Button backBtn, selfieBtn, flashBtn;
+    public SimpleCallback onCancelClb;
+    public BoolCallback onLockClb;
 
     @Override
     public void onResume() {
@@ -60,18 +79,23 @@ public class CameraFragment extends android.support.v4.app.Fragment {
         // Create an instance of Camera
         mCamera = getCameraInstance();
         if (mCamera == null) {
-            Log.v("CAMERANULL", " nUL CAMRA");
+            Log.v("CAMERANULL", " NULL CAMRA");
         }
         // Create our Preview view and set it as the content of our activity.
         mPreview = new CameraPreview(this.getActivity(), mCamera);
         preview = (FrameLayout) view.findViewById(R.id.camera_preview);
-        //preview.addView(mPreview);
+        preview.addView(mPreview);
         //mCamera.stopPreview();
 
         recordBtn = (ImageButton) view.findViewById(R.id.button_capture);
         recordBtn.setImageResource(R.drawable.circle);
         recordBtn.setColorFilter(Color.argb(255, 255, 255, 255));
-
+        recordBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePicture(v);
+            }
+        });
 
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -81,19 +105,147 @@ public class CameraFragment extends android.support.v4.app.Fragment {
         defaultWidth = width;
         rl.setX(defaultWidth);
 
+        cameraEditView = (CameraEditView) view.findViewById(R.id.cameraEditView);
+        cameraEditView.setVisibility(View.INVISIBLE);
+        cameraEditView.onCancelEdit = new SimpleCallback() {
+            @Override
+            public void callbackCall() {
+                showButtons();
+                mCamera.startPreview();
+                onLockClb.callbackCall(false);
+            }
+        };
+        cameraEditView.onMediaPosted = new SimpleCallback() {
+            @Override
+            public void callbackCall() {
+                onLockClb.callbackCall(false);
+                onCancelClb.callbackCall();
+                mCamera.stopPreview();
+            }
+        };
+
+        backBtn = (Button) view.findViewById(R.id.cameraBackBtn);
+        flashBtn = (Button) view.findViewById(R.id.cameraFlashBtn);
+        selfieBtn = (Button) view.findViewById(R.id.cameraSelfieBtn);
+
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onCancelClb.callbackCall();
+            }
+        });
+        flashBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleFlash();
+            }
+        });
+        selfieBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleSelfie();
+            }
+        });
+
+        //applyUiToButton(backBtn, "BACK");
+
         return view;
+    }
+
+
+    public void toggleFlash() {
+        if (flashIsOn) {
+//Turn flash off
+            flashBtn.setTextColor(getResources().getColor(R.color.white));
+        } else {
+//turn flash on
+            flashBtn.setTextColor(getResources().getColor(R.color.cyan));
+        }
+        flashIsOn = !flashIsOn;
+
+
+    }
+
+    public void toggleSelfie() {
+        if (selfieIsOn) {
+            selfieBtn.setTextColor(getResources().getColor(R.color.white));
+            flashBtn.setVisibility(View.VISIBLE);
+        } else {
+            selfieBtn.setTextColor(getResources().getColor(R.color.cyan));
+            flashBtn.setVisibility(View.INVISIBLE);
+        }
+        mCamera.stopPreview();
+        mCamera.setPreviewCallback(null);
+
+        mCamera.release();
+        mCamera = null;
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mPreview.showFrontFacing(selfieIsOn ? 0 : 1);
+            }
+        });
+        t.start();
+
+        selfieIsOn = !selfieIsOn;
+    }
+
+    public void cancelCamera() {
+
+    }
+
+    public void applyUiToButton(Button b, String txt) {
+        b.setBackgroundColor(getResources().getColor(R.color.black));
+        b.setTextColor(getResources().getColor(R.color.white));
+        b.setTextSize(17);
+
+        b.setTypeface(Typeface.create("HelveticaNeue", 0));
+
+        b.setText(txt);
+        int margin = UIHelper.dpToPx(getContext(), 10);
+        int btnHeight = UIHelper.dpToPx(getContext(), 50);
+
+        b.setPadding(margin, 0, margin, 0);
+
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(20, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.height = btnHeight;
+        params.setMargins(0, margin, 0, 0);
+
+        //rl.addView(button);
+        Log.v("WIDTH: ", "" + params.width);
+        Paint paint = new Paint();
+        Rect bounds = new Rect();
+
+        int text_height = 0;
+        int text_width = 0;
+
+        paint.setTypeface(b.getTypeface());// your preference here
+        paint.setTextSize(b.getTextSize());// have this the same as your text size
+
+        String text = txt;
+
+        paint.getTextBounds(text, 0, text.length(), bounds);
+
+        text_height = bounds.height();
+        text_width = bounds.width() + (margin * 2) + 10;
+        params.width = text_width;
+        b.setLayoutParams(params);
+        //width = text_width;
+        //b.setX(-width);
     }
 
     public void drag(float x) {
         float result = x + dX;
-
-
-        getView().setX(result);
-
+        Log.v("result is", "result " + result);
+        if (result >= 0) {
+            getView().setX(result);
+        }
     }
+
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
+        /*
         preview.removeView(mPreview);
         if(mCamera!=null){
             mCamera.stopPreview();
@@ -102,6 +254,68 @@ public class CameraFragment extends android.support.v4.app.Fragment {
             mCamera.release();
             mCamera = null;
         }
+        */
+    }
+
+    public void takePicture(View v) {
+
+        Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                File pictureFile = getOutputMediaFile();
+                if (pictureFile == null) {
+                    return;
+                }
+                try {
+                    FileOutputStream fos = new FileOutputStream(pictureFile);
+                    fos.write(data);
+                    fos.close();
+                    cameraEditView.addPhoto(pictureFile);
+                } catch (FileNotFoundException e) {
+
+                } catch (IOException e) {
+                }
+                cameraEditView.setVisibility(View.VISIBLE);
+                onLockClb.callbackCall(true);
+                hideButtons();
+            }
+        };
+
+        mCamera.takePicture(null, null, pictureCallback);
+
+    }
+
+    public void hideButtons() {
+        backBtn.setVisibility(View.INVISIBLE);
+        selfieBtn.setVisibility(View.INVISIBLE);
+        flashBtn.setVisibility(View.INVISIBLE);
+    }
+
+    public void showButtons() {
+        backBtn.setVisibility(View.VISIBLE);
+        selfieBtn.setVisibility(View.VISIBLE);
+        flashBtn.setVisibility(View.VISIBLE);
+    }
+
+    private static File getOutputMediaFile() {
+        File mediaStorageDir = new File(
+                Environment
+                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "MyCameraApp");
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d("MyCameraApp", "failed to create directory");
+                return null;
+            }
+        }
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new Date());
+        File mediaFile;
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator
+                + "IMG_" + timeStamp + ".jpg");
+
+        return mediaFile;
     }
 
     public void startMove(float x) {
@@ -111,6 +325,7 @@ public class CameraFragment extends android.support.v4.app.Fragment {
     public void animateIn() {
         getView().animate().translationX(0).setDuration(150);
         //Do something with cam here ??
+        prepareCamera();
     }
 
     public void animateOut() {
@@ -118,29 +333,34 @@ public class CameraFragment extends android.support.v4.app.Fragment {
     }
 
     public void prepareCamera() {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (mCamera != null){
-                    mCamera.startPreview();
-                }
+        if (!previewIsRunning && mCamera != null) {
 
-            }
-        });
-        t.start();
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    previewIsRunning = true;
+                    mCamera.startPreview();
+
+
+                }
+            });
+            t.start();
+
+        }
     }
 
     public void stopCamera() {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (mCamera != null){
+        if (previewIsRunning && mCamera != null) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    previewIsRunning = false;
                     mCamera.stopPreview();
                 }
-
-            }
-        });
-        t.start();
+            });
+            t.start();
+        }
     }
 
 

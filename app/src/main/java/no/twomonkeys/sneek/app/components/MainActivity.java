@@ -54,6 +54,7 @@ import no.twomonkeys.sneek.app.shared.Callback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
+import no.twomonkeys.sneek.app.shared.views.BoolCallback;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     StoryFragment storyFragment;
     FragmentTransaction fragmentTransaction;
     FragmentManager fragmentManager;
+    boolean canSingleTap;
 
 
     //New method
@@ -140,6 +142,19 @@ public class MainActivity extends AppCompatActivity {
         //Object initialization
         menuFragment = (MenuFragment) fragmentManager.findFragmentById(R.id.menuFragment);
         cameraFragment = (CameraFragment) fragmentManager.findFragmentById(R.id.cameraFragment);
+        cameraFragment.onCancelClb = new SimpleCallback() {
+            @Override
+            public void callbackCall() {
+                animateCameraOut();
+            }
+        };
+        cameraFragment.onLockClb = new BoolCallback() {
+            @Override
+            public void callbackCall(boolean bool) {
+                lockMode = bool;
+            }
+        };
+
         topBar = (TopBarFragment) fragmentManager.findFragmentById(R.id.topBarFragment);
         topBar.onMoreClb = new SimpleCallback() {
             @Override
@@ -150,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
         topBar.onCameraClb = new SimpleCallback() {
             @Override
             public void callbackCall() {
-                cameraFragment.prepareCamera();
                 animateCameraIn();
             }
         };
@@ -262,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
                 View child = recyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
                 if (child != null && mGestureDetector.onTouchEvent(motionEvent)) {
-                    Log.v("MENU","IS menu visible?" + menuIsVisible + " " + cameraIsVisible);
+                    Log.v("MENU", "IS menu visible?" + menuIsVisible + " " + cameraIsVisible);
                     if (!menuIsVisible && !cameraIsVisible) {
                         StoryModel storyModel = feedAdapter.getFeedModel().getStories().get(recyclerView.getChildPosition(child));
                         presentStory(storyModel);
@@ -378,7 +392,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (storyIsVisible) {
+        if (storyIsVisible || lockMode) {
 
         } else {
             View v = getCurrentFocus();
@@ -450,11 +464,14 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case MotionEvent.ACTION_UP: {
                     if (isClick) {
-                        if (menuIsVisible) {
-                            Log.v("Animating "," OUUTUT");
-                            animateOut();
-                        } else if (cameraIsVisible) {
-                            animateCameraOut();
+                        if (canSingleTap) {
+                            Log.v("SINGLE CLICK", "SINGLE CLICK");
+                            if (menuIsVisible) {
+                                Log.v("Animating ", " OUUTUT");
+                                animateOut();
+                            } else if (cameraIsVisible) {
+                                animateCameraOut();
+                            }
                         }
                     } else {
                         stopMovement(ev);
@@ -611,7 +628,6 @@ public class MainActivity extends AppCompatActivity {
         anim.setDuration(150).start();
 
 
-
     }
 
     int calculate(int percentage) {
@@ -626,6 +642,7 @@ public class MainActivity extends AppCompatActivity {
         cameraFragment.animateIn();
         //wrapper.setX(-wrapper.getWidth());
         wrapper.animate().translationX(-wrapper.getWidth()).setDuration(150);
+        canSingleTap = false;
     }
 
     private void animateCameraOut() {
@@ -634,6 +651,7 @@ public class MainActivity extends AppCompatActivity {
         cameraIsVisible = false;
         cameraFragment.animateOut();
         wrapper.animate().translationX(0).setDuration(150);
+        canSingleTap = true;
     }
 
     void animateLoader() {

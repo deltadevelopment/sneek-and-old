@@ -1,7 +1,13 @@
 package no.twomonkeys.sneek.app.shared.helpers;
 
+import android.net.Uri;
 import android.util.Log;
 
+import com.facebook.common.file.FileUtils;
+
+import org.json.JSONObject;
+
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -9,6 +15,10 @@ import no.twomonkeys.sneek.app.shared.APIs.StoryApi;
 import no.twomonkeys.sneek.app.shared.MapCallback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.models.ResponseModel;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -19,8 +29,8 @@ import retrofit2.Response;
 public class NetworkHelper {
 
     private static final String TAG = "NetworkHelper";
-    public static StoryApi userService = ServiceGenerator.createService(StoryApi.class, "f68022102ad2e2335904a5221f4e2a8d");
-
+    public static StoryApi userService = ServiceGenerator.createService(StoryApi.class, "c5325f76f70bd16dd570174ab01de9bc");
+    public static StoryApi userService2 = ServiceGenerator.createService(StoryApi.class, null);
 
     public static void sendRequest(Call<ResponseModel> call, final Contract contract, final MapCallback mcb, final SimpleCallback scb) {
         call.enqueue(new Callback<ResponseModel>() {
@@ -41,6 +51,69 @@ public class NetworkHelper {
 
                 Log.v(TAG, "FAILURE");
                 t.printStackTrace();
+            }
+        });
+    }
+
+    public static void uploadFile(File file, String url, final SimpleCallback scb) {
+        // create upload service client
+        //already creatd
+
+        // use the FileUtils to get the actual file by uri
+//        File file = new File(inputFileUri.getPath());
+        Log.v("FILE PATH", "file path is " + file.getAbsolutePath());
+        StoryApi service =
+                ServiceGenerator2.createService(StoryApi.class);
+
+        // create RequestBody instance from file
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpg"), file);
+
+
+        String uri = Uri.parse(url)
+                .buildUpon()
+                .build().toString();
+
+        Call<ResponseBody> call = service.upload(uri, requestFile);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call,
+                                   Response<ResponseBody> response) {
+                Log.v("Upload", "success");
+                scb.callbackCall();
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("Upload error:", t.getMessage());
+            }
+        });
+    }
+
+    public static void uploadFile2(File file, String url, final SimpleCallback scb, ProgressRequestBody.UploadCallbacks listener) {
+        StoryApi service =
+                ServiceGenerator2.createService(StoryApi.class);
+
+        ProgressRequestBody prb = new ProgressRequestBody(file, listener);
+        RequestBody requestFile = ProgressRequestBody.create(MediaType.parse("image/jpg"), file);
+
+        String uri = Uri.parse(url)
+                .buildUpon()
+                .build().toString();
+
+        Call<ResponseBody> call = service.upload(uri, prb);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call,
+                                   Response<ResponseBody> response) {
+                Log.v("Upload", "success");
+                scb.callbackCall();
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("Upload error:", t.getMessage());
             }
         });
     }

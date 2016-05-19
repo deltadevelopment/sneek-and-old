@@ -26,4 +26,23 @@ public class GenericContract {
         };
     }
 
+    public static Contract generate_upload_url() {
+        return new Contract() {
+            @Override
+            public Map generic_contract(Map map) {
+                return (Map) map.get("upload_url");
+            }
+        };
+    }
+
+    public static Contract generic_parse() {
+        return new Contract() {
+            @Override
+            public Map generic_contract(Map map) {
+                return map;
+            }
+        };
+    }
+
+
 }

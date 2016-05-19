@@ -16,20 +16,42 @@ import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.image.QualityInfo;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.helpers.GenericContract;
+import no.twomonkeys.sneek.app.shared.helpers.NetworkHelper;
+import no.twomonkeys.sneek.app.shared.helpers.ProgressRequestBody;
 
 /**
  * Created by simenlie on 12.05.16.
  */
-public class MomentModel extends CRUDModel {
-    public int id, media_type, caption_position, story_id;
+public class MomentModel extends CRUDModel implements ProgressRequestBody.UploadCallbacks {
+    public int id, media_type, caption_position, story_id, place_id;
+    private float latitude, longitude;
 
     private String created_at, media_key, media_url, thumbnail_url, caption;
+    private File media, thumbnail;
+
+    public interface MomentCallbacks {
+        void onProgressUpdate(int percentage);
+    }
+
+    public MomentCallbacks progress;
+
+    TokenModel tokenModel;
+    float overAllProgress;
+    boolean isUploadingThumbnail;
+
 
     public MomentModel(Map map) {
         build(map);
+    }
+
+
+    public MomentModel() {
+        tokenModel = new TokenModel();
     }
 
     public void build(Map map) {
@@ -145,5 +167,150 @@ public class MomentModel extends CRUDModel {
     }
 
 
+    public void setId(int id) {
+        this.id = id;
+    }
 
+    public void setMedia_type(int media_type) {
+        this.media_type = media_type;
+    }
+
+    public void setCaption_position(int caption_position) {
+        this.caption_position = caption_position;
+    }
+
+    public void setStory_id(int story_id) {
+        this.story_id = story_id;
+    }
+
+    public void setCreated_at(String created_at) {
+        this.created_at = created_at;
+    }
+
+    public void setMedia_key(String media_key) {
+        this.media_key = media_key;
+    }
+
+    public void setMedia_url(String media_url) {
+        this.media_url = media_url;
+    }
+
+    public void setThumbnail_url(String thumbnail_url) {
+        this.thumbnail_url = thumbnail_url;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public void setLatitude(float latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(float longitude) {
+        this.longitude = longitude;
+    }
+
+
+    public void upload(File file, String url, SimpleCallback scb) {
+
+        NetworkHelper.uploadFile2(file, url, scb, this);
+        //NetworkHelper.uploadFile(file, url, scb);
+    }
+
+
+    public void saveWithProgression(final SimpleCallback scb) {
+        //Generate upload url
+        tokenModel.save(new SimpleCallback() {
+            @Override
+            public void callbackCall() {
+                //Start uploading the actual media
+                uploadMedia(scb);
+            }
+        });
+    }
+
+
+    public void uploadMedia(final SimpleCallback scb) {
+        setMedia_key(tokenModel.getMedia_key());
+        Log.v("TOKENOMDEOl", "tokenModel " + tokenModel.getMedia_url());
+        upload(media, tokenModel.getMedia_url(), new SimpleCallback() {
+            @Override
+            public void callbackCall() {
+                //Upload was successful
+                //Store to BEN
+                putMoment(scb);
+                //scb.callbackCall();
+            }
+        });
+    }
+
+
+    public void putMoment(final SimpleCallback scb) {
+        //check if thumbnail needs to be uploaded
+        if (media_type == 1) {
+            isUploadingThumbnail = true;
+            upload(thumbnail, tokenModel.getThumbnail_url(), new SimpleCallback() {
+                @Override
+                public void callbackCall() {
+                    //done uploading thumbnail
+                    save(scb);
+                }
+            });
+        } else {
+            save(scb);
+        }
+    }
+
+    public void save(SimpleCallback scb) {
+        HashMap innerMap = new HashMap();
+        innerMap.put("media_key", media_key);
+        innerMap.put("media_type", media_type);
+        innerMap.put("caption", caption == null ? "" : caption);
+        innerMap.put("caption_position", caption_position);
+        innerMap.put("longitude", longitude);
+        innerMap.put("latitude", latitude);
+        innerMap.put("place_id", place_id);
+
+        HashMap<String, HashMap> map = new HashMap();
+        map.put("moment", innerMap);
+
+        NetworkHelper.sendRequest(NetworkHelper.userService.postMoment(map),
+                GenericContract.generic_parse(),
+                onDataReturned(),
+                scb);
+    }
+
+    public void setMedia(File media) {
+        this.media = media;
+    }
+
+    public void setThumbnail(File thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
+    @Override
+    public void onProgressUpdate(int percentage) {
+        if (media_type == 1) {
+            if (!isUploadingThumbnail) {
+                overAllProgress = (percentage / 2);
+            } else {
+                overAllProgress += (percentage / 2);
+            }
+        } else {
+            overAllProgress = percentage;
+        }
+        Log.v("Percent", "perc " + percentage);
+        progress.onProgressUpdate((int)overAllProgress);
+    }
+
+    @Override
+    public void onError() {
+
+    }
+
+    @Override
+    public void onFinish() {
+
+    }
 }

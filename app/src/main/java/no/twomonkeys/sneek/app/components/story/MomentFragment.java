@@ -256,7 +256,7 @@ public class MomentFragment extends Fragment {
                         hasLayedOut = true;
                         Layout layout = momentCaption.getLayout();
                         Log.v("Line count is", "line count: " + layout.getLineStart(1));
-                        layoutCaption(layout.getLineCount(), layout.getLineStart(layout.getLineCount() - 1));
+                        //layoutCaption(layout.getLineCount(), layout.getLineStart(layout.getLineCount() - 1));
                         captionView.updateCaption(layout.getLineCount(), layout.getLineStart(layout.getLineCount() - 1), caption);
                     }
                 }
