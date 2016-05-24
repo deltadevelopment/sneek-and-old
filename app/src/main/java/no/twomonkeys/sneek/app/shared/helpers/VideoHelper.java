@@ -41,34 +41,50 @@ public class VideoHelper {
         this.activity = activity;
         //The video helper should determine if the video should be streamed, or player.
         //It should also be responsble for saving the video to disk.
-        file = momentModel.getVideoFile();
-
+        if (momentModel != null)
+        {
+            file = momentModel.getVideoFile();
+        }
     }
 
     public void loadVideo() {
-        if (momentModel.hasCachedVideo()) {
-            Log.v("HAS CACHED","CACHED VIDEO");
-            videoView.setVideoURI(Uri.fromFile(file));
+
+        if (momentModel == null)
+        {
+            File f = new File("/storage/emulated/0/Pictures/MyCameraApp/VID_20160524_130304.mp4");
+            videoView.setVideoURI(Uri.fromFile(f));
             videoView.requestFocus();
             videoView.start();
-        } else {
-            Log.v("HAS NOT CACHED","NO CACHE");
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        file.createNewFile();
-                        downloadUsingStream(momentModel.getMedia_url(), file);
-
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            t.start();
         }
+        else{
+            if (momentModel.hasCachedVideo()) {
+                Log.v("HAS CACHED","CACHED VIDEO");
+                File f = new File("/storage/emulated/0/Pictures/MyCameraApp/VID_20160524_130304.mp4");
+                videoView.setVideoURI(Uri.fromFile(f));
+                videoView.requestFocus();
+                videoView.start();
+            } else {
+                Log.v("HAS NOT CACHED","NO CACHE");
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            file.createNewFile();
+                            downloadUsingStream(momentModel.getMedia_url(), file);
+
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                t.start();
+            }
+
+        }
+
+
     }
 
     private void downloadUsingStream(String urlStr, File file) throws IOException {

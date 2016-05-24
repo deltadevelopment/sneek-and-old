@@ -52,4 +52,6 @@ public class SneekVideoView extends VideoView {
             setMeasuredDimension(width, height);
         }
 
+
+
 }

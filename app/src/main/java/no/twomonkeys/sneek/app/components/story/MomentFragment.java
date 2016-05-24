@@ -79,14 +79,16 @@ public class MomentFragment extends Fragment {
     private LoadingView loadingView;
     private SneekVideoView videoView;
     ControllerListener controllerListener;
-    private MediaController mediaControls;
+
     private boolean isVisible;
+    private MediaController mediaControls;
     private MediaPlayer mediaPlayer;
+    private int mPlayerPosition;
     private Handler mHandler;
     private File temp;
     private int totalRead;
     private boolean started;
-    private int mPlayerPosition;
+
     VideoHelper videoHelper;
     TextView momentCaption;
     CaptionView captionView;
@@ -169,6 +171,8 @@ public class MomentFragment extends Fragment {
 
         layoutBtn();
         updateView();
+
+
         return rootView;
     }
 
@@ -303,7 +307,7 @@ public class MomentFragment extends Fragment {
     }
 
     public void loadVideo() {
-        Log.v("Got here", "hello there");
+        Log.v("Got here", "hello there " + momentModel.getMedia_url());
 
         //set the media controller buttons
         videoView.setVisibility(View.VISIBLE);
@@ -347,106 +351,8 @@ public class MomentFragment extends Fragment {
         videoHelper = new VideoHelper(videoView, momentModel, getActivity());
         videoHelper.loadVideo();
 
-        /*
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String urlStr = momentModel.getMedia_url();
-                URL url = null;
-                try {
-                    url = new URL(urlStr);
-                    //  final String path = getDataSource(url.openStream(), urlStr);
-                    temp = File.createTempFile("mediaplayertmp", "mp4");
-                    downloadUsingStream(urlStr, temp);
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        t.start();
-*/
-
-        //videoView.start();
     }
 
-    /*
-        private void downloadUsingStream(String urlStr, File file) throws IOException {
-            URL url = new URL(urlStr);
-            Log.v("STart", "is Starting");
-            BufferedInputStream bis = new BufferedInputStream(url.openStream());
-            FileOutputStream fis = new FileOutputStream(file);
-            byte[] buffer = new byte[1024];
-            int count = 0;
-            while ((count = bis.read(buffer, 0, 1024)) != -1) {
-                Log.v("Reading buffer", "Buffering");
-                totalRead += count;
-                if (totalRead > 200000) {
-                    if (!started) {
-                        Log.v("Starting VIDEO", " STARTED");
-                        playFromStream(file);
-                        started = true;
-                    } else {
-                        tryStartVideo();
-                    }
-                }
-
-                fis.write(buffer, 0, count);
-            }
-
-            fis.close();
-            bis.close();
-            onCompletion();
-        }
-
-        public void onCompletion() {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-                    mPlayerPosition = mediaPlayer.getCurrentPosition();
-                    try {
-                        mediaPlayer.reset();
-                        videoView.setVideoPath(temp.getAbsolutePath());
-                        mediaPlayer.seekTo(mPlayerPosition);
-                        mediaPlayer.setLooping(true);
-                        videoView.start();
-                    } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
-                    } catch (IllegalStateException e) {
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-
-        }
-
-        public void playFromStream(final File file) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-                    videoView.setVideoPath(file.getAbsolutePath());
-                    // videoView.setVideoURI(uri);
-                    videoView.requestFocus();
-                }
-            });
-        }
-
-        public void tryStartVideo() {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    videoView.start();
-                }
-            });
-        }
-    */
     public void stopVideo() {
         if (videoView != null) {
             videoView.pause();

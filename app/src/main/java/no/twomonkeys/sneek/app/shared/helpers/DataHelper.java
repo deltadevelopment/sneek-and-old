@@ -3,6 +3,7 @@ package no.twomonkeys.sneek.app.shared.helpers;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import no.twomonkeys.sneek.app.components.MainActivity;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
 
 /**
@@ -11,6 +12,7 @@ import no.twomonkeys.sneek.app.shared.models.StoryModel;
 public class DataHelper {
     public static final String PREFS_NAME = "DefaultPrefs";
     private static Context context;
+    public static MainActivity ma;
 
     public static int currentFeed()
     {
@@ -40,5 +42,13 @@ public class DataHelper {
 
     public static void setContext(Context context) {
         DataHelper.context = context;
+    }
+
+    public static MainActivity getMa() {
+        return ma;
+    }
+
+    public static void setMa(MainActivity ma) {
+        DataHelper.ma = ma;
     }
 }

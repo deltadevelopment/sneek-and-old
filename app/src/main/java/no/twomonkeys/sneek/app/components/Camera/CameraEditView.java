@@ -1,17 +1,24 @@
 package no.twomonkeys.sneek.app.components.Camera;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.support.v4.app.FragmentManager;
 import android.text.Layout;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.MediaController;
 import android.widget.RelativeLayout;
+import android.widget.VideoView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 
@@ -24,12 +31,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import no.twomonkeys.sneek.R;
+import no.twomonkeys.sneek.app.components.MainActivity;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.ProgressRequestBody;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
+import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
 import no.twomonkeys.sneek.app.shared.models.MomentModel;
 import no.twomonkeys.sneek.app.shared.views.CaptionView;
 import no.twomonkeys.sneek.app.shared.views.ProgressIndicator;
+import no.twomonkeys.sneek.app.shared.views.SneekVideoView;
+import retrofit2.http.Url;
 
 /**
  * Created by simenlie on 19.05.16.
@@ -47,6 +59,11 @@ public class CameraEditView extends RelativeLayout {
     int captionPosition;
     File media;
     View progressView;
+    File movieFile;
+    VideoHelper videoHelper;
+    Context c;
+    MainActivity ma;
+    SneekVideoView videoView;
 
     public CameraEditView(Context context) {
         super(context);
@@ -74,35 +91,18 @@ public class CameraEditView extends RelativeLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        // Sets the images for the previous and next buttons. Uses
-        // built-in images so you don't need to add images, but in
-        // a real application your images should be in the
-        // application package so they are always available.
-
-        /*
-        maxSize = UIHelper.dpToPx(getContext(), 35);
-        progressIndicatorOutline = new ProgressIndicator(getContext(), false);
-        RelativeLayout.LayoutParams prms = new RelativeLayout.LayoutParams(maxSize, maxSize);
-        progressIndicatorOutline.setLayoutParams(prms);
-
-        progressIndicatorFill = new ProgressIndicator(getContext(), true);
-        ViewGroup.LayoutParams prms2 = new ViewGroup.LayoutParams(0, maxSize);
-        progressIndicatorFill.setLayoutParams(prms2);
-
-        addView(progressIndicatorOutline);
-        addView(progressIndicatorFill);
-        */
         final CameraEditView self = this;
 
         saveBtn = (Button) findViewById(R.id.cameraEditSaveBtn);
-
 
         captionBtn = (Button) findViewById(R.id.cameraEditCaptionBtn);
         backBtn = (Button) findViewById(R.id.cameraEditBackBtn);
         backBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                videoView.stopPlayback();
                 self.setVisibility(INVISIBLE);
+                videoView.setVisibility(INVISIBLE);
                 onCancelEdit.callbackCall();
             }
         });
@@ -148,13 +148,35 @@ public class CameraEditView extends RelativeLayout {
         };
 
         progressView = (View) findViewById(R.id.progressUpload);
+        android.app.FragmentManager fragmentManager = DataHelper.getMa().getFragmentManager();
+
+        videoView = (SneekVideoView) findViewById(R.id.videoSneekVideoView3);
+        videoView.setZOrderMediaOverlay(true);
+    }
+
+    public void loadVideo(File f) {
+        videoView.setVisibility(VISIBLE);
+        DisplayMetrics dm = new DisplayMetrics();
+        DataHelper.getMa().getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int height = dm.heightPixels;
+        int width = dm.widthPixels;
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.setLooping(true);
+                videoView.start();
+            }
+        });
+        videoView.setMinimumWidth(width);
+        videoView.setMinimumHeight(height);
+        videoView.setVideoPath(f.getAbsolutePath());
+
+        videoView.start();
     }
 
     public void updateCaption() {
         if (captionEditView.hasCaption()) {
             captionView.setVisibility(VISIBLE);
-
-            //captionView.updateCaption(layout.getLineCount(), layout.getLineStart(layout.getLineCount() - 1), caption);
             Layout l = captionEditView.getEditLayout();
             captionView.updateCaption(l.getLineCount(), l.getLineStart(l.getLineCount() - 1), captionEditView.captionTxt());
         }
@@ -165,6 +187,12 @@ public class CameraEditView extends RelativeLayout {
         media = file;
         photoTakenView.setImageURI(Uri.fromFile(file));
         isVideo = false;
+    }
+
+    public void addMovie(File f, Context c) {
+        movieFile = f;
+        this.c = c;
+        loadVideo(f);
     }
 
     public void saveMediaToDisk() {

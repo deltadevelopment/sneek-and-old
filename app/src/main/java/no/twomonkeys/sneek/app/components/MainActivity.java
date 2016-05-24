@@ -10,6 +10,8 @@ import android.gesture.GestureLibrary;
 import android.gesture.GestureOverlayView;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
@@ -20,6 +22,7 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.GestureDetector;
@@ -35,17 +38,22 @@ import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.Camera.CameraFragment;
+import no.twomonkeys.sneek.app.components.Camera.VideoPlayBackFragment;
 import no.twomonkeys.sneek.app.components.feed.FeedAdapter;
 import no.twomonkeys.sneek.app.components.feed.TopBarFragment;
 import no.twomonkeys.sneek.app.components.menu.MenuFragment;
@@ -53,8 +61,10 @@ import no.twomonkeys.sneek.app.components.story.StoryFragment;
 import no.twomonkeys.sneek.app.shared.Callback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
+import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
 import no.twomonkeys.sneek.app.shared.views.BoolCallback;
+import no.twomonkeys.sneek.app.shared.views.SneekVideoView;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -100,6 +110,12 @@ public class MainActivity extends AppCompatActivity {
     FragmentTransaction fragmentTransaction;
     FragmentManager fragmentManager;
     boolean canSingleTap;
+    SneekVideoView videoView;
+    View loadView;
+    private MediaController mediaControls;
+    private MediaPlayer mediaPlayer;
+    private int mPlayerPosition;
+    VideoHelper videoHelper;
 
 
     //New method
@@ -125,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.root);
+        final RelativeLayout layout = (RelativeLayout) findViewById(R.id.root);
         wrapper = (RelativeLayout) findViewById(R.id.contentWrapper);
 
         overlayShadow = (FrameLayout) findViewById(R.id.overlayShadow);
@@ -138,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
         placeholderBtn.setColorFilter(Color.parseColor("#27ffff"));
 
         fragmentManager = getSupportFragmentManager();
+
 
         //Object initialization
         menuFragment = (MenuFragment) fragmentManager.findFragmentById(R.id.menuFragment);
@@ -152,6 +169,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void callbackCall(boolean bool) {
                 lockMode = bool;
+            }
+        };
+        final MainActivity self = this;
+        cameraFragment.videoDone = new CameraFragment.VideoDoneCallback() {
+            @Override
+            public void onRecorded(File file) {
+
+                self.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+
+                    }
+                });
+
+
             }
         };
 
@@ -228,11 +261,77 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         refreshItems();
+
+        final File f = new File("/storage/emulated/0/Pictures/MyCameraApp/VID_20160524_130304.mp4");
+
+        loadView = (View) findViewById(R.id.loadView2);
+        videoView = (SneekVideoView) findViewById(R.id.videoSneekVideoView2);
+
+        loadView.setVisibility(View.INVISIBLE);
+        videoView.setVisibility(View.INVISIBLE);
+
+        DisplayMetrics dm = new DisplayMetrics();
+        this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int height = dm.heightPixels;
+        int width = dm.widthPixels;
+        videoView.setMinimumWidth(width);
+        videoView.setMinimumHeight(height);
+        videoView.setMediaController(new MediaController(this));
+        videoView.setVideoPath(f.getAbsolutePath());
+        videoView.start();
     }
+
+    public void loadVideo() {
+        //Log.v("Got here", "hello there " + momentModel.getMedia_url());
+
+        //set the media controller buttons
+        videoView.setVisibility(View.VISIBLE);
+        if (mediaControls == null) {
+            mediaControls = new MediaController(this);
+
+        }
+        // videoView.setMediaController(mediaControls);
+        //Uri uri = Uri.parse(momentModel.getMedia_url());
+
+        //videoView.setVideoURI(uri);
+        //videoView.requestFocus();
+        videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                Log.v("Got here", "hello there");
+                mPlayerPosition = videoView.getCurrentPosition();
+                //videoView.setVideoPath(temp.getAbsolutePath());
+                // videoView.setVideoURI(uri);
+                videoView.resume();
+                videoView.requestFocus();
+                //mediaPlayer.seekTo(mPlayerPosition);
+                return true;
+            }
+        });
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                Log.v("Prepared", "prepared");
+                mediaPlayer = mp;
+                videoHelper.setMediaPlayer(mediaPlayer);
+                mp.setLooping(true);
+                //loadingView.stopAnimation();
+
+                videoView.start();
+
+            }
+        });
+
+        videoHelper = new VideoHelper(videoView, null, this);
+        videoHelper.loadVideo();
+
+    }
+
 
     public void initConfiguration() {
         Fresco.initialize(this);
         DataHelper.setContext(this);
+        DataHelper.setMa(this);
         //Orientation
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
