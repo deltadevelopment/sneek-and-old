@@ -101,11 +101,4 @@
         android:rotation="-90"
         android:progressDrawable="@drawable/circular" />
 
-
-
-
-
-
-
-
 </RelativeLayout>

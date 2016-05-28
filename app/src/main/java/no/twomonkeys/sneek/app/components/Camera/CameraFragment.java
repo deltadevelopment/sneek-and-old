@@ -50,6 +50,7 @@ import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
+import no.twomonkeys.sneek.app.shared.models.MediaModel;
 import no.twomonkeys.sneek.app.shared.views.BoolCallback;
 import no.twomonkeys.sneek.app.shared.views.SneekVideoView;
 import retrofit2.http.Url;
@@ -67,7 +68,7 @@ public class CameraFragment extends Fragment {
     private float dX;
     private int defaultWidth;
     FrameLayout preview;
-    boolean previewIsRunning, flashIsOn, selfieIsOn;
+    boolean previewIsRunning;//, flashIsOn, selfieIsOn;
     CameraEditView cameraEditView;
     Button backBtn, selfieBtn, flashBtn;
     public SimpleCallback onCancelClb;
@@ -103,8 +104,6 @@ public class CameraFragment extends Fragment {
         final View view = inflater.inflate(R.layout.camera_fragment, container, false);
         RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.cameraFragment);
         //cameraManager = new CameraManager();
-
-
         // Create an instance of Camera
         mCamera = getCameraInstance(0);
         if (mCamera == null) {
@@ -133,7 +132,6 @@ public class CameraFragment extends Fragment {
                 });
 
 
-
             }
         };
         preview = (FrameLayout) view.findViewById(R.id.camera_preview);
@@ -158,7 +156,9 @@ public class CameraFragment extends Fragment {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (!isLongPressing) {
-                        takePicture(v);
+                        //takePicture(v);
+                        mPreview.takePicture(v);
+                        hideButtons();
                     } else {
                         stopRecording();
                     }
@@ -229,12 +229,18 @@ public class CameraFragment extends Fragment {
 
         progressBar.setProgress(0);
 
+        mPreview.photoTakenCallback = new CameraPreview.PhotoTakenCallback() {
+            @Override
+            public void onTaken(MediaModel mediaModel) {
+                onLockClb.callbackCall(true);
+                cameraEditView.addMedia(mediaModel);
+                cameraEditView.setVisibility(View.VISIBLE);
+            }
+        };
 
 
         return view;
     }
-
-
 
 
     public void incrementSpin() {
@@ -255,48 +261,40 @@ public class CameraFragment extends Fragment {
     }
 
     public void startRecording() {
+
+
         if (!isRecording) {
             isRecording = true;
             timer = new Timer();
 
-            Thread t = new Thread(new Runnable() {
+
+            try {
+                mPreview.startRecording();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    try {
-                        mPreview.startRecording();
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
 
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        //Your code to run in GUI thread here
-                                        incrementSpin();
-                                    }//public void run() {
-                                });
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //Your code to run in GUI thread here
+                            incrementSpin();
+                        }//public void run() {
+                    });
 
 
-
-
-
-
-                            }
-                        }, 10, 10);
-
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
-            });
-
-            t.start();
-
+            }, 10, 10);
 
 
             Log.v("START RECORDING HERE", "START RECORDING");
         }
+
     }
 
     public void stopRecording() {
@@ -306,6 +304,7 @@ public class CameraFragment extends Fragment {
             percentHundred = 0;
             percent = 0;
             progressBar.setProgress(0);
+            // mPreview.stopRecording();
             mPreview.stopRecording();
             Log.v("STOP RECORDING HERE", "STOP RECORDING");
         }
@@ -313,16 +312,16 @@ public class CameraFragment extends Fragment {
 
 
     public void toggleFlash() {
-        if (flashIsOn) {
+        if (mPreview.flashIsOn) {
             flashBtn.setTextColor(getResources().getColor(R.color.white));
         } else {
             flashBtn.setTextColor(getResources().getColor(R.color.cyan));
         }
-        flashIsOn = !flashIsOn;
+        mPreview.toggleFlash();
     }
 
     public void toggleSelfie() {
-        if (selfieIsOn) {
+        if (mPreview.selfieIsOn) {
             selfieBtn.setTextColor(getResources().getColor(R.color.white));
             flashBtn.setVisibility(View.VISIBLE);
         } else {
@@ -334,13 +333,19 @@ public class CameraFragment extends Fragment {
             @Override
             public void run() {
                 mCamera.release();
-                int cameraId = selfieIsOn ? 0 : 1;
+                //mPreview.releaseRecorder();
+                int cameraId = mPreview.selfieIsOn ? 0 : 1;
                 mCamera = getCameraInstance(cameraId);
                 mPreview.showFrontFacing(mCamera, getActivity(), cameraId);
-                selfieIsOn = !selfieIsOn;
+                mPreview.toggleSelfie();
             }
         });
         t.start();
+    }
+
+    public void releaseCamera() {
+        mPreview.destoryCamera();
+
     }
 
     public void cancelCamera() {
@@ -395,147 +400,34 @@ public class CameraFragment extends Fragment {
         }
     }
 
-    public void takePicture(View v) {
-
-        Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-                turnOnFlash(false);
-                final File pictureFile = getOutputMediaFile();
-                if (pictureFile == null) {
-                    return;
-                }
-                try {
-                    FileOutputStream fos = new FileOutputStream(pictureFile);
-                    fos.write(data);
-                    fos.close();
-
-
-                    processImage(pictureFile, new ImageProcessedCallback() {
-                        @Override
-                        public void onProccesed(File file) {
-                            cameraEditView.addPhoto(file);
-                            cameraEditView.setVisibility(View.VISIBLE);
-                        }
-                    });
-                } catch (FileNotFoundException e) {
-
-                } catch (IOException e) {
-                }
-
-                onLockClb.callbackCall(true);
-                hideButtons();
-            }
-        };
-
-        if (flashIsOn && !selfieIsOn) {
-            turnOnFlash(true);
-        }
-
-        mCamera.takePicture(null, null, pictureCallback);
-    }
-
-    public void turnOnFlash(boolean turnOn) {
-        Camera.Parameters p = mCamera.getParameters();
-        p.setFlashMode(turnOn ? Camera.Parameters.FLASH_MODE_ON : Camera.Parameters.FLASH_MODE_OFF);
-        mCamera.setParameters(p);
-    }
-
     public void turnOnTorch(boolean turnOn) {
 
-    }
-
-    public void processImage(final File file, final ImageProcessedCallback ipc) {
-        //Should check here that it is a nexus phone also
-        if (selfieIsOn) {
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Matrix matrix = new Matrix();
-                    matrix.postRotate(180);
-                    matrix.preScale(-1, 1);
-
-                    Bitmap originalBitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, originalBitmap.getWidth(), originalBitmap.getHeight(), true);
-                    Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
-
-
-                    //create a file to write bitmap data
-                    final File f = new File(getActivity().getCacheDir(), "tmp.jpeg");
-                    try {
-                        f.createNewFile();
-                        //Convert bitmap to byte array
-                        Bitmap bitmap = rotatedBitmap;
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
-                        byte[] bitmapdata = bos.toByteArray();
-
-                        //write the bytes in file
-                        FileOutputStream fos = new FileOutputStream(f);
-                        fos.write(bitmapdata);
-                        fos.flush();
-                        fos.close();
-
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //Your code to run in GUI thread here
-                                ipc.onProccesed(f);
-                            }//public void run() {
-                        });
-
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            t.start();
-        } else {
-            ipc.onProccesed(file);
-        }
     }
 
     public void hideButtons() {
         backBtn.setVisibility(View.INVISIBLE);
         selfieBtn.setVisibility(View.INVISIBLE);
         flashBtn.setVisibility(View.INVISIBLE);
+        recordBtn.setVisibility(View.INVISIBLE);
     }
 
     public void showButtons() {
         backBtn.setVisibility(View.VISIBLE);
         selfieBtn.setVisibility(View.VISIBLE);
-        if (!selfieIsOn) {
+        recordBtn.setVisibility(View.VISIBLE);
+        if (!mPreview.selfieIsOn) {
             flashBtn.setVisibility(View.VISIBLE);
         }
     }
 
-    private static File getOutputMediaFile() {
-        File mediaStorageDir = new File(
-                Environment
-                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "MyCameraApp");
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-                Log.d("MyCameraApp", "failed to create directory");
-                return null;
-            }
-        }
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
-                .format(new Date());
-        File mediaFile;
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator
-                + "IMG_" + timeStamp + ".jpg");
 
-        return mediaFile;
-    }
 
     public void startMove(float x) {
         dX = getView().getX() - x;
     }
 
     public void animateIn() {
+        cameraEditView.setVisibility(View.INVISIBLE);
         getView().animate().translationX(0).setDuration(150);
         //Do something with cam here ??
         prepareCamera();
@@ -554,6 +446,7 @@ public class CameraFragment extends Fragment {
 
                     previewIsRunning = true;
                     mCamera.startPreview();
+                    //mPreview.initRecorder();
                     //mPreview.initRecorder(mPreview.mHolder.getSurface());
 
 

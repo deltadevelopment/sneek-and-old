@@ -4,13 +4,20 @@
     android:id="@+id/cameraEditView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/yellow"
+    android:background="@color/black"
     >
 
     <com.facebook.drawee.view.SimpleDraweeView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/photoTaken"/>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:id="@+id/photoTakenView"
+        android:background="@color/red"/>
 
     <FrameLayout
         android:layout_width="fill_parent"

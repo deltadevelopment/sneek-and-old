@@ -13,7 +13,19 @@ buildscript {
 }
 
 allprojects {
+    buildscript {
+        repositories {
+            mavenCentral()
+            maven {
+                url "http://repository-monochromeroad.forge.cloudbees.com/release/"
+            }
+        }
+    }
     repositories {
+        maven {
+            url "https://jitpack.io"
+        }
+        mavenCentral()
         jcenter()
     }
 }

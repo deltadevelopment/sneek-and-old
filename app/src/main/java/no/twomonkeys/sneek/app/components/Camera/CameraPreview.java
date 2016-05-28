@@ -5,7 +5,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.Image;
@@ -17,16 +20,21 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
+import no.twomonkeys.sneek.app.shared.helpers.VideoRenderer2;
+import no.twomonkeys.sneek.app.shared.models.MediaModel;
 
 /**
  * Created by simenlie on 11.05.16.
@@ -39,13 +47,24 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     List<Camera.Size> mSupportedPreviewSizes;
     int width, height;
     int cameraId;
-    boolean flashIsOn;
+    boolean flashIsOn, selfieIsOn;
     MediaRecorder mrec;
     MediaRecorder mediaRecorder;
     File recordedFile;
     Activity parentActivity;
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
+    boolean isFrontFacing;
+    VideoRenderer2 vr2;
+    boolean isRecording;
+    int imageFormat;
+
+    //Callbacks
+    public interface PhotoTakenCallback {
+        void onTaken(MediaModel mediaModel);
+    }
+
+    public PhotoTakenCallback photoTakenCallback;
 
     public interface VideoRecordedCallback {
         void onRecorded(File file);
@@ -56,6 +75,36 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public CameraPreview(Context context, Camera camera, Activity activity) {
         super(context);
         mCamera = camera;
+
+        vr2 = new VideoRenderer2();
+        /*
+        Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
+            public void onPreviewFrame(byte[] data, Camera camera) {
+                try {
+                    //Log.v("FRAME", "FRAME IS HERE");
+                    Camera.Parameters parameters = camera.getParameters();
+                    imageFormat = parameters.getPreviewFormat();
+                    if (imageFormat == ImageFormat.NV21) {
+                        Rect rect = new Rect(0, 0, mPreviewSize.width, mPreviewSize.height);
+                        YuvImage img = new YuvImage(data, ImageFormat.NV21, mPreviewSize.width, mPreviewSize.height, null);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        img.compressToJpeg(rect, 100, baos);
+                        byte[] imageData = baos.toByteArray();
+                        Bitmap previewBitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+                        if (isRecording) {
+                            vr2.recieveFrame(previewBitmap);
+                        }
+                    }
+
+
+                } catch (Exception e) {
+
+                }
+            }
+
+        };
+*/
+        // mCamera.setPreviewCallback(previewCallback);
         this.parentActivity = activity;
         mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
 
@@ -66,6 +115,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.addCallback(this);
         // deprecated setting, but required on Android versions prior to 3.0
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+    }
+
+    public void toggleFlash() {
+        flashIsOn = !flashIsOn;
+    }
+
+    public void toggleSelfie() {
+        selfieIsOn = !selfieIsOn;
+    }
+
+    public void setSelfieIsOn(boolean selfieIsOn) {
+        this.selfieIsOn = selfieIsOn;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -80,6 +141,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public void showFrontFacing(Camera cam, Activity activity, int cameraId) {
         mCamera = cam;
+
+        isFrontFacing = cameraId == 1;
 
         this.cameraId = cameraId;
         mCamera.setDisplayOrientation(getRotation2(activity, cameraId));
@@ -99,6 +162,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             e.printStackTrace();
         }
         mCamera.startPreview();
+        //initRecorder();
     }
 
     public int getRotation2(Activity activity, int cameraId) {
@@ -136,6 +200,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public void surfaceDestroyed(SurfaceHolder holder) {
         // empty. Take care of releasing the Camera preview in your activity.
+        destoryCamera();
+    }
+
+    public void destoryCamera() {
         shutdown();
         if (mCamera != null) {
             mCamera.stopPreview();
@@ -144,6 +212,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.release();
             mCamera = null;
         }
+
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -161,6 +230,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mCamera.setDisplayOrientation(90);
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setRotation(90);
+        parameters.setRecordingHint(true);
+        parameters.setFocusMode(parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
         mCamera.setParameters(parameters);
 
@@ -207,6 +278,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         return optimalSize;
     }
 
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
@@ -221,47 +293,123 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     }
 
+    public void initRecorder() {
+        initRecorder(mHolder.getSurface());
+    }
+
 
     //Record video parameters
 
     protected void startRecording() throws IOException {
-        initRecorder(mHolder.getSurface());
-        mediaRecorder.start();
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                initRecorder();
+                mediaRecorder.start();
+            }
+        });
+        t.start();
+    }
+
+    public void takePicture(View v) {
+
+        Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                turnOnFlash(false);
+                final File pictureFile = getOutputMediaFile();
+                if (pictureFile == null) {
+                    return;
+                }
+                try {
+                    FileOutputStream fos = new FileOutputStream(pictureFile);
+                    fos.write(data);
+                    fos.close();
+                    MediaModel mediaModel = obtainMediaModel(pictureFile, false);
+                    photoTakenCallback.onTaken(mediaModel);
+                } catch (FileNotFoundException e) {
+
+                } catch (IOException e) {
+                }
+            }
+        };
+
+        if (flashIsOn && !selfieIsOn) {
+            turnOnFlash(true);
+        }
+
+        mCamera.takePicture(null, null, pictureCallback);
+    }
+
+    private MediaModel obtainMediaModel(File file, boolean isVideo) {
+        MediaModel mediaModel = new MediaModel(file, selfieIsOn, isVideo);
+        return mediaModel;
+    }
+
+    private static File getOutputMediaFile() {
+        File mediaStorageDir = new File(
+                Environment
+                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "MyCameraApp");
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d("MyCameraApp", "failed to create directory");
+                return null;
+            }
+        }
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new Date());
+        File mediaFile;
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator
+                + "IMG_" + timeStamp + ".jpg");
+
+        return mediaFile;
+    }
+
+    public void turnOnFlash(boolean turnOn) {
+        Camera.Parameters p = mCamera.getParameters();
+        p.setFlashMode(turnOn ? Camera.Parameters.FLASH_MODE_ON : Camera.Parameters.FLASH_MODE_OFF);
+        mCamera.setParameters(p);
     }
 
 
     public void initRecorder(Surface surface) {
-        mCamera.unlock();
+
         Log.v("INIT RECORDER", "INITING RECORDER");
 
         if (mediaRecorder == null) {
             mediaRecorder = new MediaRecorder();
         }
 
-        mediaRecorder.setPreviewDisplay(surface);
-        mediaRecorder.setOrientationHint(90);
+
+        mediaRecorder.setOrientationHint(isFrontFacing ? 270 : 90);
+        mCamera.unlock();
         mediaRecorder.setCamera(mCamera);
 
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
+        mediaRecorder.setProfile(CamcorderProfile
+                .get(CamcorderProfile.QUALITY_HIGH));
+        //mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
 
         recordedFile = getOutputMediaFile(2);
         Log.v("File path", "path + " + recordedFile.getAbsolutePath());
         //Uri u = getOutputMediaFileUri(2);
         //recordedFile = new File(u.toString());
-        mediaRecorder.setOutputFile(recordedFile.getAbsolutePath());
 
+        mediaRecorder.setOutputFile(recordedFile.getAbsolutePath());
+        mediaRecorder.setPreviewDisplay(getHolder().getSurface());
 
         // No limit. Don't forget to check the space on disk.
         // mediaRecorder.setMaxDuration(-1);
         // mediaRecorder.setVideoFrameRate(15);
         mediaRecorder.setVideoSize(640, 480);
 
-        mediaRecorder.setVideoEncodingBitRate(1700000);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);// MPEG_4_SP
+        //mediaRecorder.setVideoEncodingBitRate(1700000);
+        //mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        //mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);// MPEG_4_SP
         //mediaRecorder.setVideoFrameRate(16);
         try {
             mediaRecorder.prepare();
@@ -277,9 +425,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private void shutdown() {
         // Release MediaRecorder and especially the Camera as it's a shared
         // object that can be used by other applications
-        mediaRecorder.reset();
-        mediaRecorder.release();
-        mCamera.release();
+        if (mediaRecorder != null) {
+            mediaRecorder.reset();
+            mediaRecorder.release();
+        }
         // once the objects have been released they can't be reused
         mediaRecorder = null;
         mCamera = null;
@@ -304,14 +453,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     }
 
-    private void releaseMediaRecorder() {
-        if (mrec != null) {
-            mrec.reset();   // clear recorder configuration
-            mrec.release(); // release the recorder object
-            mrec = null;
-            mCamera.lock();           // lock camera for later use
-        }
-    }
 
     private static Uri getOutputMediaFileUri(int type) {
         return Uri.fromFile(getOutputMediaFile(type));

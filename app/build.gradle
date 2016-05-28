@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "no.twomonkeys.sneek"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -17,6 +17,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+        pickFirst  'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.properties'
+        pickFirst  'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.xml'
+        pickFirst  'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.properties'
+        pickFirst  'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.xml'
+    }
+    sourceSets { main { jni.srcDirs = ['src/main/jni', 'src/main/jniLibs/'] } }
 }
 
 dependencies {
@@ -30,4 +38,16 @@ dependencies {
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.squareup.retrofit2:converter-gson:2.0.0'
     compile 'com.android.support:recyclerview-v7:+'
+    compile 'com.googlecode.mp4parser:isoparser:1.0.5.4'
+//    compile project(':openCVLibrary310')
+    //compile group: 'org.bytedeco', name: 'javacv', version: '1.1'
+    //compile group: 'org.bytedeco', name: 'javacv', version: '0.9'
+    compile group: 'org.bytedeco', name: 'javacv', version: '1.0'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '2.4.11-0.11', classifier: 'android-arm'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '2.6.1-0.11', classifier: 'android-arm'
+    compile group: 'org.jcodec', name: 'jcodec', version: '0.1.9'
+    compile 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.4.1'
+    compile 'com.writingminds:FFmpegAndroid:0.3.2'
+
+
 }

@@ -2,58 +2,47 @@ package no.twomonkeys.sneek.app.components;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
-import android.content.ClipData;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.gesture.GestureLibraries;
 import android.gesture.GestureLibrary;
-import android.gesture.GestureOverlayView;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.view.VelocityTrackerCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
+import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.Camera.CameraFragment;
-import no.twomonkeys.sneek.app.components.Camera.VideoPlayBackFragment;
 import no.twomonkeys.sneek.app.components.feed.FeedAdapter;
 import no.twomonkeys.sneek.app.components.feed.TopBarFragment;
 import no.twomonkeys.sneek.app.components.menu.MenuFragment;
@@ -62,12 +51,15 @@ import no.twomonkeys.sneek.app.shared.Callback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
+import no.twomonkeys.sneek.app.shared.helpers.Videokit;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
 import no.twomonkeys.sneek.app.shared.views.BoolCallback;
 import no.twomonkeys.sneek.app.shared.views.SneekVideoView;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
+
+
     private RecyclerView recyclerView;
     private FeedAdapter feedAdapter;
     private float mPrevY;
@@ -279,6 +271,8 @@ public class MainActivity extends AppCompatActivity {
         videoView.setMediaController(new MediaController(this));
         videoView.setVideoPath(f.getAbsolutePath());
         videoView.start();
+
+        test();
     }
 
     public void loadVideo() {
@@ -327,6 +321,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onPause() {
+        cameraFragment.releaseCamera();
+        super.onPause();
+    }
 
     public void initConfiguration() {
         Fresco.initialize(this);
@@ -338,7 +337,32 @@ public class MainActivity extends AppCompatActivity {
         //Remove top bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+       // getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
     }
+
+    public void test()
+    {
+        FFmpeg ffmpeg = FFmpeg.getInstance(this);
+        try {
+            ffmpeg.loadBinary(new LoadBinaryResponseHandler() {
+
+                @Override
+                public void onStart() {}
+
+                @Override
+                public void onFailure() {}
+
+                @Override
+                public void onSuccess() {}
+
+                @Override
+                public void onFinish() {}
+            });
+        } catch (FFmpegNotSupportedException e) {
+            // Handle if FFmpeg is not supported by device
+        }
+    }
+
 
     //Refreshing
     void refreshItems() {
@@ -823,4 +847,6 @@ public class MainActivity extends AppCompatActivity {
             overlayShadow.setBackgroundDrawable(cd);
         }
     }
+
+
 }
