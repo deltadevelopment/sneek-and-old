@@ -1,5 +1,6 @@
 package no.twomonkeys.sneek.app.components.Camera;
 
+import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -26,7 +27,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -41,6 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Timer;
@@ -85,6 +91,11 @@ public class CameraFragment extends Fragment {
         void onRecorded(File file);
     }
 
+    public interface AnimatedCallback {
+        void onAnimated();
+    }
+
+    public AnimatedCallback animatedCallback;
     public VideoDoneCallback videoDone;
 
     private interface ImageProcessedCallback {
@@ -105,37 +116,11 @@ public class CameraFragment extends Fragment {
         RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.cameraFragment);
         //cameraManager = new CameraManager();
         // Create an instance of Camera
-        mCamera = getCameraInstance(0);
-        if (mCamera == null) {
-            Log.v("CAMERANULL", " NULL CAMRA");
-        }
-        // Create our Preview view and set it as the content of our activity.
-        mPreview = new CameraPreview(this.getActivity(), mCamera, getActivity());
 
 
-        mPreview.videoRecordedCallback = new CameraPreview.VideoRecordedCallback() {
-            @Override
-            public void onRecorded(final File file) {
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //
-                        cameraEditView.setVisibility(View.VISIBLE);
-                        cameraEditView.addMovie(file, getContext());
-                        //videoDone.onRecorded(file);
-                        onLockClb.callbackCall(true);
-                        hideButtons();
-
-                        //loadVideo(file);
-
-                    }//public void run() {
-                });
-
-
-            }
-        };
         preview = (FrameLayout) view.findViewById(R.id.camera_preview);
-        preview.addView(mPreview);
+        // Create our Preview view and set it as the content of our activity.
+        initCamera();
         //mCamera.stopPreview();
 
         recordBtn = (ImageButton) view.findViewById(R.id.button_capture);
@@ -184,8 +169,17 @@ public class CameraFragment extends Fragment {
             @Override
             public void callbackCall() {
                 showButtons();
+                //cameraEditView.videoView.setVisibility(View.INVISIBLE);
+                //cameraEditView.videoView.setZOrderMediaOverlay(false);
+                //cameraEditView.videoView.setZOrderOnTop(false);
+                // cameraEditView.videoView.setVisibility(View.INVISIBLE);
+                cameraEditView.setVisibility(View.INVISIBLE);
+                getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                //mCamera.startPreview();
+                //initCamera();
                 mCamera.startPreview();
                 onLockClb.callbackCall(false);
+
             }
         };
         cameraEditView.onMediaPosted = new SimpleCallback() {
@@ -205,6 +199,7 @@ public class CameraFragment extends Fragment {
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 onCancelClb.callbackCall();
             }
         });
@@ -232,9 +227,23 @@ public class CameraFragment extends Fragment {
         mPreview.photoTakenCallback = new CameraPreview.PhotoTakenCallback() {
             @Override
             public void onTaken(MediaModel mediaModel) {
-                onLockClb.callbackCall(true);
-                cameraEditView.addMedia(mediaModel);
-                cameraEditView.setVisibility(View.VISIBLE);
+                final MediaModel m = mediaModel;
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onLockClb.callbackCall(true);
+                        cameraEditView.addMedia(m);
+                        cameraEditView.setVisibility(View.VISIBLE);
+                    }//public void run() {
+                });
+
+            }
+        };
+
+        mPreview.videoRecordingStartedCallback = new CameraPreview.VideoRecordingStartedCallback() {
+            @Override
+            public void onRecording() {
+                startRecordingAnimation();
             }
         };
 
@@ -260,41 +269,69 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    public void initCamera() {
+        mCamera = getCameraInstance(0);
+        if (mCamera == null) {
+            Log.v("CAMERANULL", " NULL CAMRA");
+        }
+        mPreview = new CameraPreview(this.getActivity(), mCamera, getActivity());
+
+
+        mPreview.videoRecordedCallback = new CameraPreview.VideoRecordedCallback() {
+            @Override
+            public void onRecorded(final MediaModel mediaModel) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //
+                        cameraEditView.setVisibility(View.VISIBLE);
+                        //cameraEditView.addMovie(file, getContext());
+                        cameraEditView.addMedia(mediaModel);
+                        //videoDone.onRecorded(file);
+                        onLockClb.callbackCall(true);
+                        hideButtons();
+
+                        //loadVideo(file);
+
+                    }//public void run() {
+                });
+
+
+            }
+        };
+
+        preview.addView(mPreview);
+    }
+
     public void startRecording() {
-
-
         if (!isRecording) {
             isRecording = true;
             timer = new Timer();
-
-
             try {
                 mPreview.startRecording();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            //Your code to run in GUI thread here
-                            incrementSpin();
-                        }//public void run() {
-                    });
-
-
-                }
-            }, 10, 10);
-
-
             Log.v("START RECORDING HERE", "START RECORDING");
         }
+    }
 
+    public void startRecordingAnimation() {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Your code to run in GUI thread here
+                        incrementSpin();
+                    }//public void run() {
+                });
+
+
+            }
+        }, 10, 10);
     }
 
     public void stopRecording() {
@@ -332,12 +369,17 @@ public class CameraFragment extends Fragment {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                mCamera.release();
-                //mPreview.releaseRecorder();
-                int cameraId = mPreview.selfieIsOn ? 0 : 1;
-                mCamera = getCameraInstance(cameraId);
-                mPreview.showFrontFacing(mCamera, getActivity(), cameraId);
-                mPreview.toggleSelfie();
+                if (mCamera != null) {
+                    mCamera.release();
+                    //mPreview.releaseRecorder();
+                    int cameraId = mPreview.selfieIsOn ? 0 : 1;
+                    mCamera = getCameraInstance(cameraId);
+                    mPreview.showFrontFacing(mCamera, getActivity(), cameraId);
+                    mPreview.toggleSelfie();
+                } else {
+                    //Camera is null
+                }
+
             }
         });
         t.start();
@@ -421,25 +463,75 @@ public class CameraFragment extends Fragment {
     }
 
 
-
     public void startMove(float x) {
         dX = getView().getX() - x;
     }
 
     public void animateIn() {
-        cameraEditView.setVisibility(View.INVISIBLE);
-        getView().animate().translationX(0).setDuration(150);
+        // cameraEditView.setVisibility(View.INVISIBLE);
+        //getView().animate().translationX(0).setDuration(150);
         //Do something with cam here ??
-        prepareCamera();
+
+
+        ObjectAnimator anim = ObjectAnimator.ofFloat(getView(), "translationX", 0);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setInterpolator(new AccelerateInterpolator());
+
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mPreview.hide(false);
+                prepareCamera();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+        anim.setDuration(150).start();
+
     }
 
     public void animateOut() {
-        getView().animate().translationX(defaultWidth).setDuration(150);
+        animatedCallback.onAnimated();
+        //getView().animate().translationX(defaultWidth).setDuration(150);
+        ObjectAnimator anim = ObjectAnimator.ofFloat(getView(), "translationX", defaultWidth);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setInterpolator(new AccelerateInterpolator());
+
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                //mPreview.setVisibility(View.INVISIBLE);
+                mPreview.hide(true);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+        anim.setDuration(150).start();
     }
 
     public void prepareCamera() {
         if (!previewIsRunning && mCamera != null) {
-
+            // mPreview.setVisibility(View.VISIBLE);
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {

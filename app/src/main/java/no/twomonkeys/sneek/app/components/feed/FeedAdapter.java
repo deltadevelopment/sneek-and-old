@@ -48,6 +48,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         });
     }
 
+    public void test()
+    {
+        notifyDataSetChanged();
+    }
+
     public FeedModel getFeedModel() {
         return feedModel;
     }

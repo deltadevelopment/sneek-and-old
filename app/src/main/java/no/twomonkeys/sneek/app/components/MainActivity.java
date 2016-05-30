@@ -7,6 +7,8 @@ import android.gesture.GestureLibrary;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
+import android.support.annotation.IdRes;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
@@ -39,7 +41,10 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
 
 
 import java.io.File;
+import java.sql.Time;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.Camera.CameraFragment;
@@ -108,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     private int mPlayerPosition;
     VideoHelper videoHelper;
+    RelativeLayout layout;
 
 
     //New method
@@ -133,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        final RelativeLayout layout = (RelativeLayout) findViewById(R.id.root);
+        layout = (RelativeLayout) findViewById(R.id.root);
         wrapper = (RelativeLayout) findViewById(R.id.contentWrapper);
 
         overlayShadow = (FrameLayout) findViewById(R.id.overlayShadow);
@@ -155,6 +161,30 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void callbackCall() {
                 animateCameraOut();
+            }
+        };
+        cameraFragment.animatedCallback = new CameraFragment.AnimatedCallback() {
+            @Override
+            public void onAnimated() {
+
+                Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        // Your database code here
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //feedAdapter.test();
+                                //This is here to ensure black top bar dissepears
+                                layout.requestLayout();
+                            }
+                        });
+
+                    }
+                }, 100);
+
+
             }
         };
         cameraFragment.onLockClb = new BoolCallback() {
@@ -327,6 +357,18 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    @Override
+    protected void onDestroy() {
+        cameraFragment.releaseCamera();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        cameraFragment.releaseCamera();
+        super.onStop();
+    }
+
     public void initConfiguration() {
         Fresco.initialize(this);
         DataHelper.setContext(this);
@@ -337,26 +379,30 @@ public class MainActivity extends AppCompatActivity {
         //Remove top bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-       // getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.cyan));
+        // getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
     }
 
-    public void test()
-    {
+    public void test() {
         FFmpeg ffmpeg = FFmpeg.getInstance(this);
         try {
             ffmpeg.loadBinary(new LoadBinaryResponseHandler() {
 
                 @Override
-                public void onStart() {}
+                public void onStart() {
+                }
 
                 @Override
-                public void onFailure() {}
+                public void onFailure() {
+                }
 
                 @Override
-                public void onSuccess() {}
+                public void onSuccess() {
+                }
 
                 @Override
-                public void onFinish() {}
+                public void onFinish() {
+                }
             });
         } catch (FFmpegNotSupportedException e) {
             // Handle if FFmpeg is not supported by device
@@ -366,6 +412,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Refreshing
     void refreshItems() {
+        Log.v("", "REFRESHING ITEMS");
         isRefreshing = true;
         recyclerView.animate().translationY(300).setDuration(150);
         homeBtn.animate().alpha(0).setDuration(150);

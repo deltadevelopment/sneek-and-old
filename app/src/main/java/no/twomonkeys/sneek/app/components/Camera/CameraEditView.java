@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -16,9 +17,11 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
@@ -41,6 +44,10 @@ import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.H264TrackImpl;
 import com.googlecode.mp4parser.util.Matrix;
 import com.googlecode.mp4parser.util.Path;
+import com.sherazkhilji.videffect.DuotoneEffect;
+import com.sherazkhilji.videffect.view.VideoSurfaceView;
+import com.yqritc.scalablevideoview.ScalableType;
+import com.yqritc.scalablevideoview.ScalableVideoView;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -67,6 +74,7 @@ import no.twomonkeys.sneek.app.shared.helpers.VideoRenderer2;
 import no.twomonkeys.sneek.app.shared.models.MediaModel;
 import no.twomonkeys.sneek.app.shared.models.MomentModel;
 import no.twomonkeys.sneek.app.shared.views.CaptionView;
+import no.twomonkeys.sneek.app.shared.views.FilterView;
 import no.twomonkeys.sneek.app.shared.views.ProgressIndicator;
 import no.twomonkeys.sneek.app.shared.views.SneekVideoView;
 import retrofit2.http.Url;
@@ -77,7 +85,7 @@ import retrofit2.http.Url;
 public class CameraEditView extends RelativeLayout {
 
     private static final String TAG = "CameraEditView";
-   //SimpleDraweeView photoTakenView;
+    //SimpleDraweeView photoTakenView;
     Button backBtn, captionBtn, saveBtn, uploadBtn;
     public SimpleCallback onCancelEdit;
     public SimpleCallback onMediaPosted;
@@ -95,6 +103,11 @@ public class CameraEditView extends RelativeLayout {
     SneekVideoView videoView;
     MediaModel mediaModel;
     ImageView photoTakenView;
+    TextureView textureVideoView;
+    // ScalableVideoView video_view;
+    MediaPlayer mPlayer;
+    int currentTime;
+    FilterView filterView;
 
     public CameraEditView(Context context) {
         super(context);
@@ -112,6 +125,7 @@ public class CameraEditView extends RelativeLayout {
     }
 
     private void initializeViews(Context context) {
+
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.camera_edit_view, this);
@@ -121,20 +135,73 @@ public class CameraEditView extends RelativeLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
+        filterView = (FilterView) findViewById(R.id.filterView2);
+        filterView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v("TEST","TEST CLICK LA");
+                filterView.setVideo(mediaModel.getNextFilter());
+            }
+        });
         final CameraEditView self = this;
-
         saveBtn = (Button) findViewById(R.id.cameraEditSaveBtn);
+        /*
+        video_view = (ScalableVideoView) findViewById(R.id.video_view);
+        video_view.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v("CHANGE FILTER", "FILTER CHANGE");
+                if (mediaModel.filterComplete()) {
+                    try {
+                        currentTime = mPlayer.getCurrentPosition();
+                        Log.v("CURREN TIME IS", "cur " + currentTime);
+                        video_view.stop();
+                        video_view.setScalableType(ScalableType.CENTER_TOP_CROP);
+                        video_view.invalidate();
 
+                        video_view.setDataSource(mediaModel.getVideoPathForFilter());
+                        video_view.prepare(new MediaPlayer.OnPreparedListener() {
+                            @Override
+                            public void onPrepared(MediaPlayer mp) {
+                                mp.seekTo(currentTime);
+                                mp.setLooping(true);
+                                mPlayer = mp;
+                                mp.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                                    @Override
+                                    public void onSeekComplete(MediaPlayer mp) {
+                                        video_view.start();
+
+                                    }
+                                });
+
+
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+*/
         captionBtn = (Button) findViewById(R.id.cameraEditCaptionBtn);
         backBtn = (Button) findViewById(R.id.cameraEditBackBtn);
         backBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                videoView.stopPlayback();
-                self.setVisibility(INVISIBLE);
+                //videoView.stopPlayback();
+                if (mediaModel.isVideo()) {
+                    // video_view.stop();
+                    filterView.remove();
+                }
+
+                //video_view.setVisibility(INVISIBLE);
                 //This line makes something strange happen with the top bar, gets black
-                //videoView.setVisibility(INVISIBLE);
+                // videoView.setVisibility(View.INVISIBLE);
+                //videoView.invalidate();
+                //videoView.requestLayout();
+                //self.setVisibility(INVISIBLE);
+
                 onCancelEdit.callbackCall();
             }
         });
@@ -158,7 +225,7 @@ public class CameraEditView extends RelativeLayout {
         uploadBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                uploadMedia();
+                tryUploadMedia();
             }
         });
 
@@ -172,6 +239,7 @@ public class CameraEditView extends RelativeLayout {
             }
         });
 
+
         captionEditView.onCaptionDone = new SimpleCallback() {
             @Override
             public void callbackCall() {
@@ -184,26 +252,9 @@ public class CameraEditView extends RelativeLayout {
 
         videoView = (SneekVideoView) findViewById(R.id.videoSneekVideoView3);
         videoView.setZOrderMediaOverlay(true);
-    }
+        //videoView.setZOrderOnTop(true);
 
-    public void loadVideo(File f) {
-        videoView.setVisibility(VISIBLE);
-        DisplayMetrics dm = new DisplayMetrics();
-        DataHelper.getMa().getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int height = dm.heightPixels;
-        int width = dm.widthPixels;
-        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.setLooping(true);
-                videoView.start();
-            }
-        });
-        videoView.setMinimumWidth(width);
-        videoView.setMinimumHeight(height);
-        videoView.setVideoPath(f.getAbsolutePath());
 
-        videoView.start();
     }
 
     public void updateCaption() {
@@ -223,82 +274,71 @@ public class CameraEditView extends RelativeLayout {
 
     public void addMedia(MediaModel mediaModel) {
         this.mediaModel = mediaModel;
-        if (!mediaModel.isVideo()){
+        filterView.setVisibility(INVISIBLE);
+        if (!mediaModel.isVideo()) {
             //photoTakenView.setImageURI(Uri.fromFile(mediaModel.getMediaFile()));
             photoTakenView.setImageBitmap(mediaModel.getBitmapImage());
-            Log.v(TAG,"IMAGE SET");
-        }
-        else{
-            //process video
-        }
+            Log.v(TAG, "IMAGE SET");
+        } else {
+            if (mediaModel.isSelfie()) {
+                mediaModel.videoProcessedCallback = new MediaModel.VideoProcessedCallback() {
+                    @Override
+                    public void onProcessed(File file) {
+                        playVideo(file);
+                    }
+                };
+                mediaModel.processMedia(getContext());
 
-    }
-
-
-    public void addMovie(final File f, Context c) {
-        isVideo = true;
-        final File outFile = getOutputMediaFile(2);
-
-        Log.v("file of out", "out " + outFile.length() / 1024);
-        movieFile = f;
-        this.c = c;
-        media = f;
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                test2(f, outFile);
+            } else {
+                playVideo(mediaModel.getMediaFile());
             }
-        });
-        t.start();
-    }
 
-    public void test2(File input, final File output) {
-        String s = input.getAbsolutePath();
-        String s2 = output.getAbsolutePath();
-        FFmpeg ffmpeg = FFmpeg.getInstance(getContext());
-        try {
-            String[] test2 = new String[]{
-                    "-y",                // Overwrite output files
-                    "-i",                // Input file
-                    s,
-                    "-vf",
-                    "hue=s=0",
-                    "-acodec",           // Audio codec
-                    "copy",
-                    s2 // Output file
-            };
-            // to execute "ffmpeg -version" command you just need to pass "-version"
-            ffmpeg.execute(test2, new ExecuteBinaryResponseHandler() {
 
-                @Override
-                public void onStart() {
+            /*
+            mediaModel.processFilters(getContext());
+            video_view.setVisibility(VISIBLE);
+
+            //process video
+            // videoView.setScaleX(-1);
+            // loadVideo(mediaModel.getMediaFile());
+            try {
+                if (mediaModel.isSelfie()) {
+                    video_view.setScaleX(-1);
+                } else {
+                    video_view.setScaleX(1);
                 }
+                video_view.setDataSource(mediaModel.getMediaFile().getAbsolutePath());
 
-                @Override
-                public void onProgress(String message) {
-                    Log.v("Progress is", message);
-                }
+                video_view.setScalableType(ScalableType.CENTER_TOP_CROP);
+                video_view.invalidate();
+                // video_view.start();
+                video_view.prepare(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mPlayer = mp;
+                        mp.setLooping(true);
+                        video_view.start();
+                    }
+                });
+                video_view.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                    @Override
+                    public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                        Log.v("WHAT", "WHAT");
+                        return false;
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            */
 
-                @Override
-                public void onFailure(String message) {
-                    Log.v("Failure is", message);
-                }
-
-                @Override
-                public void onSuccess(String message) {
-                    Log.v("Message is", message);
-                    Log.v("Completed", "COMPLETED NOW");
-                    //loadVideo(output);
-                }
-
-                @Override
-                public void onFinish() {
-                }
-            });
-        } catch (FFmpegCommandAlreadyRunningException e) {
-            // Handle if FFmpeg is already running
         }
 
+    }
+
+    private void playVideo(File file) {
+        filterView.setVisibility(VISIBLE);
+        filterView.setVideo(file.getAbsolutePath(), getContext());
     }
 
     private static File getOutputMediaFile(int type) {
@@ -432,14 +472,25 @@ public class CameraEditView extends RelativeLayout {
         }
     }
 
-    public void uploadMedia() {
-        uploadBtn.setVisibility(INVISIBLE);
-        if (!isVideo) {
-            media = saveBitmapToFile(media);
+    public void tryUploadMedia() {
+        //Obtain the file, processed and clear
+        if (mediaModel.isVideo()) {
+            // video_view.stop();
         }
+        mediaModel.videoProcessedCallback = new MediaModel.VideoProcessedCallback() {
+            @Override
+            public void onProcessed(File file) {
+                uploadMedia(file);
+            }
+        };
+        mediaModel.processMedia(getContext());
+    }
+
+    public void uploadMedia(File file) {
+        uploadBtn.setVisibility(INVISIBLE);
 
         MomentModel momentModel = new MomentModel();
-        momentModel.setMedia_type(isVideo ? 1 : 0);
+        momentModel.setMedia_type(mediaModel.isVideo() ? 1 : 0);
 
         //Check if moment on disk is null
 
@@ -450,10 +501,10 @@ public class CameraEditView extends RelativeLayout {
             momentModel.setCaption_position(captionPosition);
             momentModel.setCaption(captionEditView.captionTxt());
         }
-
-        momentModel.setMedia(mediaModel.getMediaFile());
-        if (isVideo) {
-            Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(media.getAbsolutePath(), MediaStore.Images.Thumbnails.MINI_KIND);
+        momentModel.setMedia(file);
+        //momentModel.setMedia(mediaModel.getMediaFile());
+        if (mediaModel.isVideo()) {
+            Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(mediaModel.getMediaFile().getAbsolutePath(), MediaStore.Images.Thumbnails.MINI_KIND);
             File f = getOutputMediaFile(1);
             try {
                 f.createNewFile();

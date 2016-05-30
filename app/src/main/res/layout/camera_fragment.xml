@@ -4,11 +4,12 @@
     android:id="@+id/cameraFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/red"
+    android:background="@color/black"
     android:paddingBottom="0dp"
     android:paddingLeft="0dp"
     android:paddingRight="0dp"
-    android:paddingTop="0dp">
+    android:paddingTop="0dp"
+    android:fitsSystemWindows="true">
 
     <FrameLayout
         android:id="@+id/camera_preview"
@@ -84,8 +85,10 @@
 
     <no.twomonkeys.sneek.app.components.Camera.CameraEditView
         android:id="@+id/cameraEditView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:background="@color/transparent">
     </no.twomonkeys.sneek.app.components.Camera.CameraEditView>
 
     <ProgressBar

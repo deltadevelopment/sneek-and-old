@@ -59,8 +59,7 @@ public class VideoHelper {
         else{
             if (momentModel.hasCachedVideo()) {
                 Log.v("HAS CACHED","CACHED VIDEO");
-                File f = new File("/storage/emulated/0/Pictures/MyCameraApp/VID_20160524_130304.mp4");
-                videoView.setVideoURI(Uri.fromFile(f));
+                videoView.setVideoURI(Uri.fromFile(momentModel.getVideoFile()));
                 videoView.requestFocus();
                 videoView.start();
             } else {

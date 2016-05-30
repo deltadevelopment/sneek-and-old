@@ -48,6 +48,6 @@ dependencies {
     compile group: 'org.jcodec', name: 'jcodec', version: '0.1.9'
     compile 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.4.1'
     compile 'com.writingminds:FFmpegAndroid:0.3.2'
-
-
+    compile 'com.yqritc:android-scalablevideoview:1.0.4'
+    compile project(path: ':libs:VidEffects-master')
 }
