@@ -53,7 +53,7 @@ public class SamplePlayerActivity extends Activity {
 		setContentView(R.layout.activity_sampleplayer);
 		mVideoView = (VideoSurfaceView) findViewById(R.id.mVideoSurfaceView);
 		mVideoView.init(mMediaPlayer,
-				new DuotoneEffect(Color.YELLOW, Color.RED));
+				new DuotoneEffect(Color.YELLOW, Color.RED), false);
 
 	}
 

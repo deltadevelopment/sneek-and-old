@@ -140,7 +140,7 @@ public class CameraEditView extends RelativeLayout {
             @Override
             public void onClick(View v) {
                 Log.v("TEST","TEST CLICK LA");
-                filterView.setVideo(mediaModel.getNextFilter());
+                filterView.applyNextFilter(mediaModel.getNextFilter());
             }
         });
         final CameraEditView self = this;
@@ -280,20 +280,9 @@ public class CameraEditView extends RelativeLayout {
             photoTakenView.setImageBitmap(mediaModel.getBitmapImage());
             Log.v(TAG, "IMAGE SET");
         } else {
-            if (mediaModel.isSelfie()) {
-                mediaModel.videoProcessedCallback = new MediaModel.VideoProcessedCallback() {
-                    @Override
-                    public void onProcessed(File file) {
-                        playVideo(file);
-                    }
-                };
-                mediaModel.processMedia(getContext());
 
-            } else {
-                playVideo(mediaModel.getMediaFile());
-            }
-
-
+            filterView.setVisibility(VISIBLE);
+            filterView.setVideo(mediaModel.getMediaFile().getAbsolutePath(), getContext(), mediaModel.isSelfie());
             /*
             mediaModel.processFilters(getContext());
             video_view.setVisibility(VISIBLE);
@@ -336,10 +325,7 @@ public class CameraEditView extends RelativeLayout {
 
     }
 
-    private void playVideo(File file) {
-        filterView.setVisibility(VISIBLE);
-        filterView.setVideo(file.getAbsolutePath(), getContext());
-    }
+
 
     private static File getOutputMediaFile(int type) {
         // To be safe, you should check that the SDCard is mounted
@@ -476,6 +462,7 @@ public class CameraEditView extends RelativeLayout {
         //Obtain the file, processed and clear
         if (mediaModel.isVideo()) {
             // video_view.stop();
+            filterView.stop();
         }
         mediaModel.videoProcessedCallback = new MediaModel.VideoProcessedCallback() {
             @Override
@@ -546,9 +533,10 @@ public class CameraEditView extends RelativeLayout {
         LayoutParams lr = new LayoutParams(0, UIHelper.dpToPx(getContext(), 2));
         lr.width = 0;
         progressView.setLayoutParams(lr);
-        //setVisibility(INVISIBLE);
+        setVisibility(INVISIBLE);
         onMediaPosted.callbackCall();
         uploadBtn.setVisibility(VISIBLE);
+        filterView.remove();
     }
 
     public void moveCaptionToY(float yPos) {

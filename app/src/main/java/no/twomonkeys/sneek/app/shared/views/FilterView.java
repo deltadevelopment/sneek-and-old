@@ -3,10 +3,13 @@ package no.twomonkeys.sneek.app.shared.views;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
+import android.opengl.Matrix;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -77,63 +80,76 @@ public class FilterView extends RelativeLayout {
 
     }
 
-    public void setVideo(String filePath, Context c) {
+    public void setVideo(String filePath, Context c, boolean isSelfie) {
         this.filePath = filePath;
         this.c = c;
-        setVideo(0);
+        setVideo(0, false, isSelfie);
     }
 
-    public void setVideo(int filterNumber) {
-        if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            currentPosition = mMediaPlayer.getCurrentPosition();
-            simpleRemove();
-        } else {
-            mMediaPlayer = new MediaPlayer();
-            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    mp.seekTo(currentPosition);
-                    mp.setLooping(true);
-                    mp.start();
-                }
-            });
-            try {
-                mMediaPlayer.setDataSource(filePath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void applyNextFilter(int filterNumber) {
+        mMediaPlayer.pause();
+        currentPosition = mMediaPlayer.getCurrentPosition();
+        simpleRemove();
+
+        RelativeLayout l = (RelativeLayout) findViewById(R.id.filterView);
+        l.addView(mVideoView);
+
+        if (filterNumber == 0) {
+            mVideoView.init(mMediaPlayer,
+                    null, true);
+        } else if (filterNumber == 1) {
+            mVideoView.init(mMediaPlayer,
+                    new BlackAndWhiteEffect(), true);
+        } else if (filterNumber == 2) {
+            mVideoView.init(mMediaPlayer,
+                    new CrossProcessEffect(), true);
         }
+    }
 
+    public void setVideo(int filterNumber, boolean isUsed, boolean isSelfie) {
 
-        //mMediaPlayer.seekTo(currentPosition);
-        mVideoView = new VideoSurfaceView(c, mMediaPlayer);
-
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.seekTo(currentPosition);
+                mp.setLooping(true);
+                mp.start();
+            }
+        });
+        try {
+            mMediaPlayer.setDataSource(filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mVideoView = new VideoSurfaceView(c, mMediaPlayer, new VideoSurfaceView.FilterAppliedCallback() {
+            @Override
+            public void onFiltered() {
+                if (!mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.start();
+                }
+            }
+        }, isSelfie);
 
         mVideoView.setZOrderMediaOverlay(true);
         mVideoView.getHolder().setFormat(PixelFormat.TRANSPARENT);
-        if (filterNumber == 0) {
-            mVideoView.init(mMediaPlayer,
-                    null);
-        } else if (filterNumber == 1) {
-            mVideoView.init(mMediaPlayer,
-                    new BlackAndWhiteEffect());
-        } else if (filterNumber == 2) {
-            mVideoView.init(mMediaPlayer,
-                    new CrossProcessEffect());
-        }
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         mVideoView.setLayoutParams(params);
+
         RelativeLayout l = (RelativeLayout) findViewById(R.id.filterView);
-        mVideoView.getHolder().setFormat(PixelFormat.TRANSPARENT);
         l.addView(mVideoView);
+        mVideoView.init(mMediaPlayer,
+                null, isUsed);
+    }
+
+    public void stop() {
+        mMediaPlayer.stop();
     }
 
 
     public void simpleRemove() {
-        mVideoView.invalidate();
-        mVideoView.getHolder().setFormat(PixelFormat.TRANSPARENT);
+        // mVideoView.invalidate();
         RelativeLayout l = (RelativeLayout) findViewById(R.id.filterView);
         l.removeView(mVideoView);
     }
@@ -144,6 +160,7 @@ public class FilterView extends RelativeLayout {
         mMediaPlayer.stop();
         mMediaPlayer.reset();
         mMediaPlayer.release();
+        mMediaPlayer = null;
         RelativeLayout l = (RelativeLayout) findViewById(R.id.filterView);
         l.removeView(mVideoView);
     }
