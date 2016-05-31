@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.opengl.GLSurfaceView;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
@@ -61,6 +62,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImageSepiaFilter;
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.MainActivity;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
@@ -139,7 +142,7 @@ public class CameraEditView extends RelativeLayout {
         filterView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("TEST","TEST CLICK LA");
+                Log.v("TEST", "TEST CLICK LA");
                 filterView.applyNextFilter(mediaModel.getNextFilter());
             }
         });
@@ -190,10 +193,10 @@ public class CameraEditView extends RelativeLayout {
             @Override
             public void onClick(View v) {
                 //videoView.stopPlayback();
-                if (mediaModel.isVideo()) {
+
                     // video_view.stop();
                     filterView.remove();
-                }
+
 
                 //video_view.setVisibility(INVISIBLE);
                 //This line makes something strange happen with the top bar, gets black
@@ -257,6 +260,33 @@ public class CameraEditView extends RelativeLayout {
 
     }
 
+    public void test(Bitmap b) {
+        RelativeLayout rl = (RelativeLayout) findViewById(R.id.cameraEditView);
+        GLSurfaceView surfaceView = new GLSurfaceView(getContext());
+        surfaceView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int currentFilter = mediaModel.getNextFilter();
+                if (currentFilter == 1){
+
+                }
+
+            }
+        });
+        surfaceView.setZOrderMediaOverlay(true);
+        LayoutParams rlp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        surfaceView.setLayoutParams(rlp);
+        rl.addView(surfaceView);
+
+
+        GPUImage mGPUImage = new GPUImage(getContext());
+        mGPUImage.setGLSurfaceView(surfaceView);
+        mGPUImage.setImage(b); // this loads image on the current thread, should be run in a thread
+        mGPUImage.setFilter(new GPUImageSepiaFilter());
+
+
+    }
+
     public void updateCaption() {
         if (captionEditView.hasCaption()) {
             captionView.setVisibility(VISIBLE);
@@ -270,61 +300,21 @@ public class CameraEditView extends RelativeLayout {
         media = file;
         //photoTakenView.setImageURI(Uri.fromFile(file));
         isVideo = false;
+
     }
 
     public void addMedia(MediaModel mediaModel) {
         this.mediaModel = mediaModel;
-        filterView.setVisibility(INVISIBLE);
+        filterView.setVisibility(VISIBLE);
         if (!mediaModel.isVideo()) {
             //photoTakenView.setImageURI(Uri.fromFile(mediaModel.getMediaFile()));
             photoTakenView.setImageBitmap(mediaModel.getBitmapImage());
-            Log.v(TAG, "IMAGE SET");
+            filterView.setImage(mediaModel.getBitmapImage());
         } else {
-
             filterView.setVisibility(VISIBLE);
             filterView.setVideo(mediaModel.getMediaFile().getAbsolutePath(), getContext(), mediaModel.isSelfie());
-            /*
-            mediaModel.processFilters(getContext());
-            video_view.setVisibility(VISIBLE);
-
-            //process video
-            // videoView.setScaleX(-1);
-            // loadVideo(mediaModel.getMediaFile());
-            try {
-                if (mediaModel.isSelfie()) {
-                    video_view.setScaleX(-1);
-                } else {
-                    video_view.setScaleX(1);
-                }
-                video_view.setDataSource(mediaModel.getMediaFile().getAbsolutePath());
-
-                video_view.setScalableType(ScalableType.CENTER_TOP_CROP);
-                video_view.invalidate();
-                // video_view.start();
-                video_view.prepare(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        mPlayer = mp;
-                        mp.setLooping(true);
-                        video_view.start();
-                    }
-                });
-                video_view.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                    @Override
-                    public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                        Log.v("WHAT", "WHAT");
-                        return false;
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            */
-
         }
-
     }
-
 
 
     private static File getOutputMediaFile(int type) {
@@ -478,9 +468,7 @@ public class CameraEditView extends RelativeLayout {
 
         MomentModel momentModel = new MomentModel();
         momentModel.setMedia_type(mediaModel.isVideo() ? 1 : 0);
-
         //Check if moment on disk is null
-
         momentModel.setLatitude(0);
         momentModel.setLongitude(0);
 
@@ -502,13 +490,9 @@ public class CameraEditView extends RelativeLayout {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             //set disk file path?
-
-
         }
         // momentModel setplaceId
-
         momentModel.progress = new MomentModel.MomentCallbacks() {
             @Override
             public void onProgressUpdate(int percentage) {
@@ -519,7 +503,6 @@ public class CameraEditView extends RelativeLayout {
                 progressView.setLayoutParams(lr);
             }
         };
-
         momentModel.saveWithProgression(new SimpleCallback() {
             @Override
             public void callbackCall() {

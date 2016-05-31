@@ -1,16 +1,19 @@
 package no.twomonkeys.sneek.app.shared.views;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
+import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -32,6 +35,20 @@ import com.yqritc.scalablevideoview.ScalableVideoView;
 import java.io.File;
 import java.io.IOException;
 
+import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImage3x3ConvolutionFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageColorBalanceFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageColorBurnBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageContrastFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageCrosshatchFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageDifferenceBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageExposureFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageGaussianBlurFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageGrayscaleFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageKuwaharaFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageNormalBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSepiaFilter;
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.Camera.CaptionEditView;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
@@ -43,10 +60,14 @@ import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 public class FilterView extends RelativeLayout {
 
     private VideoSurfaceView mVideoView = null;
+    private GLSurfaceView imageSurfaceView;
+    private GPUImage mGPUImage;
     private MediaPlayer mMediaPlayer = null;
     private String filePath;
     private Context c;
     private int currentPosition;
+    private boolean isVideo;
+
 
     public FilterView(Context context) {
         super(context);
@@ -81,12 +102,57 @@ public class FilterView extends RelativeLayout {
     }
 
     public void setVideo(String filePath, Context c, boolean isSelfie) {
+        isVideo = true;
         this.filePath = filePath;
         this.c = c;
         setVideo(0, false, isSelfie);
     }
 
+    public void setImage(Bitmap bitmap) {
+        isVideo = false;
+        RelativeLayout l = (RelativeLayout) findViewById(R.id.filterView);
+        imageSurfaceView = new GLSurfaceView(getContext());
+        imageSurfaceView.setZOrderMediaOverlay(true);
+
+        LayoutParams rlp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        imageSurfaceView.setLayoutParams(rlp);
+        l.addView(imageSurfaceView);
+
+        mGPUImage = new GPUImage(getContext());
+        mGPUImage.setGLSurfaceView(imageSurfaceView);
+        mGPUImage.setImage(bitmap); // this loads image on the current thread, should be run in a thread
+
+        //mGPUImage.saveToPictures("GPUImage", "ImageWithFilter.jpg", null);
+    }
+
     public void applyNextFilter(int filterNumber) {
+        if (isVideo) {
+            applyFilterToVideo(filterNumber);
+        } else {
+            applyFilterToImage(filterNumber);
+        }
+    }
+
+    public void applyFilterToImage(int filterNumber) {
+        switch (filterNumber) {
+            case 0: {
+                mGPUImage.setFilter(new GPUImageFilter());
+                break;
+            }
+            case 1: {
+                mGPUImage.setFilter(new GPUImageGrayscaleFilter());
+                break;
+            }
+            case 2: {
+                mGPUImage.setFilter(new VintageFilter(getContext()));
+                break;
+            }
+        }
+
+        //GPUImageContrastFilter
+    }
+
+    public void applyFilterToVideo(int filterNumber) {
         mMediaPlayer.pause();
         currentPosition = mMediaPlayer.getCurrentPosition();
         simpleRemove();
@@ -155,14 +221,17 @@ public class FilterView extends RelativeLayout {
     }
 
     public void remove() {
-        mVideoView.invalidate();
-        mVideoView.getHolder().setFormat(PixelFormat.TRANSPARENT);
-        mMediaPlayer.stop();
-        mMediaPlayer.reset();
-        mMediaPlayer.release();
-        mMediaPlayer = null;
         RelativeLayout l = (RelativeLayout) findViewById(R.id.filterView);
-        l.removeView(mVideoView);
+        if (isVideo) {
+            mVideoView.invalidate();
+            mVideoView.getHolder().setFormat(PixelFormat.TRANSPARENT);
+            mMediaPlayer.stop();
+            mMediaPlayer.reset();
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+            l.removeView(mVideoView);
+        } else {
+            l.removeView(imageSurfaceView);
+        }
     }
-
 }
