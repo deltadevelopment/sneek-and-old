@@ -44,5 +44,16 @@ public class GenericContract {
         };
     }
 
+    public static Contract v1_get_user_username_exists() {
+        return new Contract() {
+            @Override
+            public Map generic_contract(Map map) {
+                return map;
+            }
+        };
+    }
+
+
+
 
 }

@@ -45,6 +45,10 @@ public class StoryModel extends CRUDModel {
 
     }
 
+    public void setUser_id(int user_id) {
+        this.user_id = user_id;
+    }
+
     public ArrayList<MomentModel> getMoments() {
         return moments;
     }

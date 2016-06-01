@@ -63,7 +63,12 @@ public class LoadingView extends RelativeLayout {
         bg.setScaleType(ImageView.ScaleType.CENTER);
 
 
-        this.setBackgroundColor(Color.BLUE);
+       // this.setBackgroundColor(Color.BLUE);
+    }
+
+    public void removeBg()
+    {
+        bg.setVisibility(INVISIBLE);
     }
 
     public void startAnimate() {

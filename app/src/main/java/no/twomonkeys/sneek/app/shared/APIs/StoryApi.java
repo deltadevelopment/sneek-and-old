@@ -36,6 +36,11 @@ public interface StoryApi {
             @Path("feed") String feed
     );
 
+    @GET("user/username_exists/{username}")
+    Call<ResponseModel> getUsernameExists(
+            @Path("username") String username
+    );
+
     @POST("moment/generate_upload_url")
     Call<ResponseModel> postGenerateToken(
     );
@@ -52,5 +57,8 @@ public interface StoryApi {
 
     @POST("moment")
     Call<ResponseModel> postMoment(@Body HashMap<String, HashMap> body);
+
+    @POST("user")
+    Call<ResponseModel> postUser(@Body HashMap<String, HashMap> body);
 
 }

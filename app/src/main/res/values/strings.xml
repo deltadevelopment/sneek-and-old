@@ -2,10 +2,19 @@
     <string name="app_name">Sneek</string>
     <string name="more_txt">MORE</string>
     <string name="cam_txt">TRAP</string>
+
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="red">#FF0000</color>
     <color name="cyan">#42ffff</color>
     <color name="yellow">#FFFF00</color>
     <color name="transparent">#00000000</color>
+    <color name="gray">#8c807d</color>
+
+    <string name="validation_username_space">No spaces, please</string>
+    <string name="validation_username_length">Must be between 4 and 15 characters</string>
+    <string name="validation_username_alphanumeric">Only numbers and letters from A-Z</string>
+    <string name="validation_username_exists">Already taken</string>
+
+
 </resources>
