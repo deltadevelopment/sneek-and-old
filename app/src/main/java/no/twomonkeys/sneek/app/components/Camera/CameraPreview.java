@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -31,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -74,6 +76,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public interface VideoRecordingStartedCallback {
         void onRecording();
     }
+
+    public interface TouchCallback {
+        void onTouch(int x, int y);
+    }
+
+    public TouchCallback touchCallback;
 
     public VideoRecordedCallback videoRecordedCallback;
     public VideoRecordingStartedCallback videoRecordingStartedCallback;
@@ -122,6 +130,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
         });
         t.start();
+        tapToFocus();
     }
 
     @Override
@@ -179,6 +188,57 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
         });
         t.start();
+    }
+
+    private void tapToFocus() {
+        setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                int x = (int)event.getX();
+                int y = (int)event.getY();
+                touchCallback.onTouch(x, y);
+
+                if (mCamera != null) {
+                    Camera camera = mCamera;
+                    camera.cancelAutoFocus();
+                    Rect focusRect = new Rect(-1000, -1000, 1000, 0);
+
+                    Camera.Parameters parameters = camera.getParameters();
+                    if (parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_AUTO) {
+                        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                    }
+                    if (parameters.getMaxNumFocusAreas() > 0) {
+                        List<Camera.Area> mylist = new ArrayList<Camera.Area>();
+                        mylist.add(new Camera.Area(focusRect, 1000));
+                        parameters.setFocusAreas(mylist);
+                    }
+
+                    try {
+                        camera.cancelAutoFocus();
+                        camera.setParameters(parameters);
+                        camera.startPreview();
+                        camera.autoFocus(new Camera.AutoFocusCallback() {
+                            @Override
+                            public void onAutoFocus(boolean success, Camera camera) {
+                                if (camera.getParameters().getFocusMode() != Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE) {
+                                    Camera.Parameters parameters = camera.getParameters();
+                                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                                    if (parameters.getMaxNumFocusAreas() > 0) {
+                                        parameters.setFocusAreas(null);
+                                    }
+                                    camera.setParameters(parameters);
+                                    camera.startPreview();
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                return true;
+            }
+        });
     }
 
     @Override

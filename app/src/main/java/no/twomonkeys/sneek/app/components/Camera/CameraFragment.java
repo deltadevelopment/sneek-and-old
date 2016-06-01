@@ -86,6 +86,7 @@ public class CameraFragment extends Fragment {
     float percent;
     float percentHundred;
     boolean isRecording;
+    ProgressBar focusCircle;
 
     public interface VideoDoneCallback {
         void onRecorded(File file);
@@ -247,7 +248,8 @@ public class CameraFragment extends Fragment {
             }
         };
 
-
+        focusCircle = (ProgressBar) view.findViewById(R.id.focusCircle);
+        focusCircle.setAlpha(0);
         return view;
     }
 
@@ -295,12 +297,46 @@ public class CameraFragment extends Fragment {
 
                     }//public void run() {
                 });
-
-
+            }
+        };
+        mPreview.touchCallback = new CameraPreview.TouchCallback() {
+            @Override
+            public void onTouch(int x, int y) {
+                animateFocus(x, y);
             }
         };
 
         preview.addView(mPreview);
+    }
+
+    public void animateFocus(int x, int y) {
+        focusCircle.setX(x - (focusCircle.getWidth() / 2));
+        focusCircle.setY(y - (focusCircle.getHeight() / 2));
+
+        ObjectAnimator anim = ObjectAnimator.ofFloat(focusCircle, "alpha", 1);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setInterpolator(new AccelerateInterpolator());
+
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                focusCircle.animate().alpha(0).setDuration(250).setStartDelay(150);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+        anim.setDuration(150).start();
     }
 
     public void startRecording() {

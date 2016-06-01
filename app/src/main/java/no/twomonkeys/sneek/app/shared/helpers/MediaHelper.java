@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,6 +24,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
+import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageGrayscaleFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSobelEdgeDetection;
+import no.twomonkeys.sneek.app.shared.views.VintageFilter;
+
 /**
  * Created by simenlie on 28.05.16.
  */
@@ -36,11 +43,13 @@ public class MediaHelper {
         void onFiltered(File file);
     }
 
-    public interface VideoProcessedCallback {
+    public interface FileProcessedCallback {
         void onProcessed(File file);
     }
 
-    public static VideoProcessedCallback videoProcessed;
+
+    public static FileProcessedCallback videoProcessed;
+    public static FileProcessedCallback imageProcessed;
 
     public static VideoMirroredCallback videoMirrored;
     public static VideoFilterCallback bwFiltered;
@@ -225,6 +234,27 @@ public class MediaHelper {
         }
     }
 
+    public static void processImage(Bitmap image, int filterNumber, Context context) {
+        GPUImage mGPUImage = new GPUImage(context);
+
+        switch (filterNumber) {
+            case 0: {
+                mGPUImage.setFilter(new GPUImageFilter());
+                break;
+            }
+            case 1: {
+                mGPUImage.setFilter(new GPUImageGrayscaleFilter());
+                break;
+            }
+            case 2: {
+                mGPUImage.setFilter(new VintageFilter(context));
+                break;
+            }
+        }
+        mGPUImage.setImage(image);
+        imageProcessed.onProcessed(bitmapToFile(mGPUImage.getBitmapWithFilterApplied()));
+    }
+
     public static void processVideo(File inputFile, boolean flip, int filterNumber, Context context) {
         final File outFile = getOutputMediaFile(2);
         String s = inputFile.getAbsolutePath();
@@ -233,6 +263,8 @@ public class MediaHelper {
         cmd.add("-y");
         cmd.add("-i");
         cmd.add(s);
+
+        FFmpeg ffmpeg = FFmpeg.getInstance(context);
 
         ArrayList videoEffects = new ArrayList();
 
@@ -251,62 +283,75 @@ public class MediaHelper {
 
             cmd.add(StringUtils.join(videoEffects.toArray(), ", "));
 
-            if (filterNumber == 2){
+            if (filterNumber == 2) {
                 cmd.add("-pix_fmt");
                 cmd.add("yuv420p");
             }
-            cmd.add("-threads");
-            cmd.add("5");
-            cmd.add("-preset");
-            cmd.add("ultrafast");
-            cmd.add("-acodec");
-            cmd.add("copy");
-            cmd.add(s2);
-            FFmpeg ffmpeg = FFmpeg.getInstance(context);
+
+
             // to execute "ffmpeg -version" command you just need to pass "-version"
-            Object[] objectList = cmd.toArray();
-            String[] cmdArray = Arrays.copyOf(objectList, objectList.length, String[].class);
-            for (String sy : cmdArray) {
-                Log.v("t", "sy" + sy);
-            }
-            try {
-                ffmpeg.execute(cmdArray, new ExecuteBinaryResponseHandler() {
-
-                    @Override
-                    public void onStart() {
-                    }
-
-                    @Override
-                    public void onProgress(String message) {
-                        Log.v("Progress is", message);
-                    }
-
-                    @Override
-                    public void onFailure(String message) {
-                        Log.v("Failure is", message);
-                        videoProcessed.onProcessed(null);
-                    }
-
-                    @Override
-                    public void onSuccess(String message) {
-                        Log.v("Message is", message);
-                        Log.v("Completed", "COMPLETED NOW");
-                        videoProcessed.onProcessed(outFile);
-                        //loadVideo(output);
-                    }
-
-                    @Override
-                    public void onFinish() {
-                    }
-                });
-            } catch (FFmpegCommandAlreadyRunningException e) {
-                e.printStackTrace();
-            }
 
         } else {
             //No more stuff to do
-            videoProcessed.onProcessed(inputFile);
+
         }
+        cmd.add("-codec:v");
+        cmd.add("libx264");
+        cmd.add("-movflags");
+        cmd.add("faststart");
+
+        cmd.add("-threads");
+        cmd.add("5");
+        cmd.add("-preset");
+        cmd.add("ultrafast");
+        cmd.add("-acodec");
+        cmd.add("copy");
+        cmd.add(s2);
+
+        Object[] objectList = cmd.toArray();
+        String[] cmdArray = Arrays.copyOf(objectList, objectList.length, String[].class);
+
+
+        try {
+            ffmpeg.execute(cmdArray, new ExecuteBinaryResponseHandler() {
+
+                @Override
+                public void onStart() {
+                }
+
+                @Override
+                public void onProgress(String message) {
+                    Log.v("Progress is", message);
+                }
+
+                @Override
+                public void onFailure(String message) {
+                    Log.v("Failure is", message);
+                    videoProcessed.onProcessed(null);
+                }
+
+                @Override
+                public void onSuccess(String message) {
+                    Log.v("Message is", message);
+                    Log.v("Completed", "COMPLETED NOW");
+                    // Get length of file in bytes
+                    long fileSizeInBytes = outFile.length();
+                    long fileSizeInKB = fileSizeInBytes / 1024;
+                    long fileSizeInMB = fileSizeInKB / 1024;
+
+                    Log.v("MEDIAHELPER", "file size is " + fileSizeInMB);
+                    videoProcessed.onProcessed(outFile);
+                    //loadVideo(output);
+                }
+
+                @Override
+                public void onFinish() {
+                }
+            });
+        } catch (FFmpegCommandAlreadyRunningException e) {
+            e.printStackTrace();
+        }
+
 
     }
 

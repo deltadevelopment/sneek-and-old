@@ -47,11 +47,18 @@ public class MediaModel {
                 videoProcessedCallback.onProcessed(self.mediaFile);
             }
         };
-        MediaHelper.videoProcessed = new MediaHelper.VideoProcessedCallback() {
+        MediaHelper.videoProcessed = new MediaHelper.FileProcessedCallback() {
             @Override
             public void onProcessed(File file) {
                 self.mediaFile = file;
                 videoProcessedCallback.onProcessed(self.mediaFile);
+            }
+        };
+        MediaHelper.imageProcessed = new MediaHelper.FileProcessedCallback() {
+            @Override
+            public void onProcessed(File file) {
+                self.mediaFile = file;
+                videoProcessedCallback.onProcessed(file);
             }
         };
     }
@@ -59,13 +66,7 @@ public class MediaModel {
     //this method processes the media and calls a callback
     public void processMedia(Context context) {
         if (!isVideo) {
-            if (isSelfie) {
-                //need to process the image
-                File f = MediaHelper.bitmapToFile(getBitmapImage());
-                videoProcessedCallback.onProcessed(f);
-            } else {
-                videoProcessedCallback.onProcessed(mediaFile);
-            }
+            MediaHelper.processImage(getBitmapImage(), currentFilter, context);
         } else {
             MediaHelper.processVideo(mediaFile, isSelfie(), currentFilter, context);
         }
