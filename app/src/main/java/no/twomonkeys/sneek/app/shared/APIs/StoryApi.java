@@ -61,4 +61,7 @@ public interface StoryApi {
     @POST("user")
     Call<ResponseModel> postUser(@Body HashMap<String, HashMap> body);
 
+    @POST("login")
+    Call<ResponseModel> postLogin(@Body HashMap<String, HashMap> body);
+
 }

@@ -102,7 +102,7 @@ public class UserModel extends CRUDModel {
         map.put("user", innerMap);
 
         NetworkHelper.sendRequest(NetworkHelper.userService.postUser(map),
-                GenericContract.generic_parse(),
+                GenericContract.v1_post_user(),
                 onDataReturned(),
                 scb);
     }
