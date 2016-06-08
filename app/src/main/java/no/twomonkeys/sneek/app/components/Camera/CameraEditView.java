@@ -67,6 +67,7 @@ import jp.co.cyberagent.android.gpuimage.GPUImageSepiaFilter;
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.MainActivity;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.MediaHelper;
 import no.twomonkeys.sneek.app.shared.helpers.ProgressRequestBody;
@@ -74,6 +75,7 @@ import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
 import no.twomonkeys.sneek.app.shared.helpers.VideoRenderer;
 import no.twomonkeys.sneek.app.shared.helpers.VideoRenderer2;
+import no.twomonkeys.sneek.app.shared.models.ErrorModel;
 import no.twomonkeys.sneek.app.shared.models.MediaModel;
 import no.twomonkeys.sneek.app.shared.models.MomentModel;
 import no.twomonkeys.sneek.app.shared.views.CaptionView;
@@ -90,8 +92,8 @@ public class CameraEditView extends RelativeLayout {
     private static final String TAG = "CameraEditView";
     //SimpleDraweeView photoTakenView;
     Button backBtn, captionBtn, saveBtn, uploadBtn;
-    public SimpleCallback onCancelEdit;
-    public SimpleCallback onMediaPosted;
+    public SimpleCallback2 onCancelEdit;
+    public SimpleCallback2 onMediaPosted;
     public CaptionEditView captionEditView;
     public CaptionView captionView;
     float oldY;
@@ -243,7 +245,7 @@ public class CameraEditView extends RelativeLayout {
         });
 
 
-        captionEditView.onCaptionDone = new SimpleCallback() {
+        captionEditView.onCaptionDone = new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 updateCaption();
@@ -505,7 +507,7 @@ public class CameraEditView extends RelativeLayout {
         };
         momentModel.saveWithProgression(new SimpleCallback() {
             @Override
-            public void callbackCall() {
+            public void callbackCall(ErrorModel errorModel) {
                 Log.v("POSTED TO BEN", "POSTED MOMENT");
                 onMediaPosted();
             }

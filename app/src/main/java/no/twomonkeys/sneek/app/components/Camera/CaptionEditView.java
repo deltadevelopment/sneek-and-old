@@ -15,6 +15,7 @@ import com.facebook.drawee.view.SimpleDraweeView;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 
 /**
  * Created by simenlie on 19.05.16.
@@ -22,7 +23,7 @@ import no.twomonkeys.sneek.app.shared.SimpleCallback;
 public class CaptionEditView extends RelativeLayout {
 
     EditText editText;
-    SimpleCallback onCaptionDone;
+    SimpleCallback2 onCaptionDone;
 
     public CaptionEditView(Context context) {
         super(context);

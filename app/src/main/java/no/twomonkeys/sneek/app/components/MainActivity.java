@@ -54,9 +54,12 @@ import no.twomonkeys.sneek.app.components.menu.MenuFragment;
 import no.twomonkeys.sneek.app.components.story.StoryFragment;
 import no.twomonkeys.sneek.app.shared.Callback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
 import no.twomonkeys.sneek.app.shared.helpers.Videokit;
+import no.twomonkeys.sneek.app.shared.models.ErrorModel;
+import no.twomonkeys.sneek.app.shared.models.StalkModel;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
 import no.twomonkeys.sneek.app.shared.views.BoolCallback;
 import no.twomonkeys.sneek.app.shared.views.SneekVideoView;
@@ -136,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         initConfiguration();
+        Log.v(TAG,"token now is " + DataHelper.getAuthToken());
 
         setContentView(R.layout.activity_main);
 
@@ -157,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         //Object initialization
         menuFragment = (MenuFragment) fragmentManager.findFragmentById(R.id.menuFragment);
         cameraFragment = (CameraFragment) fragmentManager.findFragmentById(R.id.cameraFragment);
-        cameraFragment.onCancelClb = new SimpleCallback() {
+        cameraFragment.onCancelClb = new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 animateCameraOut();
@@ -211,13 +215,13 @@ public class MainActivity extends AppCompatActivity {
         };
 
         topBar = (TopBarFragment) fragmentManager.findFragmentById(R.id.topBarFragment);
-        topBar.onMoreClb = new SimpleCallback() {
+        topBar.onMoreClb = new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 animateIn();
             }
         };
-        topBar.onCameraClb = new SimpleCallback() {
+        topBar.onCameraClb = new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 animateCameraIn();
@@ -303,6 +307,19 @@ public class MainActivity extends AppCompatActivity {
         videoView.start();
 
         test();
+        StalkModel.fetchAll(new SimpleCallback() {
+            @Override
+            public void callbackCall(ErrorModel errorModel) {
+                if (errorModel == null) {
+                    Log.v(TAG,"Successfully retrieved stalkings");
+                }
+                else{
+                    Log.v(TAG,"Error retrieved stalkings");
+                }
+            }
+        });
+
+
     }
 
     public void loadVideo() {
@@ -420,7 +437,7 @@ public class MainActivity extends AppCompatActivity {
         shouldAnimate = true;
         animateLoader();
 
-        feedAdapter.updateData(new SimpleCallback() {
+        feedAdapter.updateData(new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 recyclerView.animate().translationY(0).setDuration(150);
@@ -480,7 +497,7 @@ public class MainActivity extends AppCompatActivity {
 
     public StoryFragment storyFragment() {
         storyFragment = (StoryFragment) fragmentManager.findFragmentById(R.id.storyFragment);
-        storyFragment.callback = new SimpleCallback() {
+        storyFragment.callback = new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 storyIsVisible = false;
@@ -830,16 +847,16 @@ public class MainActivity extends AppCompatActivity {
         final String yellow = "#ffff00";
         final String black = "#000000";
 
-        animateToColor(magenta, new SimpleCallback() {
+        animateToColor(magenta, new SimpleCallback2() {
             @Override
             public void callbackCall() {
-                animateToColor(yellow, new SimpleCallback() {
+                animateToColor(yellow, new SimpleCallback2() {
                     @Override
                     public void callbackCall() {
-                        animateToColor(black, new SimpleCallback() {
+                        animateToColor(black, new SimpleCallback2() {
                             @Override
                             public void callbackCall() {
-                                animateToColor(cyan, new SimpleCallback() {
+                                animateToColor(cyan, new SimpleCallback2() {
                                     @Override
                                     public void callbackCall() {
                                         animateLoader();
@@ -854,7 +871,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void animateToColor(String color, final SimpleCallback scb) {
+    public void animateToColor(String color, final SimpleCallback2 scb) {
 
         if (shouldAnimate) {
             ObjectAnimator anim = ObjectAnimator.ofInt(placeholderBtn, "colorFilter", Color.parseColor(color));

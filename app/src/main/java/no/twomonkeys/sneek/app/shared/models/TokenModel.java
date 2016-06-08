@@ -21,7 +21,7 @@ public class TokenModel extends CRUDModel {
     }
 
     void save(final SimpleCallback scb) {
-        NetworkHelper.sendRequest(NetworkHelper.userService.postGenerateToken(),
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().postGenerateToken(),
                 GenericContract.generate_upload_url(),
                 onDataReturned(),
                 scb);

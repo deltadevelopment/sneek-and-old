@@ -21,10 +21,22 @@ public class UserSession extends CRUDModel {
         if (map.get("user") != null) {
             userModel = new UserModel((Map) map.get("user"));
         }
-        auth_token = (String) map.get("auth_token");
-        created_at = (String) map.get("created_at");
-        updated_at = (String) map.get("updated_at");
-        user_id = integerFromObject(map.get("user_id"));
+        if (map.get("user_session") != null)
+        {
+            Map userSessionMap = (Map) map.get("user_session");
+            auth_token = (String) userSessionMap.get("auth_token");
+            //created_at = (String) userSessionMap.get("created_at");
+            //updated_at = (String) userSessionMap.get("updated_at");
+            user_id = integerFromObject(userSessionMap.get("user_id"));
+        }
+        else{
+
+            auth_token = (String) map.get("auth_token");
+            //created_at = (String) userSessionMap.get("created_at");
+            //updated_at = (String) userSessionMap.get("updated_at");
+            user_id = integerFromObject(map.get("user_id"));
+        }
+
     }
 
     public UserSession(Map map) {
@@ -44,7 +56,7 @@ public class UserSession extends CRUDModel {
     }
 
     public void save(SimpleCallback scb) {
-        NetworkHelper.sendRequest(NetworkHelper.userService.postLogin(asJSON()),
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().postLogin(asJSON()),
                 GenericContract.v1_post_login(),
                 onDataReturned(),
                 scb);
@@ -52,25 +64,36 @@ public class UserSession extends CRUDModel {
 
     public HashMap<String, HashMap> asJSON() {
         HashMap innerMap = new HashMap();
-
         String usernameEmail = "username";
         if (userModel.getUsername().contains("@")) {
             usernameEmail = "email";
         }
-
         innerMap.put("device_id", "NA");
-
         if (isTokenType) {
             innerMap.put("auth_token", "get_token");
         } else {
             innerMap.put("password", userModel.getPassword());
             innerMap.put(usernameEmail, userModel.getUsername());
         }
-
         HashMap<String, HashMap> map = new HashMap();
         map.put("user", innerMap);
 
         return map;
     }
 
+    public String getAuth_token() {
+        return auth_token;
+    }
+
+    public String getCreated_at() {
+        return created_at;
+    }
+
+    public String getUpdated_at() {
+        return updated_at;
+    }
+
+    public int getUser_id() {
+        return user_id;
+    }
 }

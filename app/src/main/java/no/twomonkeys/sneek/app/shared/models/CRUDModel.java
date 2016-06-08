@@ -30,5 +30,18 @@ public abstract class CRUDModel {
         return Integer.getInteger((String) o);
     }
 
+    public boolean booleanFromObject(Object o) {
+
+        if (o == null){
+            return false;
+        }
+        if (o instanceof Boolean){
+
+            return (boolean) o;
+        }
+
+        return Boolean.getBoolean((String)o);
+    }
+
     abstract void build(Map map);
 }

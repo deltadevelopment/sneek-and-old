@@ -54,6 +54,7 @@ import java.util.TimerTask;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.models.MediaModel;
@@ -77,7 +78,7 @@ public class CameraFragment extends Fragment {
     boolean previewIsRunning;//, flashIsOn, selfieIsOn;
     CameraEditView cameraEditView;
     Button backBtn, selfieBtn, flashBtn;
-    public SimpleCallback onCancelClb;
+    public SimpleCallback2 onCancelClb;
     public BoolCallback onLockClb;
     ProgressBar progressBar;
     boolean isLongPressing;
@@ -166,7 +167,7 @@ public class CameraFragment extends Fragment {
 
         cameraEditView = (CameraEditView) view.findViewById(R.id.cameraEditView);
         cameraEditView.setVisibility(View.INVISIBLE);
-        cameraEditView.onCancelEdit = new SimpleCallback() {
+        cameraEditView.onCancelEdit = new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 showButtons();
@@ -183,7 +184,7 @@ public class CameraFragment extends Fragment {
 
             }
         };
-        cameraEditView.onMediaPosted = new SimpleCallback() {
+        cameraEditView.onMediaPosted = new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 onLockClb.callbackCall(false);

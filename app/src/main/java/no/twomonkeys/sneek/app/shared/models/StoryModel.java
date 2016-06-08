@@ -30,11 +30,12 @@ public class StoryModel extends CRUDModel {
     private Rect frame;
     private Point cellSize;
     private Point bigCellSize;
-    public int id, user_id, moments_count;
+    public int id, user_id, moments_count, stalkers_count;
     public boolean is_following;
-    private String created_at, updated_at;
+    private String created_at, updated_at, stream_type, name;
     private ArrayList<MomentModel> moments;
     private UserModel userModel;
+
 
 
     public StoryModel(Map storyRaw) {
@@ -65,11 +66,14 @@ public class StoryModel extends CRUDModel {
         moments_count = integerFromObject(map.get("moments_count"));
         created_at = (String) map.get("created_at");
         updated_at = (String) map.get("updated_at");
-
+        name = (String) map.get("name");
+        stream_type = (String) map.get("stream_type");
+        stalkers_count = integerFromObject(map.get("stalkers_count"));
         if (map.get("user") != null) {
             userModel = new UserModel((Map)map.get("user"));
             user_id = userModel.getId();
             is_following = userModel.is_following();
+            Log.v("s","FOLLOWN NOW" + is_following);
         }
 
         if (map.get("moments") != null) {
@@ -101,7 +105,13 @@ public class StoryModel extends CRUDModel {
         return null;
     }
     public void fetch(final SimpleCallback scb) {
-        NetworkHelper.sendRequest(NetworkHelper.userService.getStory(user_id), GenericContract.get_story(), onDataReturned(), scb);
+        if (stream_type != null)
+        {
+            NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getStream(id), GenericContract.v1_get_stream(), onDataReturned(), scb);
+        }
+        else{
+            NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getStory(user_id), GenericContract.get_story(), onDataReturned(), scb);
+        }
     }
 
     //Setters
@@ -136,5 +146,13 @@ public class StoryModel extends CRUDModel {
 
     public Point getBigCellSize() {
         return bigCellSize;
+    }
+
+    public String getStream_type() {
+        return stream_type;
+    }
+
+    public String getName() {
+        return name;
     }
 }

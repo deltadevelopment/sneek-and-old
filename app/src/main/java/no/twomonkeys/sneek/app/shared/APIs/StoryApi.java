@@ -12,6 +12,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.Multipart;
@@ -30,6 +31,11 @@ public interface StoryApi {
     Call<ResponseModel> getStory(
             @Path("user_id") int userId
     );
+    @GET("stream/{stream_id}")
+    Call<ResponseModel> getStream(
+            @Path("stream_id") int streamId
+    );
+
 
     @GET("feed/{feed}")
     Call<ResponseModel> getFeed(
@@ -61,7 +67,41 @@ public interface StoryApi {
     @POST("user")
     Call<ResponseModel> postUser(@Body HashMap<String, HashMap> body);
 
+    @POST("following")
+    Call<ResponseModel> postStalkUser(@Body HashMap<String, HashMap> body);
+
     @POST("login")
     Call<ResponseModel> postLogin(@Body HashMap<String, HashMap> body);
 
+    @DELETE("user/{user_id}/following")
+    Call<ResponseModel> deleteStalkUser(
+            @Path("user_id") String user_id
+    );
+
+    @POST("user/{user_id}/block")
+    Call<ResponseModel> postUserBlock(
+            @Path("user_id") String user_id
+    );
+    @DELETE("user/{user_id}/block")
+    Call<ResponseModel> deleteUserBlock(
+            @Path("user_id") String user_id
+    );
+
+    @GET("user/blocked")
+    Call<ResponseModel> getBlockedUsers(
+    );
+
+    @GET("stalking")
+    Call<ResponseModel> getStalkings(
+    );
+
+    @POST("stalking/by_name/{stream_name}")
+    Call<ResponseModel> postStalkStream(
+            @Path("stream_name") String stream_name
+    );
+
+    @DELETE("stalking/{stream_id}")
+    Call<ResponseModel> deleteStalkStream(
+            @Path("stream_id") String stream_id
+    );
 }

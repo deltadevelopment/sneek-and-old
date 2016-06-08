@@ -55,6 +55,7 @@ import java.net.URLConnection;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.DateHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
@@ -90,13 +91,10 @@ public class MomentFragment extends Fragment {
     private boolean started;
 
     VideoHelper videoHelper;
-    TextView momentCaption;
+    TextView momentCaption, usernameTxt;
     CaptionView captionView;
     boolean hasLayedOut;
     TextView updatedTxt;
-    Button moreBtn;
-    MoreView moreView;
-    boolean moreIsShown;
 
 
     public MomentFragment() {
@@ -151,66 +149,13 @@ public class MomentFragment extends Fragment {
         captionView = (CaptionView) rootView.findViewById(R.id.captionView);
 
         updatedTxt = (TextView) rootView.findViewById(R.id.updatedTxt);
+        usernameTxt = (TextView) rootView.findViewById(R.id.usernameTxt);
 
-        moreView = (MoreView) rootView.findViewById(R.id.momentMoreView);
 
-        moreBtn = (Button) rootView.findViewById(R.id.momentMoreBtn);
-        moreBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (moreIsShown) {
-                    moreIsShown = false;
-                    moreView.animateOut();
-                } else {
-                    moreIsShown = true;
-                    moreView.animateIn();
-                }
-
-            }
-        });
-
-        layoutBtn();
         updateView();
 
 
         return rootView;
-    }
-
-    public void layoutBtn() {
-        moreBtn.setBackgroundColor(getResources().getColor(R.color.black));
-        moreBtn.setTextColor(getResources().getColor(R.color.white));
-
-        moreBtn.setTypeface(Typeface.create("HelveticaNeue", 0));
-
-        moreBtn.setText("MORE");
-        int margin = UIHelper.dpToPx(getContext(), 10);
-        int btnHeight = UIHelper.dpToPx(getContext(), 30);
-
-        moreBtn.setPadding(margin, 0, margin, 0);
-
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(20, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.height = btnHeight;
-        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        params.setMargins(0, margin, margin, margin);
-
-        Paint paint = new Paint();
-        Rect bounds = new Rect();
-
-        int text_height = 0;
-        int text_width = 0;
-
-        paint.setTypeface(moreBtn.getTypeface());// your preference here
-        paint.setTextSize(moreBtn.getTextSize());// have this the same as your text size
-
-        String text = moreBtn.getText().toString();
-
-        paint.getTextBounds(text, 0, text.length(), bounds);
-
-        text_height = bounds.height();
-        text_width = bounds.width() + (margin * 2) + 10;
-        params.width = text_width;
-        moreBtn.setLayoutParams(params);
     }
 
 
@@ -218,7 +163,7 @@ public class MomentFragment extends Fragment {
         if (momentModel != null && draweeView != null) {
 
             if (momentModel.media_type == 0) {
-                momentModel.loadPhoto(draweeView, new SimpleCallback() {
+                momentModel.loadPhoto(draweeView, new SimpleCallback2() {
                     @Override
                     public void callbackCall() {
                         loadingView.stopAnimation();
@@ -227,8 +172,8 @@ public class MomentFragment extends Fragment {
             } else {
                 loadVideo();
             }
-
             updateCaption();
+            usernameTxt.setText(momentModel.getUserModel().getUsername().toUpperCase());
             updatedTxt.setText(DateHelper.shortTimeSince(momentModel.getCreated_at()));
         }
     }
@@ -350,12 +295,16 @@ public class MomentFragment extends Fragment {
 
         videoHelper = new VideoHelper(videoView, momentModel, getActivity());
         videoHelper.loadVideo();
-
     }
 
     public void stopVideo() {
         if (videoView != null) {
             videoView.pause();
+
         }
+    }
+
+    public MomentModel getMomentModel() {
+        return momentModel;
     }
 }

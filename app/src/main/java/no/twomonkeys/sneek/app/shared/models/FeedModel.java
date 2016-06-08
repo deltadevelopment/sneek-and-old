@@ -65,7 +65,7 @@ public class FeedModel extends CRUDModel {
         for (Map storyRaw : storiesRaw) {
             StoryModel storyModel = new StoryModel(storyRaw);
             if (!hasExpired(storyModel)) {
-                if (!DataHelper.isBlocked(storyModel)) {
+                if (!DataHelper.isBlocked(storyModel.user_id)) {
                     for (StoryModel story : stories) {
                         if (story.id == storyModel.id) {
                             if (story.getMoments().size() != 0) {
@@ -82,8 +82,11 @@ public class FeedModel extends CRUDModel {
                     setFrameForStory(width, height, storyModel);
                     index++;
                 }
-                if (storyModel.getUserModel().getId() == AuthHelper.getUserId()) {
-                    deviceUserStory = storyModel;
+                if (storyModel.getUserModel() != null)
+                {
+                    if (storyModel.getUserModel().getId() == AuthHelper.getUserId()) {
+                        deviceUserStory = storyModel;
+                    }
                 }
             }
         }
@@ -98,9 +101,7 @@ public class FeedModel extends CRUDModel {
     }
 
     public void fetch(final SimpleCallback scb) {
-        String selectedFeed = DataHelper.currentFeed() == 0 ? "nearby" : "following";
-        Log.v("FEED", selectedFeed);
-        NetworkHelper.sendRequest(NetworkHelper.userService.getFeed(selectedFeed), GenericContract.get_feed(), onDataReturned(), scb);
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getFeed("stalking"), GenericContract.get_feed(), onDataReturned(), scb);
     }
 
 

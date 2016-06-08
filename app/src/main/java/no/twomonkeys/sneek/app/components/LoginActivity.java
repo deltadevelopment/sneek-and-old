@@ -2,6 +2,7 @@ package no.twomonkeys.sneek.app.components;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import java.util.regex.Pattern;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.KeyboardUtil;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.models.ErrorModel;
@@ -69,6 +71,7 @@ public class LoginActivity extends Activity {
     Button kissBtn;
     UserModel userModel;
     UserSession userSession;
+    LoadingView mainLoadingView;
 
     private enum LoginState {
         USERNAME, PASSWORD, AGE
@@ -79,7 +82,7 @@ public class LoginActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        DataHelper.setContext(this);
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
@@ -100,6 +103,10 @@ public class LoginActivity extends Activity {
         loadingView.removeBg();
         loadingView.setVisibility(View.INVISIBLE);
         loginBackBtn.setVisibility(View.INVISIBLE);
+
+        mainLoadingView = (LoadingView) findViewById(R.id.mainLoadingView);
+        mainLoadingView.removeBg();
+        mainLoadingView.setVisibility(View.INVISIBLE);
 
         ageScreen = (RelativeLayout) findViewById(R.id.ageScreen);
         ageScreen.setVisibility(View.INVISIBLE);
@@ -173,7 +180,14 @@ public class LoginActivity extends Activity {
                         break;
                     }
                     case PASSWORD: {
-                        goToAge();
+                        if (isRegistering) {
+                            goToAge();
+                        } else {
+                            Log.v(TAG, "logging in");
+                            password = usernameEditText.getText().toString();
+                            loginRegister();
+                        }
+
                         break;
                     }
                 }
@@ -185,11 +199,12 @@ public class LoginActivity extends Activity {
                 switch (loginState) {
                     case USERNAME: {
                         isRegistering = false;
-                        goToPassword();
+                        forward();
                         break;
                     }
                     case PASSWORD: {
-                        goToAge();
+                        //Login here
+
                         break;
                     }
                 }
@@ -210,17 +225,17 @@ public class LoginActivity extends Activity {
         usernameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                Log.v(TAG, "TExt before changed");
+                // Log.v(TAG, "TExt before changed");
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.v(TAG, "TExt changed");
+                // Log.v(TAG, "TExt changed");
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                Log.v(TAG, "TExt after changed");
+                //Log.v(TAG, "TExt after changed");
                 removeErrors();
                 checkButtonsEnable();
             }
@@ -273,7 +288,7 @@ public class LoginActivity extends Activity {
             //Try to login  here
             UserModel.exists(usernameEditText.getText().toString(), new SimpleCallback() {
                 @Override
-                public void callbackCall() {
+                public void callbackCall(ErrorModel errorModel) {
                     //Handle error here at some time
 
                 }
@@ -484,30 +499,71 @@ public class LoginActivity extends Activity {
     }
 
     public void loginRegister() {
+        mainLoadingView.setVisibility(View.VISIBLE);
+        mainLoadingView.startAnimate();
+
         userModel = new UserModel();
         userModel.setUsername(username);
         userModel.setPassword(password);
-        userModel.setYear_born(yearBorn());
 
         if (isRegistering) {
+            Log.v(TAG, "GOT HERE");
+            userModel.setYear_born(yearBorn());
             userModel.save(new SimpleCallback() {
                 @Override
-                public void callbackCall() {
-//Store here orsomething
+                public void callbackCall(ErrorModel errorModel) {
+                    onResponseRecieved(errorModel);
                 }
             });
         } else {
+            InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(usernameEditText.getWindowToken(), 0);
+            usernameEditText.clearFocus();
             userSession = new UserSession();
             userSession.setUserModel(userModel);
-
-
+            userSession.save(new SimpleCallback() {
+                @Override
+                public void callbackCall(ErrorModel errorModel) {
+                    onResponseRecieved(errorModel);
+                }
+            });
         }
-
-
     }
 
-    public void register() {
+    public void onResponseRecieved(ErrorModel errorModel) {
+        if (errorModel == null) {
+            if (isRegistering) {
+                Log.v("Storing token","Storing reg");
+                DataHelper.storeCredentials(userModel.getUserSession().getAuth_token(), userModel.getId());
 
+            } else {
+                Log.v("Storing token","Storing log");
+                DataHelper.storeCredentials(userSession.getAuth_token(), userSession.getUser_id());
+            }
+            showMain();
+        } else {
+            if (errorModel.errorForKey("password") != null) {
+                showError(errorModel.errorForKey("password"));
+            }
+        }
+    }
+
+    public void showError(String errorString) {
+        InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(usernameEditText, InputMethodManager.SHOW_IMPLICIT);
+        mainLoadingView.stopAnimation();
+        loginErrorTxt.setVisibility(View.VISIBLE);
+        loginErrorTxt.setText(errorString);
+    }
+
+    public void showMain() {
+        Intent getMainScreenIntent = new Intent(this, MainActivity.class);
+        final int result = 1;
+
+        getMainScreenIntent.putExtra("loginActivity", "MainActivity");
+        mainLoadingView.stopAnimation();
+        startActivity(getMainScreenIntent);
+        //startActivityForResult(getMainScreenIntent, result);
     }
 
 }

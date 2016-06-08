@@ -29,6 +29,7 @@ import org.w3c.dom.Text;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.models.MomentModel;
@@ -80,7 +81,15 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void updateTxt(StoryModel storyModel) {
-        String txt = storyModel.getUserModel().getUsername().toUpperCase();
+        String txt;
+        if (storyModel.getStream_type() != null)
+        {
+            txt = "#" + storyModel.getName().toUpperCase();
+        }
+        else{
+            txt = storyModel.getUserModel().getUsername().toUpperCase();
+        }
+
         Rect storyFrame = DataHelper.currentFeed() == 0 ? storyModel.getFrame() : storyModel.getBigFrame();
 
         //storyImageView.setX(storyFrame.left);
@@ -99,7 +108,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
         loadingView.startAnimate();
         MomentModel momentModel = storyModel.getCurrentMoment();
 
-        momentModel.loadPhoto(draweeView, new SimpleCallback() {
+        momentModel.loadPhoto(draweeView, new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 loadingView.stopAnimation();

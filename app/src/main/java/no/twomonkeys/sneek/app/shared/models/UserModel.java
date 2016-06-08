@@ -22,6 +22,7 @@ public class UserModel extends CRUDModel {
     private int year_born;
     private UserSession userSession;
     private StoryModel storyModel;
+    private BlockModel blockModel;
 
     public void setUsername(String username) {
         this.username = username;
@@ -54,14 +55,20 @@ public class UserModel extends CRUDModel {
     public void build(Map map) {
         id = integerFromObject(map.get("id"));
         username = (String) map.get("username");
-
+        is_following = booleanFromObject(map.get("is_following"));
+        Log.v("FOLLOWING IS ","foll" + map.get("is_following") + " " + is_following);
         if (map.get("user_session") != null) {
+            Log.v("USer session build","yeah build");
             userSession = new UserSession((Map) map.get("user_session"));
         }
         if (map.get("story") != null) {
             storyModel = new StoryModel((Map) map.get("story"));
             storyModel.setUser_id(id);
         }
+    }
+
+    public UserSession getUserSession() {
+        return userSession;
     }
 
     public interface UserExistsCallback {
@@ -90,7 +97,7 @@ public class UserModel extends CRUDModel {
             }
         };
 
-        NetworkHelper.sendRequest(NetworkHelper.userService.getUsernameExists(username), GenericContract.v1_get_user_username_exists(), callback, scb);
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getUsernameExists(username), GenericContract.v1_get_user_username_exists(), callback, scb);
     }
 
     public void save(SimpleCallback scb) {
@@ -101,9 +108,24 @@ public class UserModel extends CRUDModel {
         HashMap<String, HashMap> map = new HashMap();
         map.put("user", innerMap);
 
-        NetworkHelper.sendRequest(NetworkHelper.userService.postUser(map),
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().postUser(map),
                 GenericContract.v1_post_user(),
                 onDataReturned(),
                 scb);
+    }
+
+    public void setIs_following(boolean is_following) {
+        this.is_following = is_following;
+    }
+
+    public BlockModel getBlockModel() {
+        if (blockModel == null){
+            blockModel = new BlockModel(id);
+        }
+        return blockModel;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

@@ -19,8 +19,8 @@ public class MenuFragment extends android.support.v4.app.Fragment {
 
     private MoreButton viewsBtn;
     private MoreButton stalkersbtn;
-    private MoreButton randomsBtn;
-    private MoreButton stalkingBtn;
+    private MoreButton stalkBtn;
+    private MoreButton egotripBtn;
     private MoreButton fmlBtn;
     private boolean isShowing;
     public Callback callback;
@@ -39,27 +39,26 @@ public class MenuFragment extends android.support.v4.app.Fragment {
         stalkersbtn.updateTxt("9 STALKERS");
         stalkersbtn.disableBtn();
 
-        randomsBtn = new MoreButton(getActivity());
-        randomsBtn.updateTxt("RANDOMS");
+        stalkBtn = new MoreButton(getActivity());
+        stalkBtn.updateTxt("STALK");
+        stalkBtn.setTextColor(getResources().getColor(R.color.yellow));
 
-        stalkingBtn = new MoreButton(getActivity());
-        stalkingBtn.updateTxt("STALKING");
+        egotripBtn = new MoreButton(getActivity());
+        egotripBtn.updateTxt("EGOTRIP");
 
         fmlBtn = new MoreButton(getActivity());
         fmlBtn.updateTxt("FML");
 
 
-        randomsBtn.setOnClickListener(new View.OnClickListener() {
+        stalkBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                changeFeed(0);
                 callback.callbackCall(0);
             }
         });
-        stalkingBtn.setOnClickListener(new View.OnClickListener() {
+        egotripBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                changeFeed(1);
                 callback.callbackCall(1);
             }
         });
@@ -71,12 +70,11 @@ public class MenuFragment extends android.support.v4.app.Fragment {
         });
 
 
-        swapColors();
 
-        rl.addView(viewsBtn);
+      //  rl.addView(viewsBtn);
         rl.addView(stalkersbtn);
-        rl.addView(randomsBtn);
-        rl.addView(stalkingBtn);
+        rl.addView(stalkBtn);
+        rl.addView(egotripBtn);
         rl.addView(fmlBtn);
         ColorDrawable cd = new ColorDrawable(0xFF000000);
 //255
@@ -90,8 +88,8 @@ public class MenuFragment extends android.support.v4.app.Fragment {
     public void dragRight(float x) {
         viewsBtn.moveRight(x);
         stalkersbtn.moveRight(x);
-        randomsBtn.moveRight(x);
-        stalkingBtn.moveRight(x);
+        stalkBtn.moveRight(x);
+        egotripBtn.moveRight(x);
         fmlBtn.moveRight(x);
 
         /*
@@ -125,22 +123,6 @@ public class MenuFragment extends android.support.v4.app.Fragment {
         return false;
     }
 
-    public void changeFeed(int row) {
-        //Store the current here
-        DataHelper.storeCurrentFeed(row);
-        swapColors();
-    }
-
-    public void swapColors() {
-        if (isSelected(0)) {
-            randomsBtn.setTextColor(getResources().getColor(R.color.cyan));
-            stalkingBtn.setTextColor(getResources().getColor(R.color.white));
-        } else {
-            randomsBtn.setTextColor(getResources().getColor(R.color.white));
-            stalkingBtn.setTextColor(getResources().getColor(R.color.cyan));
-        }
-    }
-
     public boolean isSelected(int row) {
         int storedRow = DataHelper.currentFeed();
         if (storedRow == row) {
@@ -153,8 +135,8 @@ public class MenuFragment extends android.support.v4.app.Fragment {
     public void startMove(float x) {
         viewsBtn.startMove(x);
         stalkersbtn.startMove(x);
-        randomsBtn.startMove(x);
-        stalkingBtn.startMove(x);
+        stalkBtn.startMove(x);
+        egotripBtn.startMove(x);
         fmlBtn.startMove(x);
     }
 
@@ -162,8 +144,8 @@ public class MenuFragment extends android.support.v4.app.Fragment {
         isShowing = true;
         viewsBtn.animateIn();
         stalkersbtn.animateIn();
-        randomsBtn.animateIn();
-        stalkingBtn.animateIn();
+        stalkBtn.animateIn();
+        egotripBtn.animateIn();
         fmlBtn.animateIn();
     }
 
@@ -177,8 +159,8 @@ public class MenuFragment extends android.support.v4.app.Fragment {
         isShowing = false;
         viewsBtn.animateOut();
         stalkersbtn.animateOut();
-        randomsBtn.animateOut();
-        stalkingBtn.animateOut();
+        stalkBtn.animateOut();
+        egotripBtn.animateOut();
         fmlBtn.animateOut();
     }
 

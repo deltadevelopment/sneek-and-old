@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.GenericContract;
 import no.twomonkeys.sneek.app.shared.helpers.NetworkHelper;
 import no.twomonkeys.sneek.app.shared.helpers.ProgressRequestBody;
@@ -33,6 +34,7 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
 
     private String created_at, media_key, media_url, thumbnail_url, caption;
     private File media, thumbnail;
+    private UserModel userModel;
 
     public interface MomentCallbacks {
         void onProgressUpdate(int percentage);
@@ -64,6 +66,9 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
         media_type = integerFromObject(map.get("media_type"));
         caption_position = integerFromObject(map.get("caption_position"));
         story_id = integerFromObject(map.get("story_id"));
+        if (map.get("user") != null){
+            userModel = new UserModel((Map)map.get("user"));
+        }
     }
 
     public String getMedia_key() {
@@ -87,7 +92,7 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
     }
 
 
-    public void loadPhoto(SimpleDraweeView sdv, final SimpleCallback scb) {
+    public void loadPhoto(SimpleDraweeView sdv, final SimpleCallback2 scb) {
         Log.v("Called", "called");
         Uri uri;
         if (media_type == 0) {
@@ -223,7 +228,7 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
         //Generate upload url
         tokenModel.save(new SimpleCallback() {
             @Override
-            public void callbackCall() {
+            public void callbackCall(ErrorModel errorModel) {
                 //Start uploading the actual media
                 uploadMedia(scb);
             }
@@ -236,7 +241,7 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
         Log.v("TOKENOMDEOl", "tokenModel " + tokenModel.getMedia_url());
         upload(media, tokenModel.getMedia_url(), new SimpleCallback() {
             @Override
-            public void callbackCall() {
+            public void callbackCall(ErrorModel errorModel) {
                 //Upload was successful
                 //Store to BEN
                 putMoment(scb);
@@ -252,7 +257,7 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
             isUploadingThumbnail = true;
             upload(thumbnail, tokenModel.getThumbnail_url(), new SimpleCallback() {
                 @Override
-                public void callbackCall() {
+                public void callbackCall(ErrorModel errorModel) {
                     //done uploading thumbnail
                     save(scb);
                 }
@@ -275,7 +280,7 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
         HashMap<String, HashMap> map = new HashMap();
         map.put("moment", innerMap);
 
-        NetworkHelper.sendRequest(NetworkHelper.userService.postMoment(map),
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().postMoment(map),
                 GenericContract.generic_parse(),
                 onDataReturned(),
                 scb);
@@ -312,5 +317,9 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
     @Override
     public void onFinish() {
 
+    }
+
+    public UserModel getUserModel() {
+        return userModel;
     }
 }

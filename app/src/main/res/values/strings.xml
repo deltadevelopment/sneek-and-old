@@ -6,8 +6,9 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="red">#FF0000</color>
-    <color name="cyan">#42ffff</color>
+    <color name="cyan">#00FFFF</color>
     <color name="yellow">#FFFF00</color>
+    <color name="magenta">#FF00FF</color>
     <color name="transparent">#00000000</color>
     <color name="gray">#8c807d</color>
 
@@ -15,6 +16,10 @@
     <string name="validation_username_length">Must be between 4 and 15 characters</string>
     <string name="validation_username_alphanumeric">Only numbers and letters from A-Z</string>
     <string name="validation_username_exists">Already taken</string>
+    <string name="validation_password_incorrect">Wrong password</string>
 
-
+    <string name="block_user_h">Blocking user</string>
+    <string name="block_user_b">By blocking this user, the user will not be able to see any of your moments and you will not be able see any of his. This will take effect next time you refresh the feed. Are you sure you want to block this user?</string>
+    <string name="cancel_txt">Cancel</string>
+    <string name="block_txt">Block</string>
 </resources>

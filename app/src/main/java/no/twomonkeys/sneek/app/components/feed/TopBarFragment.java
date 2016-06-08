@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.Callback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 
 /**
  * Created by simenlie on 10.05.16.
@@ -22,8 +23,8 @@ public class TopBarFragment extends android.support.v4.app.Fragment {
     private final int startTopbarMargin = 10;
     public Button moreBtn;
     private Button cameraBtn;
-    public SimpleCallback onMoreClb;
-    public SimpleCallback onCameraClb;
+    public SimpleCallback2 onMoreClb;
+    public SimpleCallback2 onCameraClb;
 
     @Nullable
     @Override

@@ -19,8 +19,10 @@ import java.util.ArrayList;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
+import no.twomonkeys.sneek.app.shared.models.ErrorModel;
 import no.twomonkeys.sneek.app.shared.models.FeedModel;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
 
@@ -37,10 +39,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         feedModel = new FeedModel(context);
     }
 
-    public void updateData(final SimpleCallback scb) {
+    public void updateData(final SimpleCallback2 scb) {
         feedModel.fetch(new SimpleCallback() {
             @Override
-            public void callbackCall() {
+            public void callbackCall(ErrorModel errorModel) {
                 notifyDataSetChanged();
                 Log.v("ADAPTER", " size " + feedModel.getStories().size());
                 scb.callbackCall();

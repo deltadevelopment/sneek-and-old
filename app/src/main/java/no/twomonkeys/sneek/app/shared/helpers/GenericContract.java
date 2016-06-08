@@ -1,7 +1,9 @@
 package no.twomonkeys.sneek.app.shared.helpers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by simenlie on 12.05.16.
@@ -18,11 +20,31 @@ public class GenericContract {
         };
     }
 
+    public static Contract v1_get_stream() {
+        return new Contract() {
+            @Override
+            public Map generic_contract(Map map) {
+                return (Map) map.get("stream");
+            }
+        };
+    }
+
     public static Contract get_feed() {
         return new Contract() {
             @Override
             public Map generic_contract(Map map) {
-                return map;
+                ArrayList streamsRaw = (ArrayList) map.get("streams");
+                ArrayList storiesRaw = (ArrayList) map.get("stories");
+
+                for (Object stream : streamsRaw) {
+                    storiesRaw.add(stream);
+                }
+
+                HashMap<String, Object> returnMap = new HashMap<>();
+                returnMap.put("stories", storiesRaw);
+
+
+                return returnMap;
             }
         };
     }

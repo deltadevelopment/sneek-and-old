@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.MainActivity;
+import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 
 /**
  * Created by simenlie on 01.06.16.
@@ -22,14 +23,36 @@ public class StartActivity extends Activity {
         Intent activityThaCalled = getIntent();
         String previousAcitvity = activityThaCalled.getExtras().getString("callingActivity");
         */
-        openActivity();
+        DataHelper.setStartActivity(this);
+        DataHelper.setContext(this);
+        if (DataHelper.getAuthToken() == null) {
+            openLoginActivity();
+        } else {
+            openMainActivity();
+        }
+
     }
 
-    private void openActivity() {
+    public void logout() {
+        DataHelper.storeCredentials(null, 0);
+        openLoginActivity();
+    }
+
+    private void openLoginActivity() {
         Intent getMainScreenIntent = new Intent(this, LoginActivity.class);
         final int result = 1;
 
         getMainScreenIntent.putExtra("callingActivity", "StartActivity");
+
+        startActivity(getMainScreenIntent);
+        //startActivityForResult(getMainScreenIntent, result);
+    }
+
+    private void openMainActivity() {
+        Intent getMainScreenIntent = new Intent(this, MainActivity.class);
+        final int result = 1;
+
+        getMainScreenIntent.putExtra("callingActivity", "MainActivity");
 
         startActivity(getMainScreenIntent);
         //startActivityForResult(getMainScreenIntent, result);

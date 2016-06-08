@@ -2,9 +2,13 @@ package no.twomonkeys.sneek.app.components.story;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,6 +20,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -23,9 +28,19 @@ import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.MainActivity;
 import no.twomonkeys.sneek.app.components.menu.MoreButton;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
+import no.twomonkeys.sneek.app.shared.helpers.AuthHelper;
+import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
+import no.twomonkeys.sneek.app.shared.helpers.DateHelper;
 import no.twomonkeys.sneek.app.shared.helpers.DirectionHelper;
+import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
+import no.twomonkeys.sneek.app.shared.models.ErrorModel;
+import no.twomonkeys.sneek.app.shared.models.MomentModel;
+import no.twomonkeys.sneek.app.shared.models.StalkModel;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
+import no.twomonkeys.sneek.app.shared.models.UserModel;
 import no.twomonkeys.sneek.app.shared.views.IndicatorView;
+import no.twomonkeys.sneek.app.shared.views.MoreView;
 
 /**
  * Created by simenlie on 13.05.16.
@@ -38,7 +53,7 @@ public class StoryFragment extends android.support.v4.app.Fragment {
     boolean touchActionMoveStatus, lastScrolledUp, isClick;
     float scrollDy;
     float startY;
-    public SimpleCallback callback;
+    public SimpleCallback2 callback;
     public StoryModel storyModel;
     public int previousPageIndex;
     // When requested, this adapter returns a DemoObjectFragment,
@@ -46,6 +61,10 @@ public class StoryFragment extends android.support.v4.app.Fragment {
     MomentAdapter mDemoCollectionPagerAdapter;
     ViewPager mViewPager;
     IndicatorView indicatorView;
+    Button moreBtn;
+    MoreView moreView;
+    MoreViewModel viewModel;
+    MomentFragment currentMomentFragment;
 
     @Nullable
     @Override
@@ -69,8 +88,97 @@ public class StoryFragment extends android.support.v4.app.Fragment {
             }
         });
 
+        moreView = (MoreView) view.findViewById(R.id.momentMoreView);
+        moreView.setAlpha(0.0f);
+        moreView.onStalkUser = new SimpleCallback2() {
+            @Override
+            public void callbackCall() {
+                if (viewModel.isStalkingUser) {
+                    unstalkUser();
+                } else {
+                    stalkUser();
+                }
+            }
+        };
+        moreView.onBlock = new SimpleCallback2() {
+            @Override
+            public void callbackCall() {
+                showBlockAlert();
+            }
+        };
+
+        moreView.onStalkStream = new SimpleCallback2() {
+            @Override
+            public void callbackCall() {
+                stalkStream();
+            }
+        };
+
+        moreView.onHidden = new SimpleCallback2() {
+            @Override
+            public void callbackCall() {
+                moreBtn.setVisibility(View.VISIBLE);
+                currentMomentFragment.usernameTxt.setVisibility(View.VISIBLE);
+                currentMomentFragment.updatedTxt.setVisibility(View.VISIBLE);
+                indicatorView.setVisibility(View.VISIBLE);
+            }
+        };
+
+        moreBtn = (Button) view.findViewById(R.id.momentMoreBtn);
+        moreBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (moreView.getAlpha() == 1.0f) {
+                    moreView.animateOut();
+                } else {
+                    showMore();
+                }
+
+            }
+        });
+
+        layoutBtn();
+        viewModel = new MoreViewModel();
+        moreView.setViewModel(viewModel);
 
         return view;
+    }
+
+    public void layoutBtn() {
+        moreBtn.setBackgroundColor(getResources().getColor(R.color.black));
+        moreBtn.setTextColor(getResources().getColor(R.color.white));
+
+        moreBtn.setTypeface(Typeface.create("HelveticaNeue", 0));
+
+        moreBtn.setText("MORE");
+        int margin = UIHelper.dpToPx(getContext(), 10);
+        int btnHeight = UIHelper.dpToPx(getContext(), 30);
+
+        moreBtn.setPadding(margin, 0, margin, 0);
+
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(20, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.height = btnHeight;
+        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        params.setMargins(0, margin, margin, margin);
+
+        Paint paint = new Paint();
+        Rect bounds = new Rect();
+
+        int text_height = 0;
+        int text_width = 0;
+
+        paint.setTypeface(moreBtn.getTypeface());// your preference here
+        paint.setTextSize(moreBtn.getTextSize());// have this the same as your text size
+
+        String text = moreBtn.getText().toString();
+
+        paint.getTextBounds(text, 0, text.length(), bounds);
+
+        text_height = bounds.height();
+        text_width = bounds.width() + (margin * 2) + 10;
+        params.width = text_width;
+        moreBtn.setLayoutParams(params);
     }
 
 
@@ -140,8 +248,6 @@ public class StoryFragment extends android.support.v4.app.Fragment {
                     } else {
                         mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1, false);
                     }
-
-
                 } else {
                     if (direction == DirectionHelper.DOWN || direction == DirectionHelper.UP) {
                         if (lastScrolledUp) {
@@ -169,7 +275,7 @@ public class StoryFragment extends android.support.v4.app.Fragment {
     }
 
 
-    public void animateIn(final SimpleCallback scb) {
+    public void animateIn(final SimpleCallback2 scb) {
         ObjectAnimator anim = ObjectAnimator.ofFloat(view, "translationY", 0);
         anim.addListener(new Animator.AnimatorListener() {
             @Override
@@ -181,7 +287,7 @@ public class StoryFragment extends android.support.v4.app.Fragment {
             public void onAnimationEnd(Animator animation) {
                 // Do something.
                 mViewPager.setVisibility(View.VISIBLE);
-                if (scb != null){
+                if (scb != null) {
                     scb.callbackCall();
                 }
             }
@@ -237,14 +343,13 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         // ViewPager and its adapters use support library
         // fragments, so use getSupportFragmentManager.
         initialize();
-        animateIn(new SimpleCallback() {
+        animateIn(new SimpleCallback2() {
             @Override
             public void callbackCall() {
                 storyModel = story;
-                Log.v("USER", "user : " + story.getUserModel().getUsername());
                 storyModel.fetch(new SimpleCallback() {
                     @Override
-                    public void callbackCall() {
+                    public void callbackCall(ErrorModel errorModel) {
                         mDemoCollectionPagerAdapter.setMoments(storyModel.getMoments());
                         updateProgressWithPercent();
                         // mDemoCollectionPagerAdapter.getItem(mViewPager.getCurrentItem());
@@ -254,23 +359,21 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         });
     }
 
-    public void updateProgressWithPercent()
-    {
+
+    public void updateProgressWithPercent() {
         float pageCount = storyModel.getMoments().size();
         //Log.v("PAGE","page " + mViewPager.getCurrentItem() + " " + pageCount);
         float currentPage = (mViewPager.getCurrentItem() + 1);
-        float percent = (currentPage/pageCount)*100;
+        float percent = (currentPage / pageCount) * 100;
         indicatorView.updateProgress(percent);
     }
 
-    public void update(float v, int currentItem)
-    {
+    public void update(float v, int currentItem) {
         float pageCount = storyModel.getMoments().size();
         //Log.v("PAGE","page " + mViewPager.getCurrentItem() + " " + pageCount);
         float currentPage = currentItem + v;
-        if (currentPage <= mViewPager.getCurrentItem() + 2)
-        {
-            float percent = (currentPage/pageCount)*100;
+        if (currentPage <= mViewPager.getCurrentItem() + 2) {
+            float percent = (currentPage / pageCount) * 100;
 
 
             indicatorView.updateProgress(percent);
@@ -313,5 +416,173 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         });
     }
 
+    public void showMore() {
+        currentMomentFragment = mDemoCollectionPagerAdapter.getFragment(mViewPager.getCurrentItem());
+        MomentModel currentMoment = currentMomentFragment.getMomentModel();
 
+        moreBtn.setVisibility(View.INVISIBLE);
+        currentMomentFragment.usernameTxt.setVisibility(View.INVISIBLE);
+        currentMomentFragment.updatedTxt.setVisibility(View.INVISIBLE);
+        indicatorView.setVisibility(View.INVISIBLE);
+
+        // 0 = user
+        // 1 = user_device
+        // 2 = stream with device user
+        // 3 = stream without device user
+
+        if (storyModel.getStream_type() != null) {
+            //is stream
+            viewModel.streamTitle = storyModel.getName();
+            viewModel.username = currentMoment.getUserModel().getUsername();
+            viewModel.stalkersCountTxt = storyModel.stalkers_count;
+            viewModel.isBlocked = DataHelper.isBlocked(currentMoment.getUserModel().getId());
+            viewModel.isStalkingStream = DataHelper.hasTag(storyModel.getName());
+            if (currentMoment.getUserModel().getId() == DataHelper.getUserId()) {
+                //Is user moment
+                moreView.setup(2);
+            } else {
+                moreView.setup(3);
+                viewModel.isStalkingUser = currentMoment.getUserModel().is_following();
+            }
+        } else {
+            //Is not stream
+            Log.v("username is", "user is " + storyModel.getUserModel().getUsername());
+            viewModel.username = storyModel.getUserModel().getUsername();
+            viewModel.isBlocked = DataHelper.isBlocked(storyModel.getUserModel().getId());
+            if (storyModel.getUserModel().getId() == DataHelper.getUserId()) {
+                //Is user story
+                moreView.setup(1);
+            } else {
+                viewModel.isStalkingUser = storyModel.is_following;
+                moreView.setup(0);
+            }
+        }
+        moreView.updateView();
+        moreView.animateIn();
+        moreView.animate().alpha(1.0f);
+    }
+
+    public class MoreViewModel {
+        public String username, streamTitle, reportTxt;
+        public int stalkersCountTxt;
+        public boolean isStalkingStream, isStalkingUser, isBlocked;
+
+        public MoreViewModel() {
+
+        }
+    }
+
+    private StalkModel obtainStalkUserModel() {
+        StalkModel stalkModel = new StalkModel();
+        stalkModel.setUser_id(AuthHelper.getUserId());
+        if (storyModel.getStream_type() != null) {
+            stalkModel.setFollowee_id(currentMomentFragment.getMomentModel().getUserModel().getId());
+        } else {
+            stalkModel.setFollowee_id(storyModel.user_id);
+        }
+        return stalkModel;
+    }
+
+    private void stalkUser() {
+        StalkModel stalkModel = obtainStalkUserModel();
+        viewModel.isStalkingUser = true;
+        moreView.updateView();
+        stalkModel.saveUser(new SimpleCallback() {
+            @Override
+            public void callbackCall(ErrorModel errorModel) {
+                if (errorModel == null) {
+                    storyModel.is_following = true;
+                    UserModel userModel = currentMomentFragment.getMomentModel().getUserModel();
+                    if (userModel != null) {
+                        userModel.setIs_following(true);
+                    }
+                } else {
+                    Log.v("Storyfragment", "FAILED TO STALK USER");
+                }
+            }
+        });
+    }
+
+    private void unstalkUser() {
+        StalkModel stalkModel = obtainStalkUserModel();
+        viewModel.isStalkingUser = false;
+        moreView.updateView();
+        stalkModel.deleteUser(new SimpleCallback() {
+            @Override
+            public void callbackCall(ErrorModel errorModel) {
+                if (errorModel != null) {
+                    storyModel.is_following = false;
+                    UserModel userModel = currentMomentFragment.getMomentModel().getUserModel();
+                    if (userModel != null) {
+                        userModel.setIs_following(false);
+                    }
+                } else {
+                    Log.v("Storyfragment", "FAILED TO STALK USER");
+                }
+            }
+        });
+    }
+
+    private void stalkStream() {
+        final StalkModel stalkModel = new StalkModel();
+        stalkModel.setTag_name(storyModel.getName());
+        final String tagId = DataHelper.tagId(storyModel.getName());
+        if (tagId != null) {
+            stalkModel.setStream_id(Integer.parseInt(tagId));
+            viewModel.isStalkingStream = false;
+            stalkModel.deleteStream(new SimpleCallback() {
+                @Override
+                public void callbackCall(ErrorModel errorModel) {
+                    DataHelper.removeTagStream(Integer.parseInt(tagId));
+                    viewModel.stalkersCountTxt -= 1;
+                    moreView.updateView();
+
+                }
+            });
+        } else {
+            viewModel.isStalkingStream = true;
+            stalkModel.saveStream(new SimpleCallback() {
+                @Override
+                public void callbackCall(ErrorModel errorModel) {
+                    if (errorModel == null) {
+                        DataHelper.storeTagStream(storyModel.id, storyModel.getName());
+                        viewModel.stalkersCountTxt += 1;
+                        moreView.updateView();
+                    }
+                }
+            });
+        }
+    }
+
+    private void showBlockAlert() {
+        final UserModel userModel = new UserModel();
+        userModel.setId(storyModel.user_id == 0 ? currentMomentFragment.getMomentModel().getUserModel().getId() : storyModel.user_id);
+        new AlertDialog.Builder(getContext())
+                .setTitle(R.string.block_user_h)
+                .setMessage(R.string.block_user_b)
+                .setPositiveButton(R.string.block_txt, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+
+                        userModel.getBlockModel().save(new SimpleCallback() {
+                            @Override
+                            public void callbackCall(ErrorModel errorModel) {
+                                if (errorModel == null) {
+                                    viewModel.isBlocked = DataHelper.isBlocked(userModel.getId());
+                                    moreView.updateView();
+                                }
+                            }
+                        });
+
+
+                    }
+                })
+                .setNegativeButton(R.string.cancel_txt, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
 }
