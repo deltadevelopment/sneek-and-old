@@ -18,6 +18,7 @@
         android:lines="2"
         android:maxLines="2"
         android:padding="5dp"
+        android:textColor="@color/white"
         android:hint="One year later"
         android:inputType="textMultiLine"
         android:background="@android:color/transparent"/>

@@ -30,6 +30,7 @@
         android:layout_marginBottom="10dp"
         android:layout_marginRight="10dp"
         android:text="MORE"
+        style="?android:attr/borderlessButtonStyle"
         android:padding="5dp"
         android:id="@+id/momentMoreBtn"/>
 

@@ -1,29 +1,50 @@
 package no.twomonkeys.sneek.app.shared.models;
 
+import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.facebook.cache.common.CacheKey;
+import com.facebook.cache.common.SimpleCacheKey;
+import com.facebook.common.executors.CallerThreadExecutor;
 import com.facebook.common.logging.FLog;
+import com.facebook.common.references.CloseableReference;
+import com.facebook.datasource.BaseDataSubscriber;
+import com.facebook.datasource.DataSource;
+import com.facebook.datasource.DataSubscriber;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.BaseControllerListener;
 import com.facebook.drawee.controller.ControllerListener;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.cache.DefaultCacheKeyFactory;
+import com.facebook.imagepipeline.common.Priority;
+import com.facebook.imagepipeline.core.ImagePipeline;
+import com.facebook.imagepipeline.core.ImagePipelineFactory;
+import com.facebook.imagepipeline.datasource.BaseBitmapDataSubscriber;
+import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.image.QualityInfo;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
+import no.twomonkeys.sneek.app.shared.MapCallback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback2;
+import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.GenericContract;
 import no.twomonkeys.sneek.app.shared.helpers.NetworkHelper;
 import no.twomonkeys.sneek.app.shared.helpers.ProgressRequestBody;
+import retrofit2.http.Url;
 
 /**
  * Created by simenlie on 12.05.16.
@@ -35,6 +56,7 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
     private String created_at, media_key, media_url, thumbnail_url, caption;
     private File media, thumbnail;
     private UserModel userModel;
+    private MomentFlagModel momentFlagModel;
 
     public interface MomentCallbacks {
         void onProgressUpdate(int percentage);
@@ -66,8 +88,8 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
         media_type = integerFromObject(map.get("media_type"));
         caption_position = integerFromObject(map.get("caption_position"));
         story_id = integerFromObject(map.get("story_id"));
-        if (map.get("user") != null){
-            userModel = new UserModel((Map)map.get("user"));
+        if (map.get("user") != null) {
+            userModel = new UserModel((Map) map.get("user"));
         }
     }
 
@@ -94,6 +116,8 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
 
     public void loadPhoto(SimpleDraweeView sdv, final SimpleCallback2 scb) {
         Log.v("Called", "called");
+        DataHelper.addCacheHelp(media_key, media_url);
+
         Uri uri;
         if (media_type == 0) {
             uri = Uri.parse(media_url);
@@ -101,6 +125,9 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
             uri = Uri.parse(thumbnail_url);
         }
 
+       // sdv.setImageURI(uri);
+       // isIndisk(uri);
+       Log.v("IS CACHED?","disk " + isDownloaded(uri));
         ControllerListener controllerListener = new BaseControllerListener<ImageInfo>() {
             @Override
             public void onFinalImageSet(
@@ -137,6 +164,7 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
 
         Log.v("URI IS", "uri " + uri);
 
+
         DraweeController controller = Fresco.newDraweeControllerBuilder()
                 .setUri(uri)
                 .setTapToRetryEnabled(true)
@@ -144,6 +172,49 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
                 .setControllerListener(controllerListener)
                 .build();
         sdv.setController(controller);
+
+    }
+
+    private boolean isDownloaded(Uri loadUri) {
+        if (loadUri == null) {
+            return false;
+        }
+        ImageRequest imageRequest = ImageRequest.fromUri(loadUri);
+        CacheKey cacheKey = DefaultCacheKeyFactory.getInstance()
+                .getEncodedCacheKey(imageRequest);
+
+        Log.v("Cache key","key is " + cacheKey.toString() + " : " + media_key);
+        SimpleCacheKey simpleCacheKey = new SimpleCacheKey(media_key);
+        return ImagePipelineFactory.getInstance()
+                .getMainDiskStorageCache().hasKey(simpleCacheKey);
+    }
+
+    public void isIndisk(Uri uri) {
+        ImagePipeline imagePipeline = Fresco.getImagePipeline();
+        DataSource<Boolean> inDiskCacheSource = imagePipeline.isInDiskCache(uri);
+        DataSubscriber<Boolean> subscriber = new BaseDataSubscriber<Boolean>() {
+            @Override
+            protected void onNewResultImpl(DataSource<Boolean> dataSource) {
+                if (!dataSource.isFinished()) {
+                    return;
+                }
+                boolean isInCache = dataSource.getResult();
+                Log.v("success", "is in cache" + isInCache);
+                // your code here
+            }
+
+            @Override
+            protected void onFailureImpl(DataSource<Boolean> dataSource) {
+                Log.v("failure", " failure");
+            }
+        };
+        Executor executor = new Executor() {
+            @Override
+            public void execute(Runnable command) {
+                Log.v("executor ", "executor done ");
+            }
+        };
+        inDiskCacheSource.subscribe(subscriber, executor);
     }
 
 
@@ -286,6 +357,25 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
                 scb);
     }
 
+    public void delete(SimpleCallback scb) {
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().deleteMoment(id + ""),
+                GenericContract.generic_parse(),
+                onDataReturned(),
+                scb);
+    }
+
+    public static void deleteAll(SimpleCallback scb) {
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().deleteMoments(),
+                GenericContract.generic_parse(),
+                new MapCallback() {
+                    @Override
+                    public void callbackCall(Map map) {
+
+                    }
+                },
+                scb);
+    }
+
     public void setMedia(File media) {
         this.media = media;
     }
@@ -306,7 +396,7 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
             overAllProgress = percentage;
         }
         Log.v("Percent", "perc " + percentage);
-        progress.onProgressUpdate((int)overAllProgress);
+        progress.onProgressUpdate((int) overAllProgress);
     }
 
     @Override
@@ -321,5 +411,12 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
 
     public UserModel getUserModel() {
         return userModel;
+    }
+
+    public MomentFlagModel getMomentFlagModel() {
+        if (momentFlagModel == null){
+            momentFlagModel = new MomentFlagModel(id);
+        }
+        return momentFlagModel;
     }
 }

@@ -73,7 +73,7 @@ public class MediaHelper {
         File file = getOutputMediaFile();
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bos);
             byte[] bitmapdata = bos.toByteArray();
 
             //write the bytes in file
@@ -235,6 +235,10 @@ public class MediaHelper {
     }
 
     public static void processImage(Bitmap image, int filterNumber, Context context) {
+        int targetWidth = 640; // your arbitrary fixed limit
+        int targetHeight = (int) (image.getHeight() * targetWidth / (double) image.getWidth()); // casts to avoid truncating
+        Bitmap smaller = Bitmap.createScaledBitmap(image, targetWidth, targetHeight, false);
+
         GPUImage mGPUImage = new GPUImage(context);
 
         switch (filterNumber) {
@@ -251,8 +255,17 @@ public class MediaHelper {
                 break;
             }
         }
-        mGPUImage.setImage(image);
-        imageProcessed.onProcessed(bitmapToFile(mGPUImage.getBitmapWithFilterApplied()));
+        mGPUImage.setImage(smaller);
+        Bitmap uncompressed = mGPUImage.getBitmapWithFilterApplied();
+        File file = bitmapToFile(uncompressed);
+        // Get length of file in bytes
+        long fileSizeInBytes = file.length();
+// Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+        long fileSizeInKB = fileSizeInBytes / 1024;
+// Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+        long fileSizeInMB = fileSizeInKB / 1024;
+        Log.v("file size is", "file sise " + fileSizeInMB + " KB " + fileSizeInKB +  " B " + fileSizeInBytes  );
+        imageProcessed.onProcessed(file);
     }
 
     public static void processVideo(File inputFile, boolean flip, int filterNumber, Context context) {

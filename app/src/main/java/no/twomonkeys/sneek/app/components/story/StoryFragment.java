@@ -16,13 +16,16 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.MainActivity;
@@ -107,6 +110,19 @@ public class StoryFragment extends android.support.v4.app.Fragment {
             }
         };
 
+        moreView.onDelete = new SimpleCallback2() {
+            @Override
+            public void callbackCall() {
+                deleteMoment();
+            }
+        };
+        moreView.onDeleteAll = new SimpleCallback2() {
+            @Override
+            public void callbackCall() {
+                deleteAllMoments();
+            }
+        };
+
         moreView.onStalkStream = new SimpleCallback2() {
             @Override
             public void callbackCall() {
@@ -121,6 +137,14 @@ public class StoryFragment extends android.support.v4.app.Fragment {
                 currentMomentFragment.usernameTxt.setVisibility(View.VISIBLE);
                 currentMomentFragment.updatedTxt.setVisibility(View.VISIBLE);
                 indicatorView.setVisibility(View.VISIBLE);
+                moreView.setVisibility(View.INVISIBLE);
+            }
+        };
+
+        moreView.onReport = new SimpleCallback2() {
+            @Override
+            public void callbackCall() {
+                report();
             }
         };
 
@@ -140,6 +164,7 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         layoutBtn();
         viewModel = new MoreViewModel();
         moreView.setViewModel(viewModel);
+        moreView.setVisibility(View.INVISIBLE);
 
         return view;
     }
@@ -417,6 +442,7 @@ public class StoryFragment extends android.support.v4.app.Fragment {
     }
 
     public void showMore() {
+        moreView.setVisibility(View.VISIBLE);
         currentMomentFragment = mDemoCollectionPagerAdapter.getFragment(mViewPager.getCurrentItem());
         MomentModel currentMoment = currentMomentFragment.getMomentModel();
 
@@ -429,11 +455,12 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         // 1 = user_device
         // 2 = stream with device user
         // 3 = stream without device user
-
+        viewModel.momentId = currentMoment.id;
         if (storyModel.getStream_type() != null) {
             //is stream
             viewModel.streamTitle = storyModel.getName();
             viewModel.username = currentMoment.getUserModel().getUsername();
+            viewModel.userId = currentMoment.getUserModel().getId();
             viewModel.stalkersCountTxt = storyModel.stalkers_count;
             viewModel.isBlocked = DataHelper.isBlocked(currentMoment.getUserModel().getId());
             viewModel.isStalkingStream = DataHelper.hasTag(storyModel.getName());
@@ -447,6 +474,7 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         } else {
             //Is not stream
             Log.v("username is", "user is " + storyModel.getUserModel().getUsername());
+            viewModel.userId = storyModel.getUserModel().getId();
             viewModel.username = storyModel.getUserModel().getUsername();
             viewModel.isBlocked = DataHelper.isBlocked(storyModel.getUserModel().getId());
             if (storyModel.getUserModel().getId() == DataHelper.getUserId()) {
@@ -460,16 +488,6 @@ public class StoryFragment extends android.support.v4.app.Fragment {
         moreView.updateView();
         moreView.animateIn();
         moreView.animate().alpha(1.0f);
-    }
-
-    public class MoreViewModel {
-        public String username, streamTitle, reportTxt;
-        public int stalkersCountTxt;
-        public boolean isStalkingStream, isStalkingUser, isBlocked;
-
-        public MoreViewModel() {
-
-        }
     }
 
     private StalkModel obtainStalkUserModel() {
@@ -584,5 +602,106 @@ public class StoryFragment extends android.support.v4.app.Fragment {
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
+    }
+
+    public void deleteMoment() {
+        new AlertDialog.Builder(getContext())
+                .setTitle(R.string.delete_moment_title)
+                .setMessage(R.string.delete_moment_msg)
+                .setPositiveButton(R.string.ok_txt, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        deleteMomentAndUpdateUI();
+                    }
+                })
+                .setNegativeButton(R.string.cancel_txt, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    public void deleteMomentBEN(MomentModel momentModel) {
+        currentMomentFragment.getMomentModel().delete(new SimpleCallback() {
+            @Override
+            public void callbackCall(ErrorModel errorModel) {
+
+            }
+        });
+    }
+
+    public void deleteMomentAndUpdateUI() {
+        moreView.animateOut();
+        currentMomentFragment.stopVideo();
+        if (storyModel.getMoments().size() == 1) {
+            animateOut();
+            deleteMomentBEN(currentMomentFragment.getMomentModel());
+            storyModel.popMoment(currentMomentFragment.getMomentModel());
+        } else {
+            int pageToGoTo = 0;
+            if (mViewPager.getCurrentItem() == storyModel.getMoments().size() - 1) {
+                //Direction reverse
+                pageToGoTo = -1;
+            } else {
+                //Direction forward
+                pageToGoTo = 0;
+            }
+            MomentModel oldMoment = currentMomentFragment.getMomentModel();
+            deleteMomentBEN(oldMoment);
+            storyModel.popMoment(oldMoment);
+            mDemoCollectionPagerAdapter.setMoments(storyModel.getMoments());
+
+            Log.v("current index ", "index " + mViewPager.getCurrentItem());
+            int currentIndex = mViewPager.getCurrentItem() == 0 ? 0 : mViewPager.getCurrentItem() + pageToGoTo;
+            currentMomentFragment = mDemoCollectionPagerAdapter.getFragment(currentIndex);
+
+            mViewPager.setCurrentItem(currentIndex, true);
+            //Go to new page. and then update progress
+            //load video
+
+        }
+    }
+
+    public void deleteAllMoments() {
+        new AlertDialog.Builder(getContext())
+                .setTitle(R.string.delete_all_moment_title)
+                .setMessage(R.string.delete_all_moment_msg)
+                .setPositiveButton(R.string.ok_txt, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        MomentModel.deleteAll(new SimpleCallback() {
+                            @Override
+                            public void callbackCall(ErrorModel errorModel) {
+                                moreView.animateOut();
+                                animateOut();
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton(R.string.cancel_txt, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+
+    public void report() {
+
+    }
+
+    public class MoreViewModel {
+        public String username, streamTitle, reportTxt;
+        public int stalkersCountTxt;
+        public boolean isStalkingStream, isStalkingUser, isBlocked;
+        public int userId, momentId;
+
+        public MoreViewModel() {
+
+        }
     }
 }

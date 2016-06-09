@@ -2,11 +2,13 @@ package no.twomonkeys.sneek.app.components;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.gesture.GestureLibrary;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
+import android.os.Environment;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
@@ -32,7 +34,11 @@ import android.widget.ImageButton;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
 
+import com.facebook.cache.common.SimpleCacheKey;
+import com.facebook.cache.disk.DiskCacheConfig;
+import com.facebook.common.util.ByteConstants;
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.imagepipeline.core.ImagePipelineConfig;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
@@ -55,6 +61,7 @@ import no.twomonkeys.sneek.app.components.story.StoryFragment;
 import no.twomonkeys.sneek.app.shared.Callback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback2;
+import no.twomonkeys.sneek.app.shared.helpers.CacheKeyFactory2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
 import no.twomonkeys.sneek.app.shared.helpers.Videokit;
@@ -318,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
+        mUnexpectedTerminationHelper.init();
 
     }
 
@@ -387,7 +394,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initConfiguration() {
-        Fresco.initialize(this);
+        CacheKeyFactory2 cacheKeyFactory2 = new CacheKeyFactory2();
+
+        Context context = getApplicationContext();
+        DiskCacheConfig diskCacheConfig = DiskCacheConfig.newBuilder(context)//
+                .setBaseDirectoryPath(new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),getPackageName()))
+                .setBaseDirectoryName("image")
+                .setMaxCacheSize(100 * ByteConstants.MB)
+                .setMaxCacheSizeOnLowDiskSpace(10 * ByteConstants.MB)
+                .setMaxCacheSizeOnVeryLowDiskSpace(5 * ByteConstants.MB)
+                .setVersion(1)
+                .build();
+        ImagePipelineConfig imagePipelineConfig = ImagePipelineConfig.newBuilder(context)//
+                .setMainDiskCacheConfig(diskCacheConfig)
+                .setCacheKeyFactory(cacheKeyFactory2)
+                .build();
+
+        Fresco.initialize(context,imagePipelineConfig);
+        //Fresco.initialize(this);
+
         DataHelper.setContext(this);
         DataHelper.setMa(this);
         //Orientation
@@ -909,6 +934,32 @@ public class MainActivity extends AppCompatActivity {
             ColorDrawable cd = new ColorDrawable(0xFF000000);
             cd.setAlpha(menuFragment.percentageColor());
             overlayShadow.setBackgroundDrawable(cd);
+        }
+    }
+
+    private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
+    private class UnexpectedTerminationHelper {
+        private Thread mThread;
+        private Thread.UncaughtExceptionHandler mOldUncaughtExceptionHandler = null;
+        private Thread.UncaughtExceptionHandler mUncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable ex) { // gets called on the same (main) thread
+                cameraFragment.releaseCamera(); // TODO: write appropriate code here
+                if(mOldUncaughtExceptionHandler != null) {
+                    // it displays the "force close" dialog
+                    mOldUncaughtExceptionHandler.uncaughtException(thread, ex);
+                }
+            }
+        };
+        void init() {
+            mThread = Thread.currentThread();
+            mOldUncaughtExceptionHandler = mThread.getUncaughtExceptionHandler();
+            mThread.setUncaughtExceptionHandler(mUncaughtExceptionHandler);
+        }
+        void fini() {
+            mThread.setUncaughtExceptionHandler(mOldUncaughtExceptionHandler);
+            mOldUncaughtExceptionHandler = null;
+            mThread = null;
         }
     }
 

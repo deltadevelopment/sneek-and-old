@@ -23,6 +23,7 @@ public class UserModel extends CRUDModel {
     private UserSession userSession;
     private StoryModel storyModel;
     private BlockModel blockModel;
+    private UserFlagModel userFlagModel;
 
     public void setUsername(String username) {
         this.username = username;
@@ -127,5 +128,12 @@ public class UserModel extends CRUDModel {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public UserFlagModel getUserFlagModel() {
+        if (userFlagModel == null){
+            userFlagModel = new UserFlagModel(id);
+        }
+        return userFlagModel;
     }
 }

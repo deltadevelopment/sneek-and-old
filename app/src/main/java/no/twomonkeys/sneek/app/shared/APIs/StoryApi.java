@@ -104,4 +104,22 @@ public interface StoryApi {
     Call<ResponseModel> deleteStalkStream(
             @Path("stream_id") String stream_id
     );
+
+    @DELETE("moment/{moment_id}")
+    Call<ResponseModel> deleteMoment(
+            @Path("moment_id") String moment_id
+    );
+
+    @DELETE("story/moments")
+    Call<ResponseModel> deleteMoments(
+    );
+
+    @POST("user/{user_id}/flag")
+    Call<ResponseModel> postFlagUser(
+            @Path("user_id") String user_id
+    );
+    @POST("moment/{moment_id}/flag")
+    Call<ResponseModel> postFlagMoment(
+            @Path("moment_id") String moment_id
+    );
 }

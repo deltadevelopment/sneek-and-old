@@ -138,6 +138,7 @@ public class MomentFragment extends Fragment {
 
         RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(200, RelativeLayout.LayoutParams.WRAP_CONTENT);
         //params2.width = width;
+        params2.setMargins(0,UIHelper.dpToPx(getContext(), 30),0,0);
         params2.height = UIHelper.dpToPx(getContext(), 30);
         momentCaption = (TextView) rootView.findViewById(R.id.momentCaption);
         momentCaption.setBackgroundColor(getContext().getResources().getColor(R.color.white));

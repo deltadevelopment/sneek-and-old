@@ -114,6 +114,11 @@ public class StoryModel extends CRUDModel {
         }
     }
 
+    public void popMoment(MomentModel momentModel)
+    {
+        moments.remove(momentModel);
+    }
+
     //Setters
 
     public void setBigCellSize(Point bigCellSize) {

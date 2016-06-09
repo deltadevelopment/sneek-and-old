@@ -22,6 +22,7 @@ public class DataHelper {
     private static Context context;
     public static MainActivity ma;
     public static StartActivity startActivity;
+    public static Map<String, String> imageCacheMapHelper;
 
     public static int currentFeed() {
         SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
@@ -232,23 +233,20 @@ public class DataHelper {
 
     public static boolean hasTag(String tagname) {
         Map<String, String> map = tagStreams();
-        for(String tagNameSorted : map.values())
-        {
-            if (tagNameSorted.equals(tagname)){
+        for (String tagNameSorted : map.values()) {
+            if (tagNameSorted.equals(tagname)) {
                 return true;
             }
         }
         return false;
     }
 
-    public static String tagId(String tagName)
-    {
+    public static String tagId(String tagName) {
         Map<String, String> map = tagStreams();
-        for (String tagKey : map.keySet()){
+        for (String tagKey : map.keySet()) {
             String tagNameSorted = map.get(tagKey);
-            if(tagNameSorted != null)
-            {
-                if (tagNameSorted.equals(tagName)){
+            if (tagNameSorted != null) {
+                if (tagNameSorted.equals(tagName)) {
                     return tagKey;
                 }
             }
@@ -256,8 +254,7 @@ public class DataHelper {
         return null;
     }
 
-    public static void removeTagStream(int streamId)
-    {
+    public static void removeTagStream(int streamId) {
         String stringStreamId = streamId + "";
         HashMap<String, String> tagStreams = tagStreams();
         ArrayList<String> tagStreamIdsArray = tagStreamIdsArray();
@@ -267,5 +264,16 @@ public class DataHelper {
 
         storeTagStreamIds(tagStreamIdsArray);
         storeTagStreams(tagStreams);
+    }
+
+    public static void addCacheHelp(String mediaKey, String url) {
+        if (imageCacheMapHelper == null) {
+            imageCacheMapHelper = new HashMap<>();
+        }
+        imageCacheMapHelper.put(url, mediaKey);
+    }
+    public static Map<String, String>getImageCacheMapHelper()
+    {
+        return imageCacheMapHelper;
     }
 }

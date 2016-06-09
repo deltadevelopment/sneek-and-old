@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.ViewGroup;
 
@@ -18,9 +19,6 @@ import no.twomonkeys.sneek.app.shared.models.StoryModel;
  * Created by simenlie on 13.05.16.
  */
 public class MomentAdapter extends FragmentStatePagerAdapter {
-
-    // Since this is an object collection, use a FragmentStatePagerAdapter,
-// and NOT a FragmentPagerAdapter.
     ArrayList<MomentModel> moments;
     HashMap<Integer, MomentFragment> momentPages;
 
@@ -39,7 +37,8 @@ public class MomentAdapter extends FragmentStatePagerAdapter {
     @Override
     public int getItemPosition(Object object) {
         Log.v("POs", "page ");
-        return super.getItemPosition(object);
+        //return super.getItemPosition(object);
+        return PagerAdapter.POSITION_NONE;
     }
 
     @Override
@@ -85,4 +84,8 @@ public class MomentAdapter extends FragmentStatePagerAdapter {
     public CharSequence getPageTitle(int position) {
         return "OBJECT " + (position + 1);
     }
+
+
+
+
 }

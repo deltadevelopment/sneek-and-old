@@ -22,4 +22,16 @@
     <string name="block_user_b">By blocking this user, the user will not be able to see any of your moments and you will not be able see any of his. This will take effect next time you refresh the feed. Are you sure you want to block this user?</string>
     <string name="cancel_txt">Cancel</string>
     <string name="block_txt">Block</string>
+
+    <string name="ok_txt">Ok</string>
+    <string name="delete_moment_title">Delete moment</string>
+    <string name="delete_moment_msg">Are you sure you want to delete the moment?</string>
+    <string name="delete_all_moment_title">Delete moments</string>
+    <string name="delete_all_moment_msg">Are you sure you want to delete all the moments?</string>
+
+    <string name="report_user_h">Reporting user</string>
+    <string name="report_user_b">By reporting this user, you are saying that this user violates the terms of service. Are you sure you want to report this user?</string>
+    <string name="report_moment_h">Reporting moment</string>
+    <string name="report_moment_b">By reporting this moment, you are saying that this moment does not comply with the community guidelines. Are you sure you want to report this moment?</string>
+
 </resources>

@@ -34,7 +34,7 @@ import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 public class MoreView extends RelativeLayout {
 
     Button stalkButton;
-    Button reportButton;
+    public Button reportButton;
     Button deleteAllButton;
     Button deleteButton;
     Button stalkStreamBtn;
@@ -50,6 +50,7 @@ public class MoreView extends RelativeLayout {
     StoryFragment.MoreViewModel viewModel;
     public SimpleCallback2 onStalkUser, onStalkStream, onBlock, onReport, onDelete, onDeleteAll, onHidden;
     Button backBtn;
+    ReportView reportView;
 
     public MoreView(Context context) {
         super(context);
@@ -87,12 +88,9 @@ public class MoreView extends RelativeLayout {
         // stalkButton.setText("STALK");
 
         reportButton = (Button) findViewById(R.id.reportBtn);
-        reportButton.setText("REPORT / BLOCK");
 
         deleteAllButton = (Button) findViewById(R.id.deleteAllBtn);
-        deleteAllButton.setText("DELETE ALL");
         deleteButton = (Button) findViewById(R.id.deleteBtn);
-        deleteButton.setText("DELETE");
 
         blockBtn = (Button) findViewById(R.id.blockBtn);
         backBtn = (Button) findViewById(R.id.backBtn);
@@ -108,16 +106,19 @@ public class MoreView extends RelativeLayout {
         usernameTitle = (TextView) findViewById(R.id.usernameTitle);
         stalkersTxt = (TextView) findViewById(R.id.stalkersTxt);
 
+        reportView = (ReportView) findViewById(R.id.reportViewMore);
+        reportView.setVisibility(INVISIBLE);
+
         deleteAllButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                onDeleteAll.callbackCall();
             }
         });
         deleteButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                onDelete.callbackCall();
             }
         });
         blockBtn.setOnClickListener(new OnClickListener() {
@@ -146,20 +147,19 @@ public class MoreView extends RelativeLayout {
             }
         });
 
-        //stalkButton.setVisibility(INVISIBLE);
-        //reportButton.setVisibility(INVISIBLE);
-
-        deleteAllButton.setY(100);
+        reportButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportView.setVisibility(VISIBLE);
+                reportView.momentId = viewModel.momentId;
+                reportView.userId = viewModel.userId;
+                //onReport.callbackCall();
+            }
+        });
 
         int screenHeight = UIHelper.screenHeight(getContext()) / 2;
         int screenWidth = UIHelper.screenWidth(getContext());
-        //deleteButton.setY(screenHeight + (screenHeight / 2));
-        //  deleteAllButton.setY(screenHeight + (screenHeight / 6));
-        //  startX = deleteButton.getX();
-        //deleteButton.setX(screenWidth);
-        // deleteAllButton.setX(screenWidth);
-        // applyUIToButton(deleteAllButton);
-        //applyUIToButton(deleteButton);
+
 
         bg = (FrameLayout) findViewById(R.id.moreBg);
         bg.setOnTouchListener(new OnTouchListener() {
@@ -359,17 +359,11 @@ public class MoreView extends RelativeLayout {
     public void animateIn() {
         bg.setVisibility(VISIBLE);
         bg.animate().alpha(0.7f).setDuration(150);
-        deleteAllButton.animate().translationX(startX).setDuration(150);
-
-
-        //deleteButton.animate().translationX(startX).setDuration(150);
     }
 
     public void animateOut() {
-        //bg.animate().alpha(0.0f).setDuration(150);
         int screenWidth = UIHelper.screenWidth(getContext());
-        deleteAllButton.animate().translationX(screenWidth).setDuration(150);
-        //deleteButton.animate().translationX(screenWidth).setDuration(150);
+
 
         ObjectAnimator anim = ObjectAnimator.ofFloat(bg, "alpha", 0.0f);
         anim.addListener(new Animator.AnimatorListener() {

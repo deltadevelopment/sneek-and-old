@@ -141,4 +141,11 @@
 
     </LinearLayout>
 
+    <no.twomonkeys.sneek.app.shared.views.ReportView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/reportViewMore">
+
+    </no.twomonkeys.sneek.app.shared.views.ReportView>
+
 </RelativeLayout>
