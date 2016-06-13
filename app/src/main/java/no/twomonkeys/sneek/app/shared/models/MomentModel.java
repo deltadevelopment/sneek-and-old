@@ -116,12 +116,14 @@ public class MomentModel extends CRUDModel implements ProgressRequestBody.Upload
 
     public void loadPhoto(SimpleDraweeView sdv, final SimpleCallback2 scb) {
         Log.v("Called", "called");
-        DataHelper.addCacheHelp(media_key, media_url);
+
 
         Uri uri;
         if (media_type == 0) {
+            DataHelper.addCacheHelp(media_key, media_url);
             uri = Uri.parse(media_url);
         } else {
+            DataHelper.addCacheHelp(media_key, thumbnail_url);
             uri = Uri.parse(thumbnail_url);
         }
 

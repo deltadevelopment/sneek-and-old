@@ -25,6 +25,10 @@ public class UserModel extends CRUDModel {
     private BlockModel blockModel;
     private UserFlagModel userFlagModel;
 
+    public interface UserModelCallback{
+        void callbackCall(UserModel userModel);
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -135,5 +139,17 @@ public class UserModel extends CRUDModel {
             userFlagModel = new UserFlagModel(id);
         }
         return userFlagModel;
+    }
+
+
+    public static void fetch(String username, final UserModelCallback umc ,SimpleCallback scb)
+    {
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getUserByUsername(username), GenericContract.v1_get_user_by_username(), new MapCallback() {
+            @Override
+            public void callbackCall(Map map) {
+                UserModel userModel = new UserModel(map);
+                umc.callbackCall(userModel);
+            }
+        }, scb);
     }
 }

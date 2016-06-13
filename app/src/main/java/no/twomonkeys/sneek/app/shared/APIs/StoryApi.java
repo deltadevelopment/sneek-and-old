@@ -122,4 +122,13 @@ public interface StoryApi {
     Call<ResponseModel> postFlagMoment(
             @Path("moment_id") String moment_id
     );
+
+    @GET("stream/by_name/{tag_name}")
+    Call<ResponseModel> getStreamByTag(
+            @Path("tag_name") String tagName
+    );
+    @GET("user/by_username/{username}")
+    Call<ResponseModel> getUserByUsername(
+                    @Path("username") String username
+            );
 }

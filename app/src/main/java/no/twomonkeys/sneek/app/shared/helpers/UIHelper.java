@@ -1,5 +1,7 @@
 package no.twomonkeys.sneek.app.shared.helpers;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Point;
@@ -16,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import no.twomonkeys.sneek.R;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 
 /**
  * Created by simenlie on 10.05.16.
@@ -129,6 +132,32 @@ public class UIHelper {
         text_width = bounds.width() + (margin * 2) + 10;
         params.width = text_width;
         btn.setLayoutParams(params);
+    }
+
+    public static void animate(ObjectAnimator objectAnimator, int duration, final SimpleCallback2 scb)
+    {
+
+        objectAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                scb.callbackCall();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        objectAnimator.setDuration(duration).start();
     }
 
 }

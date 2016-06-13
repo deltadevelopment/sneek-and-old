@@ -57,12 +57,14 @@ import no.twomonkeys.sneek.app.components.Camera.CameraFragment;
 import no.twomonkeys.sneek.app.components.feed.FeedAdapter;
 import no.twomonkeys.sneek.app.components.feed.TopBarFragment;
 import no.twomonkeys.sneek.app.components.menu.MenuFragment;
+import no.twomonkeys.sneek.app.components.stalk.StalkController;
 import no.twomonkeys.sneek.app.components.story.StoryFragment;
 import no.twomonkeys.sneek.app.shared.Callback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.CacheKeyFactory2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
+import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
 import no.twomonkeys.sneek.app.shared.helpers.Videokit;
 import no.twomonkeys.sneek.app.shared.models.ErrorModel;
@@ -118,12 +120,12 @@ public class MainActivity extends AppCompatActivity {
     FragmentManager fragmentManager;
     boolean canSingleTap;
     SneekVideoView videoView;
-    View loadView;
     private MediaController mediaControls;
     private MediaPlayer mediaPlayer;
     private int mPlayerPosition;
     VideoHelper videoHelper;
     RelativeLayout layout;
+    StalkController stalkController;
 
 
     //New method
@@ -146,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         initConfiguration();
-        Log.v(TAG,"token now is " + DataHelper.getAuthToken());
+        Log.v(TAG, "token now is " + DataHelper.getAuthToken());
 
         setContentView(R.layout.activity_main);
 
@@ -204,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 lockMode = bool;
             }
         };
+
         final MainActivity self = this;
         cameraFragment.videoDone = new CameraFragment.VideoDoneCallback() {
             @Override
@@ -246,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
                 animateOut();
                 switch (row) {
                     case 0: {
-                        refreshItems();
+                        showStalkScreen();
                         break;
                     }
                     case 1: {
@@ -263,6 +266,15 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) layout.findViewById(R.id.recycleView);
         feedAdapter = new FeedAdapter(this);
         recyclerView.setAdapter(feedAdapter);
+
+        stalkController = (StalkController) findViewById(R.id.stalkController);
+        stalkController.enableKeyboard(this);
+        stalkController.onLockClb =  new BoolCallback() {
+            @Override
+            public void callbackCall(boolean bool) {
+                lockMode = bool;
+            }
+        };
 
         canScroll = false;
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2) {
@@ -297,10 +309,9 @@ public class MainActivity extends AppCompatActivity {
 
         final File f = new File("/storage/emulated/0/Pictures/MyCameraApp/VID_20160524_130304.mp4");
 
-        loadView = (View) findViewById(R.id.loadView2);
         videoView = (SneekVideoView) findViewById(R.id.videoSneekVideoView2);
 
-        loadView.setVisibility(View.INVISIBLE);
+
         videoView.setVisibility(View.INVISIBLE);
 
         DisplayMetrics dm = new DisplayMetrics();
@@ -318,10 +329,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void callbackCall(ErrorModel errorModel) {
                 if (errorModel == null) {
-                    Log.v(TAG,"Successfully retrieved stalkings");
-                }
-                else{
-                    Log.v(TAG,"Error retrieved stalkings");
+                    Log.v(TAG, "Successfully retrieved stalkings");
+                } else {
+                    Log.v(TAG, "Error retrieved stalkings");
                 }
             }
         });
@@ -347,12 +357,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 Log.v("Got here", "hello there");
-                mPlayerPosition = videoView.getCurrentPosition();
-                //videoView.setVideoPath(temp.getAbsolutePath());
-                // videoView.setVideoURI(uri);
-                videoView.resume();
-                videoView.requestFocus();
-                //mediaPlayer.seekTo(mPlayerPosition);
+                try {
+                    mPlayerPosition = videoView.getCurrentPosition();
+                    //videoView.setVideoPath(temp.getAbsolutePath());
+                    // videoView.setVideoURI(uri);
+                    videoView.resume();
+                    videoView.requestFocus();
+                    //mediaPlayer.seekTo(mPlayerPosition);
+                } catch (Exception e) {
+
+                }
+
                 return true;
             }
         });
@@ -373,6 +388,10 @@ public class MainActivity extends AppCompatActivity {
         videoHelper = new VideoHelper(videoView, null, this);
         videoHelper.loadVideo();
 
+    }
+
+    public void showStalkScreen() {
+        stalkController.animateIn();
     }
 
     @Override
@@ -398,7 +417,7 @@ public class MainActivity extends AppCompatActivity {
 
         Context context = getApplicationContext();
         DiskCacheConfig diskCacheConfig = DiskCacheConfig.newBuilder(context)//
-                .setBaseDirectoryPath(new File(Environment.getExternalStorageDirectory().getAbsoluteFile(),getPackageName()))
+                .setBaseDirectoryPath(new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), getPackageName()))
                 .setBaseDirectoryName("image")
                 .setMaxCacheSize(100 * ByteConstants.MB)
                 .setMaxCacheSizeOnLowDiskSpace(10 * ByteConstants.MB)
@@ -410,7 +429,7 @@ public class MainActivity extends AppCompatActivity {
                 .setCacheKeyFactory(cacheKeyFactory2)
                 .build();
 
-        Fresco.initialize(context,imagePipelineConfig);
+        Fresco.initialize(context, imagePipelineConfig);
         //Fresco.initialize(this);
 
         DataHelper.setContext(this);
@@ -938,6 +957,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
+
     private class UnexpectedTerminationHelper {
         private Thread mThread;
         private Thread.UncaughtExceptionHandler mOldUncaughtExceptionHandler = null;
@@ -945,17 +965,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void uncaughtException(Thread thread, Throwable ex) { // gets called on the same (main) thread
                 cameraFragment.releaseCamera(); // TODO: write appropriate code here
-                if(mOldUncaughtExceptionHandler != null) {
+                if (mOldUncaughtExceptionHandler != null) {
                     // it displays the "force close" dialog
                     mOldUncaughtExceptionHandler.uncaughtException(thread, ex);
                 }
             }
         };
+
         void init() {
             mThread = Thread.currentThread();
             mOldUncaughtExceptionHandler = mThread.getUncaughtExceptionHandler();
             mThread.setUncaughtExceptionHandler(mUncaughtExceptionHandler);
         }
+
         void fini() {
             mThread.setUncaughtExceptionHandler(mOldUncaughtExceptionHandler);
             mOldUncaughtExceptionHandler = null;

@@ -71,14 +71,27 @@ public class LoadingView extends RelativeLayout {
         bg.setVisibility(INVISIBLE);
     }
 
+    public void blackTheme()
+    {
+        imageView.setColorFilter(Color.parseColor("#000000"));
+    }
+
     public void startAnimate() {
+        imageView.setAnimation(null);
+        setVisibility(VISIBLE);
         shouldAnimate = true;
         animateToAlpha(0.5f);
+    }
+
+    public boolean isAnimating()
+    {
+        return shouldAnimate;
     }
 
     public void animateToAlpha(final float alpha) {
         if (shouldAnimate) {
             ObjectAnimator anim = ObjectAnimator.ofFloat(imageView, "alpha", alpha);
+
             anim.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {
@@ -109,7 +122,7 @@ public class LoadingView extends RelativeLayout {
 
     public void stopAnimation() {
         shouldAnimate = false;
-        setVisibility(INVISIBLE);
+        setVisibility(GONE);
     }
 
 }

@@ -75,6 +75,7 @@ import no.twomonkeys.sneek.app.shared.views.SneekVideoView;
 // object in our collection.
 public class MomentFragment extends Fragment {
     public static final String ARG_OBJECT = "object";
+    private static final String TAG = "MomentFragment";
     private static SimpleDraweeView draweeView;
     private MomentModel momentModel;
     private LoadingView loadingView;
@@ -259,7 +260,6 @@ public class MomentFragment extends Fragment {
         videoView.setVisibility(View.VISIBLE);
         if (mediaControls == null) {
             mediaControls = new MediaController(getContext());
-
         }
         // videoView.setMediaController(mediaControls);
         Uri uri = Uri.parse(momentModel.getMedia_url());
@@ -273,7 +273,10 @@ public class MomentFragment extends Fragment {
                 mPlayerPosition = videoView.getCurrentPosition();
                 //videoView.setVideoPath(temp.getAbsolutePath());
                 // videoView.setVideoURI(uri);
-                videoView.resume();
+                if (isVisible){
+                    videoView.resume();
+                }
+
                 videoView.requestFocus();
                 //mediaPlayer.seekTo(mPlayerPosition);
                 return true;
@@ -282,12 +285,13 @@ public class MomentFragment extends Fragment {
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
-                Log.v("Prepared", "prepared");
+                Log.v(TAG, "prepared");
                 mediaPlayer = mp;
                 videoHelper.setMediaPlayer(mediaPlayer);
                 mp.setLooping(true);
                 loadingView.stopAnimation();
                 if (isVisible) {
+                    Log.v(TAG, "VISIBLE NO??");
                     videoView.start();
                 }
             }

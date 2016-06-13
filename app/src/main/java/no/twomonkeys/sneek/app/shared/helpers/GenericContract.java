@@ -101,4 +101,22 @@ public class GenericContract {
             }
         };
     }
+
+    public static Contract v1_get_stream_by_name() {
+        return new Contract() {
+            @Override
+            public Map generic_contract(Map map) {
+                return (Map) map.get("stream");
+            }
+        };
+    }
+
+    public static Contract v1_get_user_by_username() {
+        return new Contract() {
+            @Override
+            public Map generic_contract(Map map) {
+                return (Map) map.get("user");
+            }
+        };
+    }
 }

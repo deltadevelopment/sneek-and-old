@@ -49,7 +49,7 @@ import no.twomonkeys.sneek.app.shared.views.MoreView;
  * Created by simenlie on 13.05.16.
  */
 public class StoryFragment extends android.support.v4.app.Fragment {
-
+    private static final String TAG = "StoryFragment";
     View view;
     DirectionHelper direction;
     float touchActionDownX, touchActionDownY, touchActionMoveX, touchActionMoveY, lastX;
@@ -335,6 +335,7 @@ public class StoryFragment extends android.support.v4.app.Fragment {
     public void animateOut() {
         MomentFragment momentFragment = mDemoCollectionPagerAdapter.getFragment(mViewPager.getCurrentItem());
         if (momentFragment != null) {
+            Log.v(TAG, "Stopping here");
             momentFragment.stopVideo();
         }
         ObjectAnimator anim = ObjectAnimator.ofFloat(view, "translationY", startY);
