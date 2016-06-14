@@ -140,8 +140,9 @@ public class FeedModel extends CRUDModel {
         //The position where Y should start
         float startY = (twentyPercentage2 * percentageOfTopY) / 100;
 
-        story.setFrame(new Rect(xPos, (int) startY, storySize.x, storySize.y));
+        Log.v("STARTY","start y " + startY);
 
+        story.setFrame(new Rect(xPos, (int) startY, storySize.x, storySize.y));
 
         //x, y, width, height
         //left, top, right, bottom

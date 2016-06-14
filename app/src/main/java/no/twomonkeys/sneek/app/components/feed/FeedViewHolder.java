@@ -92,6 +92,9 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
 
         Rect storyFrame = feedCount > 2 ? storyModel.getFrame() : storyModel.getBigFrame();
 
+        Log.v("TAG", "cell size " + storyFrame.right + " : " + storyFrame.bottom);
+
+
         //storyImageView.setX(storyFrame.left);
         // storyImageView.setY(storyFrame.top);
 

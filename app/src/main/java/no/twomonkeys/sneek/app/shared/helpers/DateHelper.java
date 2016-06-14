@@ -38,6 +38,14 @@ public class DateHelper {
         return false;
     }
 
+    public static boolean dateLaterThan(Date date, int seconds)
+    {
+        Date dateNow = new Date();
+        long secondsDiff = (dateNow.getTime()-date.getTime())/1000;
+        Log.v("DIFF is","DIFF " + secondsDiff);
+        return true;
+    }
+
 
     public static String shortTimeSince(String date) {
 

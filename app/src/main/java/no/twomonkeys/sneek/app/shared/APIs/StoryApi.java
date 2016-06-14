@@ -136,4 +136,9 @@ public interface StoryApi {
     Call<ResponseModel> getSuggestions(
     );
 
+    @GET("user/{user_id}")
+    Call<ResponseModel> getUser(
+            @Path("user_id") int user_id
+    );
+
 }

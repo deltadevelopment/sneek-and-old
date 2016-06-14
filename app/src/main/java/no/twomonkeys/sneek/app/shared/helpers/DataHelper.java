@@ -24,11 +24,12 @@ public class DataHelper {
     public static StartActivity startActivity;
     public static Map<String, String> imageCacheMapHelper;
     public static ArrayList<String> flashSuggestions;
+    public static boolean forceUpdateStory;
 
     public static int currentFeed() {
         SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
         int currentFeedInt = settings.getInt("feedFilter", 0);
-        return currentFeedInt;
+        return 0;
     }
 
     public static void storeCurrentFeed(int row) {
@@ -50,6 +51,16 @@ public class DataHelper {
         editor.putInt("user_id", user_id);
         // Commit the edits!
         editor.commit();
+    }
+
+    public static void storeUsername(String username)
+    {
+
+    }
+
+    public static String getUsername()
+    {
+        return "notImplemented";
     }
 
     public static int getUserId() {
@@ -238,6 +249,29 @@ public class DataHelper {
         } else {
             return new HashMap();
         }
+    }
+
+    public static boolean shouldForceUpdateStory()
+    {
+        return forceUpdateStory;
+    }
+
+    public static void setForceUpdateStory(boolean shouldForce){
+        forceUpdateStory = shouldForce;
+    }
+
+    public static void storeEmail(String email){
+        SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("user_email", email);
+        editor.commit();
+    }
+
+    public static String getEmail()
+    {
+        SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
+        String email = settings.getString("user_email", "NA");
+        return email;
     }
 
     public static boolean hasTag(String tagname) {

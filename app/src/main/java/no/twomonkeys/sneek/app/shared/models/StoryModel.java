@@ -37,13 +37,16 @@ public class StoryModel extends CRUDModel {
     private UserModel userModel;
 
 
-
     public StoryModel(Map storyRaw) {
         build(storyRaw);
     }
 
     public StoryModel() {
 
+    }
+
+    public StoryModel(int user_id) {
+        this.user_id = user_id;
     }
 
     public void setUser_id(int user_id) {
@@ -70,10 +73,10 @@ public class StoryModel extends CRUDModel {
         stream_type = (String) map.get("stream_type");
         stalkers_count = integerFromObject(map.get("stalkers_count"));
         if (map.get("user") != null) {
-            userModel = new UserModel((Map)map.get("user"));
+            userModel = new UserModel((Map) map.get("user"));
             user_id = userModel.getId();
             is_following = userModel.is_following();
-            Log.v("s","FOLLOWN NOW" + is_following);
+            Log.v("s", "FOLLOWN NOW" + is_following);
         }
 
         if (map.get("moments") != null) {
@@ -91,31 +94,27 @@ public class StoryModel extends CRUDModel {
         }
 
         if (map.get("moment") != null) {
-            MomentModel momentModel = new MomentModel((Map)map.get("moment"));
+            MomentModel momentModel = new MomentModel((Map) map.get("moment"));
             moments.add(momentModel);
         }
     }
 
-    public MomentModel getCurrentMoment()
-    {
-        if (moments.size() > 0)
-        {
+    public MomentModel getCurrentMoment() {
+        if (moments.size() > 0) {
             return moments.get(moments.size() - 1);
         }
         return null;
     }
+
     public void fetch(final SimpleCallback scb) {
-        if (stream_type != null)
-        {
+        if (stream_type != null) {
             NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getStream(id), GenericContract.v1_get_stream(), onDataReturned(), scb);
-        }
-        else{
+        } else {
             NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getStory(user_id), GenericContract.get_story(), onDataReturned(), scb);
         }
     }
 
-    public void popMoment(MomentModel momentModel)
-    {
+    public void popMoment(MomentModel momentModel) {
         moments.remove(momentModel);
     }
 

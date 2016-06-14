@@ -7,6 +7,6 @@ public class AuthHelper {
 
     public static int getUserId()
     {
-        return 0;
+        return DataHelper.getUserId();
     }
 }

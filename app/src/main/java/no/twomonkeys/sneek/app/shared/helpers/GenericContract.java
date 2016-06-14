@@ -76,6 +76,17 @@ public class GenericContract {
         };
     }
 
+    public static Contract v1_get_user() {
+        return new Contract() {
+            @Override
+            public Map generic_contract(Map map) {
+                return (Map) map.get("user");
+            }
+        };
+    }
+
+
+
     public static Contract v1_post_user() {
         return new Contract() {
             @Override

@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="no.twomonkeys.sneek">
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
-    <uses-feature android:name="android.hardware.camera.flash" android:required="true" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.flash"
+        android:required="true" />
+
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -23,7 +30,8 @@
         <activity android:name=".app.components.MainActivity">
 
         </activity>
-        <activity android:name=".app.components.StartActivity"
+        <activity
+            android:name=".app.components.StartActivity"
             android:label="Start"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
@@ -31,9 +39,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".app.components.LoginActivity"
+        <activity
+            android:name=".app.components.LoginActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:windowSoftInputMode="adjustPan|adjustResize">
+
+        </activity>
+        <activity
+            android:name=".app.components.Prefs"
+            android:theme="@style/Theme.AppCompat.Light">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".app.components.MainActivity" />
+        </activity>
+        <activity android:name=".app.components.settings.SettingsActivity">
 
         </activity>
     </application>

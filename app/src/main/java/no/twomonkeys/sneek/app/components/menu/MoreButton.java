@@ -17,7 +17,7 @@ import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 public class MoreButton extends Button {
 
     private float dX;
-    private  int width;
+    private int width;
 
     public MoreButton(Context context) {
         super(context);
@@ -25,16 +25,16 @@ public class MoreButton extends Button {
         //setText("RANDOMS");
         setBackgroundColor(getResources().getColor(R.color.black));
         setTextColor(getResources().getColor(R.color.white));
-        setTextSize(17);
+        setTextSize(16);
 
         setTypeface(Typeface.create("HelveticaNeue", 0));
 
     }
 
-    public void updateTxt(String txt) {
+    public void updateTxt(String txt, boolean shouldSetX) {
         setText(txt);
         int margin = UIHelper.dpToPx(getContext(), 10);
-        int btnHeight = UIHelper.dpToPx(getContext(), 50);
+        int btnHeight = UIHelper.dpToPx(getContext(), 47);
 
         setPadding(margin, 0, margin, 0);
 
@@ -62,7 +62,9 @@ public class MoreButton extends Button {
         params.width = text_width;
         setLayoutParams(params);
         width = text_width;
-        setX(-width);
+        if (shouldSetX) {
+            setX(-width);
+        }
     }
 
     public void enableBtn() {
@@ -75,6 +77,11 @@ public class MoreButton extends Button {
         setTextColor(getResources().getColor(R.color.black));
     }
 
+    public void disableBtn2() {
+        setBackgroundColor(getResources().getColor(R.color.black));
+        setTextColor(getResources().getColor(R.color.gray));
+    }
+
     public void startMove(float x) {
         dX = getX() - x;
     }
@@ -82,28 +89,25 @@ public class MoreButton extends Button {
     public void moveRight(float x) {
         float result = x + dX;
 
-        if (result < 0){
+        if (result < 0) {
             setX(result);
-        }
-        else{
+        } else {
             setX(0);
         }
     }
 
-    public float percentageScrolled()
-    {
+    public float percentageScrolled() {
         float min = getX();
         float maxPos = -width;
-        float result = (min/maxPos);
+        float result = (min / maxPos);
         return result;
     }
 
-    public void animateOut()
-    {
+    public void animateOut() {
         animate().translationX(-width).setDuration(50);
     }
-    public void animateIn()
-    {
+
+    public void animateIn() {
         animate().translationX(0).setDuration(50);
     }
 

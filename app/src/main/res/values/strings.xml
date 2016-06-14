@@ -11,6 +11,9 @@
     <color name="magenta">#FF00FF</color>
     <color name="transparent">#00000000</color>
     <color name="gray">#aaaaaa</color>
+    <color name="settingsGray">#f0eff5</color>
+    <color name="settingsGrayText">#6e6d73</color>
+
 
     <string name="validation_username_space">No spaces, please</string>
     <string name="validation_username_length">Must be between 4 and 15 characters</string>
@@ -33,5 +36,9 @@
     <string name="report_user_b">By reporting this user, you are saying that this user violates the terms of service. Are you sure you want to report this user?</string>
     <string name="report_moment_h">Reporting moment</string>
     <string name="report_moment_b">By reporting this moment, you are saying that this moment does not comply with the community guidelines. Are you sure you want to report this moment?</string>
+
+
+    <string name="log_out_h">Log out</string>
+    <string name="log_out_b">Are you sure you want to log out?</string>
 
 </resources>

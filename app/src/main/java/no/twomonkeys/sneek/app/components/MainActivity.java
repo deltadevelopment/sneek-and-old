@@ -3,14 +3,13 @@ package no.twomonkeys.sneek.app.components;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.gesture.GestureLibrary;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.os.Environment;
-import android.support.annotation.IdRes;
-import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
@@ -23,10 +22,8 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.TextureView;
 import android.view.VelocityTracker;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
@@ -39,20 +36,16 @@ import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.facebook.cache.common.SimpleCacheKey;
 import com.facebook.cache.disk.DiskCacheConfig;
 import com.facebook.common.util.ByteConstants;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.imagepipeline.core.ImagePipelineConfig;
-import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 
 
 import java.io.File;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
@@ -63,6 +56,7 @@ import no.twomonkeys.sneek.app.components.Camera.CameraFragment;
 import no.twomonkeys.sneek.app.components.feed.FeedAdapter;
 import no.twomonkeys.sneek.app.components.feed.TopBarFragment;
 import no.twomonkeys.sneek.app.components.menu.MenuFragment;
+import no.twomonkeys.sneek.app.components.settings.SettingsActivity;
 import no.twomonkeys.sneek.app.components.stalk.StalkController;
 import no.twomonkeys.sneek.app.components.story.StoryFragment;
 import no.twomonkeys.sneek.app.shared.Callback;
@@ -72,7 +66,6 @@ import no.twomonkeys.sneek.app.shared.helpers.CacheKeyFactory2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.helpers.VideoHelper;
-import no.twomonkeys.sneek.app.shared.helpers.Videokit;
 import no.twomonkeys.sneek.app.shared.models.ErrorModel;
 import no.twomonkeys.sneek.app.shared.models.StalkModel;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
@@ -187,6 +180,8 @@ public class MainActivity extends AppCompatActivity {
         UIHelper.layoutBtn(this, stalkBtn, "STALK");
         noContentLayout = (LinearLayout) findViewById(R.id.noContentLayout);
 
+        Log.v(TAG,"Screen sise " + UIHelper.screenWidth(this));
+
         //Object initialization
         menuFragment = (MenuFragment) fragmentManager.findFragmentById(R.id.menuFragment);
         cameraFragment = (CameraFragment) fragmentManager.findFragmentById(R.id.cameraFragment);
@@ -194,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void callbackCall() {
                 animateCameraOut();
+                DataHelper.setForceUpdateStory(true);
             }
         };
         cameraFragment.animatedCallback = new CameraFragment.AnimatedCallback() {
@@ -278,6 +274,8 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     case 2: {
+                        Intent i = new Intent(MainActivity.this, SettingsActivity.class);
+                        startActivity(i);
                         break;
                     }
                 }
@@ -298,14 +296,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         canScroll = false;
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2) {
-            @Override
-            public boolean canScrollVertically() {
-                return canScroll;
-            }
-        };
-
-        recyclerView.setLayoutManager(gridLayoutManager);
+        updateGrid();
         canScroll = true;
 
         setup();
@@ -322,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
                 overallXScroll = overallXScroll + dy;
                 mPrevY -= dy;
                 if (!isRefreshing) {
-                    topBar.drag(mPrevY, recyclerView.computeVerticalScrollOffset());
+                    //topBar.drag(mPrevY, recyclerView.computeVerticalScrollOffset());
                 }
             }
         });
@@ -358,6 +349,19 @@ public class MainActivity extends AppCompatActivity {
         });
         mUnexpectedTerminationHelper.init();
         fetchSuggestions();
+    }
+
+    public void updateGrid()
+    {
+        int numberCol = feedAdapter.getFeedModel().getStories().size() > 2 ? 2 : 1;
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, numberCol) {
+            @Override
+            public boolean canScrollVertically() {
+                return canScroll;
+            }
+        };
+
+        recyclerView.setLayoutManager(gridLayoutManager);
     }
 
     public void fetchSuggestions() {
@@ -526,6 +530,7 @@ public class MainActivity extends AppCompatActivity {
                     noContentLayout.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
                 }
+                updateGrid();
                 recyclerView.animate().translationY(0).setDuration(150);
                 homeBtn.animate().alpha(255).setDuration(150);
                 placeholderBtn.animate().alpha(0).setDuration(150);

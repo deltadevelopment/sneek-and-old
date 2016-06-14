@@ -19,13 +19,14 @@ public class UserModel extends CRUDModel {
     private int id;
     private boolean is_following;
     private String username, password;
-    private int year_born;
+    private int year_born, followers_count;
+    private String email;
     private UserSession userSession;
     private StoryModel storyModel;
     private BlockModel blockModel;
     private UserFlagModel userFlagModel;
 
-    public interface UserModelCallback{
+    public interface UserModelCallback {
         void callbackCall(UserModel userModel);
     }
 
@@ -60,16 +61,22 @@ public class UserModel extends CRUDModel {
     public void build(Map map) {
         id = integerFromObject(map.get("id"));
         username = (String) map.get("username");
+        followers_count = integerFromObject(map.get("followers_count"));
+        email = (String) map.get("email");
         is_following = booleanFromObject(map.get("is_following"));
-        Log.v("FOLLOWING IS ","foll" + map.get("is_following") + " " + is_following);
+        Log.v("FOLLOWING IS ", "foll" + map.get("is_following") + " " + is_following);
         if (map.get("user_session") != null) {
-            Log.v("USer session build","yeah build");
+            Log.v("USer session build", "yeah build");
             userSession = new UserSession((Map) map.get("user_session"));
         }
         if (map.get("story") != null) {
             storyModel = new StoryModel((Map) map.get("story"));
             storyModel.setUser_id(id);
         }
+    }
+
+    public void fetch(SimpleCallback scb) {
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getUser(id), GenericContract.v1_get_user(), onDataReturned(), scb);
     }
 
     public UserSession getUserSession() {
@@ -124,7 +131,7 @@ public class UserModel extends CRUDModel {
     }
 
     public BlockModel getBlockModel() {
-        if (blockModel == null){
+        if (blockModel == null) {
             blockModel = new BlockModel(id);
         }
         return blockModel;
@@ -135,15 +142,14 @@ public class UserModel extends CRUDModel {
     }
 
     public UserFlagModel getUserFlagModel() {
-        if (userFlagModel == null){
+        if (userFlagModel == null) {
             userFlagModel = new UserFlagModel(id);
         }
         return userFlagModel;
     }
 
 
-    public static void fetch(String username, final UserModelCallback umc ,SimpleCallback scb)
-    {
+    public static void fetch(String username, final UserModelCallback umc, SimpleCallback scb) {
         NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getUserByUsername(username), GenericContract.v1_get_user_by_username(), new MapCallback() {
             @Override
             public void callbackCall(Map map) {
@@ -151,5 +157,18 @@ public class UserModel extends CRUDModel {
                 umc.callbackCall(userModel);
             }
         }, scb);
+    }
+
+    public int getFollowers_count() {
+        return followers_count;
+    }
+
+    public void setFollowers_count(int followers_count) {
+        this.followers_count = followers_count;
+    }
+
+    public String getEmail() {
+
+        return email;
     }
 }

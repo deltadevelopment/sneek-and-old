@@ -77,7 +77,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         layoutParams.leftMargin = 0;
         layoutParams.rightMargin = 0;
         view.setLayoutParams(layoutParams);
-
         RelativeLayout lay = (RelativeLayout) view.findViewById(R.id.contentGrid);
 
         //
@@ -91,7 +90,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         Log.v("TEST", "ROW : " + position);
         StoryModel storyModel = feedModel.getStories().get(position);
 
-        Point cellSize = feedModel.getStories().size() >2 ? storyModel.getCellSize() : storyModel.getBigCellSize();
+        Point cellSize = feedModel.getStories().size() > 2 ? storyModel.getCellSize() : storyModel.getBigCellSize();
 
         GridLayout gridLayout = (GridLayout) view.findViewById(R.id.rowRoot);
         GridLayoutManager.LayoutParams layoutParams = (GridLayoutManager.LayoutParams) view.getLayoutParams();
@@ -105,6 +104,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         layoutParams.rightMargin = 0;
         view.setLayoutParams(layoutParams);
 
+        Log.v("TAG", "cell size " + cellSize.x + " : " + cellSize.y);
 
         holder.updateTxt(storyModel, feedModel.getStories().size());
     }

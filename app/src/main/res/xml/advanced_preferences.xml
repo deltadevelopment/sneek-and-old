@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <no.twomonkeys.sneek.app.shared.views.MyPreferenceCategory android:title="ACCOUNT">
+        <Preference
+            android:enabled="true"
+            android:key="username"
+            android:selectable="false"
+            android:summary="oddetallet"
+            android:title="Username"></Preference>
+        <PreferenceScreen
+            android:key="screen_preference"
+            android:title="Change password">
+
+            <CheckBoxPreference
+                android:key="next_screen_checkbox_preference"
+                android:summary="sum"
+                android:title="Change email" />
+
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="screen_preference"
+            android:title="Change email">
+
+            <CheckBoxPreference
+                android:key="next_screen_checkbox_preference"
+                android:summary="sum"
+                android:title="Change email" />
+
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="screen_preference"
+            android:title="Blocked users">
+
+            <CheckBoxPreference
+                android:key="next_screen_checkbox_preference"
+                android:summary="sum"
+                android:title="title" />
+
+        </PreferenceScreen>
+
+        <Preference
+            android:enabled="true"
+            android:key="username"
+            android:selectable="false"
+            android:title="Log out"></Preference>
+    </no.twomonkeys.sneek.app.shared.views.MyPreferenceCategory>
+    <no.twomonkeys.sneek.app.shared.views.MyPreferenceCategory android:title="SCROLL OF DEATH">
+        <PreferenceScreen
+            android:key="screen_preference"
+            android:title="Help">
+
+            <CheckBoxPreference
+                android:key="next_screen_checkbox_preference"
+                android:summary="sum"
+                android:title="title" />
+
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="screen_preference"
+            android:title="Privacy Policy">
+            <CheckBoxPreference
+                android:key="next_screen_checkbox_preference"
+                android:summary="sum"
+                android:title="title" />
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="screen_preference"
+            android:title="Terms of Service">
+
+            <CheckBoxPreference
+                android:key="next_screen_checkbox_preference"
+                android:summary="sum"
+                android:title="title" />
+
+        </PreferenceScreen>
+    </no.twomonkeys.sneek.app.shared.views.MyPreferenceCategory>
+    <PreferenceCategory>
+        <Preference
+            android:key="delete_account"
+            android:title="Delete Account">
+
+        </Preference>
+    </PreferenceCategory>
+
+</PreferenceScreen>
