@@ -80,7 +80,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
         usernameTxtView.setTextColor(c.getResources().getColor(R.color.black));
     }
 
-    public void updateTxt(StoryModel storyModel) {
+    public void updateTxt(StoryModel storyModel, int feedCount) {
         String txt;
         if (storyModel.getStream_type() != null)
         {
@@ -90,7 +90,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder {
             txt = storyModel.getUserModel().getUsername().toUpperCase();
         }
 
-        Rect storyFrame = DataHelper.currentFeed() == 0 ? storyModel.getFrame() : storyModel.getBigFrame();
+        Rect storyFrame = feedCount > 2 ? storyModel.getFrame() : storyModel.getBigFrame();
 
         //storyImageView.setX(storyFrame.left);
         // storyImageView.setY(storyFrame.top);

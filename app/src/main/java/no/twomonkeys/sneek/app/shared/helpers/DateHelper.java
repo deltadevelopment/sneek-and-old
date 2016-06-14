@@ -16,6 +16,7 @@ public class DateHelper {
     public static boolean hasExpired(String date) {
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
             Log.v("date", "date " + date);
             Date date1 = formatter.parse(date);
 

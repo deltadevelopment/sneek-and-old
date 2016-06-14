@@ -23,16 +23,21 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.TextureView;
 import android.view.VelocityTracker;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.facebook.cache.common.SimpleCacheKey;
 import com.facebook.cache.disk.DiskCacheConfig;
@@ -110,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean doOnce;
     private Date oldDate;
     boolean lockMode;
+    private TextView emptyView;
 
     FrameLayout overlayShadow;
 
@@ -128,7 +134,9 @@ public class MainActivity extends AppCompatActivity {
     VideoHelper videoHelper;
     RelativeLayout layout;
     StalkController stalkController;
-
+    long touchStart;
+    Button stalkBtn;
+    LinearLayout noContentLayout;
 
     //New method
     float touchActionDownX, touchActionDownY, touchActionMoveX, touchActionMoveY;
@@ -161,13 +169,23 @@ public class MainActivity extends AppCompatActivity {
 
         homeBtn = (ImageButton) findViewById(R.id.homeButton);
         homeBtn.setImageResource(R.drawable.triangle);
-
+        homeBtn.setVisibility(View.GONE);
         placeholderBtn = (ImageButton) findViewById(R.id.placeholderButton);
         placeholderBtn.setImageResource(R.drawable.triangle);
         placeholderBtn.setColorFilter(Color.parseColor("#27ffff"));
 
         fragmentManager = getSupportFragmentManager();
 
+        emptyView = (TextView) findViewById(R.id.empty_view);
+        stalkBtn = (Button) findViewById(R.id.feedStalkBtn);
+        stalkBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showStalkScreen();
+            }
+        });
+        UIHelper.layoutBtn(this, stalkBtn, "STALK");
+        noContentLayout = (LinearLayout) findViewById(R.id.noContentLayout);
 
         //Object initialization
         menuFragment = (MenuFragment) fragmentManager.findFragmentById(R.id.menuFragment);
@@ -225,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
+
 
         topBar = (TopBarFragment) fragmentManager.findFragmentById(R.id.topBarFragment);
         topBar.onMoreClb = new SimpleCallback2() {
@@ -313,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
 
         videoView = (SneekVideoView) findViewById(R.id.videoSneekVideoView2);
 
-
+        canSingleTap = true;
         videoView.setVisibility(View.INVISIBLE);
 
         DisplayMetrics dm = new DisplayMetrics();
@@ -500,6 +519,13 @@ public class MainActivity extends AppCompatActivity {
         feedAdapter.updateData(new SimpleCallback2() {
             @Override
             public void callbackCall() {
+                if (feedAdapter.getFeedModel().getStories().size() == 0) {
+                    noContentLayout.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                } else {
+                    noContentLayout.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                }
                 recyclerView.animate().translationY(0).setDuration(150);
                 homeBtn.animate().alpha(255).setDuration(150);
                 placeholderBtn.animate().alpha(0).setDuration(150);
@@ -635,6 +661,10 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.smoothScrollToPosition(0);
     }
 
+    public void clickTimer() {
+
+    }
+
     //Movements
 
     @Override
@@ -647,6 +677,7 @@ public class MainActivity extends AppCompatActivity {
             switch (ev.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     isClick = true;
+                    touchStart = System.currentTimeMillis();
                     direction = Direction.DOWN;
                     touchActionDownX = (int) ev.getX();
                     touchActionDownY = (int) ev.getY();
@@ -668,8 +699,6 @@ public class MainActivity extends AppCompatActivity {
                     if (touchActionMoveStatus) {
                         touchActionMoveX = (int) ev.getX();
                         touchActionMoveY = (int) ev.getY();
-
-
                         float ratioLeftRight = Math.abs(touchActionMoveX - touchActionDownX) / Math.abs(touchActionMoveY - touchActionDownY);
                         float ratioUpDown = Math.abs(touchActionMoveY - touchActionDownY) / Math.abs(touchActionMoveX - touchActionDownX);
 
@@ -710,7 +739,12 @@ public class MainActivity extends AppCompatActivity {
                     move(ev);
                     break;
                 case MotionEvent.ACTION_UP: {
+                    long tEnd = System.currentTimeMillis();
+                    long tDelta = tEnd - touchStart;
+                    Log.v(TAG, "SINGPLE " + tDelta);
                     if (isClick) {
+                        //is Click
+
                         if (canSingleTap) {
                             Log.v("SINGLE CLICK", "SINGLE CLICK");
                             if (menuIsVisible) {
@@ -946,9 +980,12 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     // Do something.
-                    if (shouldAnimate) {
-                        scb.callbackCall();
+                    if (!animation.isRunning()){
+                        if (shouldAnimate) {
+                            scb.callbackCall();
+                        }
                     }
+
                 }
 
                 @Override

@@ -91,7 +91,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         Log.v("TEST", "ROW : " + position);
         StoryModel storyModel = feedModel.getStories().get(position);
 
-        Point cellSize = DataHelper.currentFeed() == 0 ? storyModel.getCellSize() : storyModel.getBigCellSize();
+        Point cellSize = feedModel.getStories().size() >2 ? storyModel.getCellSize() : storyModel.getBigCellSize();
 
         GridLayout gridLayout = (GridLayout) view.findViewById(R.id.rowRoot);
         GridLayoutManager.LayoutParams layoutParams = (GridLayoutManager.LayoutParams) view.getLayoutParams();
@@ -106,7 +106,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
         view.setLayoutParams(layoutParams);
 
 
-        holder.updateTxt(storyModel);
+        holder.updateTxt(storyModel, feedModel.getStories().size());
     }
 
     @Override

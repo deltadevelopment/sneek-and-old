@@ -339,7 +339,7 @@ public class StalkController extends RelativeLayout {
     }
 
     private void flashSuggestions(final int flashNumber) {
-        if (shouldFlash) {
+        if (shouldFlash && flashSuggestions != null) {
             ObjectAnimator animator = ObjectAnimator.ofFloat(stalkEditText, "alpha", 0.0f);
             UIHelper.animate(animator, 400, 1000, new SimpleCallback2() {
                 @Override
