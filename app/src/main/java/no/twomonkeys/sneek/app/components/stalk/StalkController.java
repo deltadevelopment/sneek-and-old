@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import com.googlecode.mp4parser.authoring.Edit;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -49,7 +50,7 @@ import okhttp3.internal.Util;
  * Created by simenlie on 13.06.16.
  */
 public class StalkController extends RelativeLayout {
-
+    private static final String TAG = "StalkController";
     Button stalkBtn;
     TextView noUsersTextView;
     EditText stalkEditText;
@@ -63,6 +64,8 @@ public class StalkController extends RelativeLayout {
     UserModel userFound;
     Activity activity;
     boolean hasStalked;
+    ArrayList<String> flashSuggestions;
+    Timer suggestionTimer;
 
     public StalkController(Context context) {
         super(context);
@@ -116,6 +119,23 @@ public class StalkController extends RelativeLayout {
 
         setVisibility(VISIBLE);
 
+        if (DataHelper.flashSuggestions() == null) {
+            suggestionTimer = new Timer();
+            suggestionTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkSuggestions();
+                        }
+                    });
+                }
+            }, 1000, 1000);
+        } else {
+            startFlash();
+        }
+
         ObjectAnimator anim = ObjectAnimator.ofFloat(this, "translationY", 0);
         UIHelper.animate(anim, 150, new SimpleCallback2() {
             @Override
@@ -129,6 +149,20 @@ public class StalkController extends RelativeLayout {
                 }, 100);
             }
         });
+    }
+
+    public void startFlash() {
+        flashSuggestions = DataHelper.flashSuggestions();
+        stalkEditText.setHint(flashSuggestions.get(0));
+        shouldFlash = true;
+        flashSuggestions(1);
+    }
+
+    public void checkSuggestions() {
+        if (DataHelper.flashSuggestions() != null) {
+            suggestionTimer.cancel();
+            startFlash();
+        }
     }
 
     public void animateOut() {
@@ -244,12 +278,10 @@ public class StalkController extends RelativeLayout {
                 stalkModel.deleteStream(new SimpleCallback() {
                     @Override
                     public void callbackCall(ErrorModel errorModel) {
-                        if (errorModel == null) {
-                            DataHelper.removeTagStream(Integer.parseInt(tagid));
-                            uiForStalking(DataHelper.hasTag(tagName));
-                            tagStreamModel.setStalkers_count(tagStreamModel.getStalkers_count() - 1);
-                            stalkersCountText.setText(UtilHelper.stalkersStringForNumber(tagStreamModel.getStalkers_count()));
-                        }
+                        DataHelper.removeTagStream(Integer.parseInt(tagid));
+                        uiForStalking(DataHelper.hasTag(tagName));
+                        tagStreamModel.setStalkers_count(tagStreamModel.getStalkers_count() - 1);
+                        stalkersCountText.setText(UtilHelper.stalkersStringForNumber(tagStreamModel.getStalkers_count()));
                     }
                 });
             } else {
@@ -257,10 +289,17 @@ public class StalkController extends RelativeLayout {
                     @Override
                     public void callbackCall(ErrorModel errorModel) {
                         if (errorModel == null) {
+
                             DataHelper.storeTagStream(stalkModel.getStream_id(), tagName);
                             uiForStalking(DataHelper.hasTag(tagName));
+                            if (tagStreamModel == null) {
+                                tagStreamModel = new StreamModel();
+                                Log.v(TAG, "tag stream " + stalkModel.getStream_id() + " " + tagName + " " + tagStreamModel.getStalkers_count());
+                            }
+
                             tagStreamModel.setStalkers_count(tagStreamModel.getStalkers_count() + 1);
                             stalkersCountText.setText(UtilHelper.stalkersStringForNumber(tagStreamModel.getStalkers_count()));
+
                             hasStalked = true;
                         }
                     }
@@ -299,7 +338,30 @@ public class StalkController extends RelativeLayout {
 
     }
 
-    private void flashSuggestions(int flashNumber) {
+    private void flashSuggestions(final int flashNumber) {
+        if (shouldFlash) {
+            ObjectAnimator animator = ObjectAnimator.ofFloat(stalkEditText, "alpha", 0.0f);
+            UIHelper.animate(animator, 400, 1000, new SimpleCallback2() {
+                @Override
+                public void callbackCall() {
+                    stalkEditText.setHint(flashSuggestions.get(flashNumber));
+                    ObjectAnimator animator2 = ObjectAnimator.ofFloat(stalkEditText, "alpha", 1.0f);
+                    UIHelper.animate(animator2, 400, new SimpleCallback2() {
+                        @Override
+                        public void callbackCall() {
+                            if (shouldFlash) {
+                                int index2 = flashNumber + 1;
+                                if (index2 >= flashSuggestions.size()) {
+                                    index2 = 0;
+                                }
+                                flashSuggestions(index2);
+                            }
+                        }
+                    });
+
+                }
+            });
+        }
 
     }
 
@@ -326,6 +388,7 @@ public class StalkController extends RelativeLayout {
                     textChanged();
                 }
             });
+            UIHelper.setCursorDrawableColor(stalkEditText, getResources().getColor(R.color.cyan));
             this.stalkEditText = stalkEditText;
         }
         return stalkEditText;
@@ -464,6 +527,7 @@ public class StalkController extends RelativeLayout {
                     @Override
                     public void callbackCall(ErrorModel errorModel) {
                         if (errorModel != null) {
+                            tagStreamModel = null;
                             stalkersCountText.setVisibility(VISIBLE);
                             stalkLoadingView.stopAnimation();
                             uiForStalking(DataHelper.hasTag(stringStripped));

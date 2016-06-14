@@ -131,4 +131,9 @@ public interface StoryApi {
     Call<ResponseModel> getUserByUsername(
                     @Path("username") String username
             );
+
+    @GET("feed/suggestions")
+    Call<ResponseModel> getSuggestions(
+    );
+
 }

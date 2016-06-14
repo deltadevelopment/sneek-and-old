@@ -23,6 +23,7 @@ public class DataHelper {
     public static MainActivity ma;
     public static StartActivity startActivity;
     public static Map<String, String> imageCacheMapHelper;
+    public static ArrayList<String> flashSuggestions;
 
     public static int currentFeed() {
         SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
@@ -202,7 +203,15 @@ public class DataHelper {
             storeTagStreamIds(tagStreamIdsArray);
             storeTagStreams(tagStreams);
         }
+    }
 
+    public static ArrayList<String> flashSuggestions() {
+        return flashSuggestions;
+    }
+
+    public static void addSuggestions(ArrayList<String> list)
+    {
+        flashSuggestions = list;
     }
 
     public static void storeTagStreams(HashMap<String, String> map) {
@@ -272,8 +281,8 @@ public class DataHelper {
         }
         imageCacheMapHelper.put(url, mediaKey);
     }
-    public static Map<String, String>getImageCacheMapHelper()
-    {
+
+    public static Map<String, String> getImageCacheMapHelper() {
         return imageCacheMapHelper;
     }
 }

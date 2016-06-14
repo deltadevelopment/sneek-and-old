@@ -21,7 +21,11 @@ public class StalkModel extends CRUDModel {
 
     @Override
     void build(Map map) {
+        if (map.get("stalking") != null) {
+            map = (Map) map.get("stalking");
+        }
 
+        stream_id = integerFromObject(map.get("stream_id"));
     }
 
     public void saveUser(SimpleCallback scb) {
@@ -79,10 +83,9 @@ public class StalkModel extends CRUDModel {
                             for (Object streamStalking : stalkingsArray) {
                                 Map streamStalkingMap = (Map) streamStalking;
                                 Double doubleValue = (Double) streamStalkingMap.get("id");
-                                String stringStreamId = doubleValue.intValue()  + "";
+                                String stringStreamId = doubleValue.intValue() + "";
                                 String streamName = (String) streamStalkingMap.get("name");
-                                if (!isInside(stringStreamId))
-                                {
+                                if (!isInside(stringStreamId)) {
                                     tagsStreamIdsArray.add(stringStreamId);
                                 }
                                 tagStreams.put(stringStreamId, streamName);
@@ -97,12 +100,10 @@ public class StalkModel extends CRUDModel {
     }
 
 
-    public static boolean isInside(String stringID)
-    {
+    public static boolean isInside(String stringID) {
         ArrayList<String> oldTagIds = DataHelper.tagStreamIdsArray();
         boolean isInside = false;
-        for(String s : oldTagIds)
-        {
+        for (String s : oldTagIds) {
             int intValue = Integer.parseInt(s);
             int stringIdInt = Integer.parseInt(stringID);
 

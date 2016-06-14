@@ -48,6 +48,7 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
 
 import java.io.File;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -70,6 +71,7 @@ import no.twomonkeys.sneek.app.shared.helpers.Videokit;
 import no.twomonkeys.sneek.app.shared.models.ErrorModel;
 import no.twomonkeys.sneek.app.shared.models.StalkModel;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
+import no.twomonkeys.sneek.app.shared.models.SuggestionsModel;
 import no.twomonkeys.sneek.app.shared.views.BoolCallback;
 import no.twomonkeys.sneek.app.shared.views.SneekVideoView;
 
@@ -269,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
 
         stalkController = (StalkController) findViewById(R.id.stalkController);
         stalkController.enableKeyboard(this);
-        stalkController.onLockClb =  new BoolCallback() {
+        stalkController.onLockClb = new BoolCallback() {
             @Override
             public void callbackCall(boolean bool) {
                 lockMode = bool;
@@ -336,7 +338,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mUnexpectedTerminationHelper.init();
+        fetchSuggestions();
+    }
 
+    public void fetchSuggestions() {
+        SuggestionsModel.fetchAll(new SuggestionsModel.SuggestionsCallback() {
+            @Override
+            public void callbackCall(ArrayList<String> suggestions) {
+                DataHelper.addSuggestions(suggestions);
+            }
+        }, new SimpleCallback() {
+            @Override
+            public void callbackCall(ErrorModel errorModel) {
+
+            }
+        });
     }
 
     public void loadVideo() {

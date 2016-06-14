@@ -10,7 +10,7 @@
     <color name="yellow">#FFFF00</color>
     <color name="magenta">#FF00FF</color>
     <color name="transparent">#00000000</color>
-    <color name="gray">#8c807d</color>
+    <color name="gray">#aaaaaa</color>
 
     <string name="validation_username_space">No spaces, please</string>
     <string name="validation_username_length">Must be between 4 and 15 characters</string>

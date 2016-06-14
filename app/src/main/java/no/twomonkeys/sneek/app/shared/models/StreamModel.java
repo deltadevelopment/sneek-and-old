@@ -1,5 +1,7 @@
 package no.twomonkeys.sneek.app.shared.models;
 
+import android.util.Log;
+
 import java.util.Map;
 
 import no.twomonkeys.sneek.app.shared.MapCallback;
@@ -19,6 +21,7 @@ public class StreamModel extends CRUDModel {
     private int stalkers_count, id;
 
     public StreamModel() {
+        stalkers_count = 0;
     }
 
     public StreamModel(Map map) {
@@ -27,6 +30,7 @@ public class StreamModel extends CRUDModel {
 
     @Override
     void build(Map map) {
+        Log.v("hel","hello " + map);
         stalkers_count = integerFromObject(map.get("stalkers_count"));
         id = integerFromObject(map.get("id"));
     }
@@ -35,6 +39,7 @@ public class StreamModel extends CRUDModel {
         NetworkHelper.sendRequest(NetworkHelper.getNetworkService().getStreamByTag(tagName), GenericContract.v1_get_stream_by_name(), new MapCallback() {
             @Override
             public void callbackCall(Map map) {
+                Log.v("hel","hello " + map);
                 StreamModel streamModel = new StreamModel(map);
                 stcb.callbackCall(streamModel);
             }
