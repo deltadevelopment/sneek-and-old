@@ -556,7 +556,10 @@ public class MainActivity extends AppCompatActivity {
                 if (child != null && mGestureDetector.onTouchEvent(motionEvent)) {
                     Log.v("MENU", "IS menu visible?" + menuIsVisible + " " + cameraIsVisible);
                     if (!menuIsVisible && !cameraIsVisible) {
-                        StoryModel storyModel = feedAdapter.getFeedModel().getStories().get(recyclerView.getChildPosition(child));
+                        Log.v(TAG,"position is " + recyclerView.getChildPosition(child));
+
+                        StoryModel storyModel = feedAdapter.getFeedModel().getStories().get(recyclerView.getChildAdapterPosition(child));
+                        Log.v(TAG,"username id is " + storyModel.user_id);
                         presentStory(storyModel);
                     }
                     return true;

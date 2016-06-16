@@ -116,8 +116,7 @@ public class MomentFragment extends Fragment {
         View rootView = inflater.inflate(
                 R.layout.moment_fragment, container, false);
         Bundle args = getArguments();
-
-
+        
         RelativeLayout layout = (RelativeLayout) rootView.findViewById(R.id.momentFragment);
         draweeView = (SimpleDraweeView) rootView.findViewById(R.id.draweeView);
         loadingView = (LoadingView) rootView.findViewById(R.id.storyLoadingView);

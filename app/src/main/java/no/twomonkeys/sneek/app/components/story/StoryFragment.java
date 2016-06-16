@@ -388,9 +388,9 @@ public class StoryFragment extends android.support.v4.app.Fragment {
 
     public void updateProgressWithPercent() {
         float pageCount = storyModel.getMoments().size();
-        //Log.v("PAGE","page " + mViewPager.getCurrentItem() + " " + pageCount);
         float currentPage = (mViewPager.getCurrentItem() + 1);
         float percent = (currentPage / pageCount) * 100;
+        Log.v(TAG,"percemtage is " + percent + " : " + pageCount + " : " + currentPage);
         indicatorView.updateProgress(percent);
     }
 

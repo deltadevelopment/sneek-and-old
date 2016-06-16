@@ -63,4 +63,8 @@
 
     <string name="validation_email_format">Not valid</string>
 
+    <string name="delete_confirm_title">Delete Account</string>
+    <string name="delete_confirm_msg">Are you sure you want to die in the virtual realm?</string>
+    <string name="delete_btn">Delete</string>
+
 </resources>

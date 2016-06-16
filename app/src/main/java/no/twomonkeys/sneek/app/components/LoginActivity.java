@@ -37,7 +37,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import no.twomonkeys.sneek.R;
+import no.twomonkeys.sneek.app.components.web.WebController;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.KeyboardUtil;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
@@ -72,6 +74,7 @@ public class LoginActivity extends Activity {
     UserModel userModel;
     UserSession userSession;
     LoadingView mainLoadingView;
+    WebController webController;
 
     private enum LoginState {
         USERNAME, PASSWORD, AGE
@@ -193,6 +196,7 @@ public class LoginActivity extends Activity {
                 }
             }
         });
+        final LoginActivity self = this;
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -204,7 +208,15 @@ public class LoginActivity extends Activity {
                     }
                     case PASSWORD: {
                         //Login here
-
+                        if (isRegistering) {
+                            webController.loadView(2);
+                        } else {
+                            webController.loadView(3);
+                        }
+                        loginBackBtn.setVisibility(View.INVISIBLE);
+                        InputMethodManager imm = (InputMethodManager) self.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(usernameEditText.getWindowToken(), 0);
+                        webController.animateIn();
                         break;
                     }
                 }
@@ -264,6 +276,17 @@ public class LoginActivity extends Activity {
 
             }
         }, 100);
+
+        webController = (WebController) findViewById(R.id.webControllerLogin);
+        webController.scb2 = new SimpleCallback2() {
+            @Override
+            public void callbackCall() {
+                loginBackBtn.setVisibility(View.VISIBLE);
+                InputMethodManager imm = (InputMethodManager) self.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(usernameEditText, InputMethodManager.SHOW_IMPLICIT);
+            }
+        };
+        webController.setVisibility(View.GONE);
 
     }
 
@@ -348,7 +371,13 @@ public class LoginActivity extends Activity {
             }
             case PASSWORD: {
                 usernameEditText.setHint("password");
-                loginBtn.setText("Forgot");
+                if (isRegistering){
+                    loginBtn.setText("Terms");
+                }
+                else{
+                    loginBtn.setText("Forgot");
+                }
+
                 registerBtn.setText("I'm ready");
                 break;
             }
@@ -533,12 +562,14 @@ public class LoginActivity extends Activity {
     public void onResponseRecieved(ErrorModel errorModel) {
         if (errorModel == null) {
             if (isRegistering) {
-                Log.v("Storing token","Storing reg");
+                Log.v("Storing token", "Storing reg " + userModel.getUsername());
                 DataHelper.storeCredentials(userModel.getUserSession().getAuth_token(), userModel.getId());
+                DataHelper.storeUsername(userModel.getUsername());
 
             } else {
-                Log.v("Storing token","Storing log");
+                Log.v("Storing token", "Storing log");
                 DataHelper.storeCredentials(userSession.getAuth_token(), userSession.getUser_id());
+                DataHelper.storeUsername(userSession.getUserModel().getUsername());
             }
             showMain();
         } else {

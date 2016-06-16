@@ -29,7 +29,8 @@ public class MomentAdapter extends FragmentStatePagerAdapter {
     }
 
     public void setMoments(ArrayList<MomentModel> moments) {
-        this.moments = moments;
+        this.moments.removeAll(this.moments);
+        this.moments.addAll(moments);
         Log.v("Moments set", " moments set");
         notifyDataSetChanged();
     }

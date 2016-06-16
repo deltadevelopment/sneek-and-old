@@ -53,14 +53,17 @@ public class DataHelper {
         editor.commit();
     }
 
-    public static void storeUsername(String username)
-    {
-
+    public static void storeUsername(String username) {
+        SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("username", username);
+        editor.commit();
     }
 
-    public static String getUsername()
-    {
-        return "notImplemented";
+    public static String getUsername() {
+        SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
+        String username = settings.getString("username", "Na");
+        return username;
     }
 
     public static int getUserId() {
@@ -220,8 +223,7 @@ public class DataHelper {
         return flashSuggestions;
     }
 
-    public static void addSuggestions(ArrayList<String> list)
-    {
+    public static void addSuggestions(ArrayList<String> list) {
         flashSuggestions = list;
     }
 
@@ -251,24 +253,22 @@ public class DataHelper {
         }
     }
 
-    public static boolean shouldForceUpdateStory()
-    {
+    public static boolean shouldForceUpdateStory() {
         return forceUpdateStory;
     }
 
-    public static void setForceUpdateStory(boolean shouldForce){
+    public static void setForceUpdateStory(boolean shouldForce) {
         forceUpdateStory = shouldForce;
     }
 
-    public static void storeEmail(String email){
+    public static void storeEmail(String email) {
         SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("user_email", email);
         editor.commit();
     }
 
-    public static String getEmail()
-    {
+    public static String getEmail() {
         SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
         String email = settings.getString("user_email", "NA");
         return email;

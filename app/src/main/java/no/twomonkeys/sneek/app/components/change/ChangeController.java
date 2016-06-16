@@ -172,6 +172,7 @@ public class ChangeController extends RelativeLayout {
         firstEditText.setHint(getContext().getString(R.string.new_pass_txt));
         secondEditText.setHint(getContext().getString(R.string.repeat_pass_txt));
         secondEditText.setVisibility(VISIBLE);
+        firstEditText.setText("");
 
         animateIn();
     }
@@ -245,7 +246,6 @@ public class ChangeController extends RelativeLayout {
                     messageView.setMessageTypeSuccess();
                     messageView.setMessage(getContext().getString(passwordMode ? R.string.pass_saved : R.string.email_saved));
                     messageView.animateIn();
-
                 } else {
                     if (errorModel.errorForKey("email") != null) {
                         showError(errorModel.errorForKey("email"), firstError);

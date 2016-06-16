@@ -66,6 +66,7 @@ public class UserModel extends CRUDModel {
     }
 
     public void build(Map map) {
+        Log.v("HERE WHAT ","what " + map.toString());
         id = integerFromObject(map.get("id"));
         username = (String) map.get("username");
         followers_count = integerFromObject(map.get("followers_count"));
@@ -171,6 +172,13 @@ public class UserModel extends CRUDModel {
                 umc.callbackCall(userModel);
             }
         }, scb);
+    }
+
+    public void delete(SimpleCallback scb) {
+        NetworkHelper.sendRequest(NetworkHelper.getNetworkService().deleteUser(id),
+                GenericContract.generic_parse(),
+                onDataReturned(),
+                scb);
     }
 
     public int getFollowers_count() {

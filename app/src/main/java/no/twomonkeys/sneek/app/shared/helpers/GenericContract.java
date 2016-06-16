@@ -95,7 +95,7 @@ public class GenericContract {
                 newMap.put("story", map.get("story"));
                 newMap.put("user_session", map.get("user_session"));
 
-                return map;
+                return newMap;
             }
         };
     }

@@ -21,11 +21,14 @@ import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.block.BlockController;
 import no.twomonkeys.sneek.app.components.change.ChangeController;
 import no.twomonkeys.sneek.app.components.settings.SettingsAdapter;
+import no.twomonkeys.sneek.app.components.web.WebController;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.helpers.AuthHelper;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.models.ErrorModel;
 import no.twomonkeys.sneek.app.shared.models.SettingsModel;
+import no.twomonkeys.sneek.app.shared.models.UserModel;
 
 /**
  * Created by simenlie on 14.06.16.
@@ -36,6 +39,8 @@ public class SettingsActivity extends Activity {
     TextView accountHeadView, helpHeadView;
     BlockController blockController;
     ChangeController changeController;
+    WebController webController;
+    Button deleteAccountBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +69,7 @@ public class SettingsActivity extends Activity {
         });
         accountList = (ListView) findViewById(R.id.accountList);
         helpList = (ListView) findViewById(R.id.helpList);
+
 
         LayoutInflater inflater = getLayoutInflater();
         ViewGroup header = (ViewGroup) inflater.inflate(R.layout.header, accountList, false);
@@ -110,7 +116,9 @@ public class SettingsActivity extends Activity {
         helpList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                int indexPostion = position - 1;
+                webController.loadView(indexPostion);
+                webController.animateIn();
             }
         });
 
@@ -119,6 +127,45 @@ public class SettingsActivity extends Activity {
 
         changeController = (ChangeController) findViewById(R.id.changeController);
         changeController.setVisibility(View.GONE);
+
+        webController = (WebController) findViewById(R.id.webController);
+        webController.setVisibility(View.GONE);
+
+        setListViewHeightBasedOnChildren(helpList);
+        setListViewHeightBasedOnChildren(accountList);
+
+        deleteAccountBtn = (Button) findViewById(R.id.deleteAccountBtn);
+        final SettingsActivity self = this;
+        deleteAccountBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AlertDialog.Builder(self)
+                        .setTitle(R.string.delete_confirm_title)
+                        .setMessage(R.string.delete_confirm_msg)
+                        .setPositiveButton(R.string.delete_btn, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // continue with delete
+                                DataHelper.startActivity.logout();
+                                UserModel userModel = new UserModel();
+                                userModel.setId(AuthHelper.getUserId());
+                                userModel.delete(new SimpleCallback() {
+                                    @Override
+                                    public void callbackCall(ErrorModel errorModel) {
+                                        DataHelper.startActivity.logout();
+                                    }
+                                });
+                                //Reset different stuff here, username, token, user_id, location?
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel_txt, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // do nothing
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
+        });
     }
 
 
@@ -142,5 +189,26 @@ public class SettingsActivity extends Activity {
                 .show();
     }
 
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) {
+            // pre-condition
+            return;
+        }
+
+        int totalHeight = listView.getPaddingTop() + listView.getPaddingBottom();
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            View listItem = listAdapter.getView(i, null, listView);
+            if (listItem instanceof ViewGroup) {
+                listItem.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+            listItem.measure(0, 0);
+            totalHeight += listItem.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
+    }
 
 }

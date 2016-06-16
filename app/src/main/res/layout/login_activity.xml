@@ -12,14 +12,14 @@
     tools:context=".app.components.LoginActivity">
 
     <Button
+        android:id="@+id/loginBackBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="BACK"
         android:layout_margin="0dp"
-        android:paddingLeft="-20dp"
-        android:textColor="@color/white"
         android:background="@color/transparent"
-        android:id="@+id/loginBackBtn"/>
+        android:paddingLeft="-20dp"
+        android:text="BACK"
+        android:textColor="@color/white" />
 
     <RelativeLayout
         android:id="@+id/usernameScreen"
@@ -38,6 +38,7 @@
             android:layout_marginRight="60dp"
             android:layout_marginTop="60dp"
             android:background="@color/black"
+            android:gravity="center"
             android:hint="username"
             android:imeOptions="actionNone"
             android:inputType="textNoSuggestions"
@@ -49,7 +50,6 @@
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textColorHint="@color/gray"
-            android:gravity="center"
             android:textSize="25dp" />
 
 
@@ -86,6 +86,7 @@
             android:layout_alignParentBottom="true"
             android:layout_centerVertical="true"
             android:layout_marginBottom="80dp"
+            android:gravity="center"
             android:text="test"
             android:textAlignment="center"
             android:textColor="@color/cyan" />
@@ -105,15 +106,15 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/ageScreen"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/ageScreen">
+        android:layout_height="match_parent">
+
         <no.twomonkeys.sneek.app.shared.views.CustomNumberPicker
+            android:id="@+id/customNumberPicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:id="@+id/customNumberPicker"
-           >
+            android:layout_centerInParent="true">
 
         </no.twomonkeys.sneek.app.shared.views.CustomNumberPicker>
 
@@ -122,8 +123,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="80dp"
             android:layout_centerHorizontal="true"
+            android:layout_marginBottom="80dp"
             android:background="@color/transparent"
             android:text="KISS"
             android:textAllCaps="false"
@@ -131,6 +132,7 @@
             android:textSize="25dp" />
 
     </RelativeLayout>
+
     <no.twomonkeys.sneek.app.shared.views.LoadingView
         android:id="@+id/mainLoadingView"
         android:layout_width="match_parent"
@@ -139,9 +141,14 @@
         android:layout_centerHorizontal="true"
         android:background="@color/black"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"></no.twomonkeys.sneek.app.shared.views.LoadingView>
 
-    </no.twomonkeys.sneek.app.shared.views.LoadingView>
+    <no.twomonkeys.sneek.app.components.web.WebController
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/webControllerLogin">
+
+    </no.twomonkeys.sneek.app.components.web.WebController>
 
 
 </RelativeLayout>

@@ -10,64 +10,85 @@
     android:paddingRight="0dp"
     android:paddingTop="0dp"
     tools:context=".app.components.settings.SettingsActivity">
-
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <RelativeLayout
+        android:layout_height="match_parent">
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:paddingBottom="10dp">
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/backBtn"
-                style="?android:attr/borderlessButtonStyle"
+            <ListView
+                android:id="@+id/accountList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_gravity="center"
-                android:layout_marginTop="10dp"
-                android:background="@color/black"
-                android:text="BACK"
-                android:textColor="@color/white" />
+                android:layout_marginTop="80dp"></ListView>
 
-            <TextView
+            <ListView
+                android:id="@+id/helpList"
                 android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="13dp"
-                android:text="FML"
-                android:textColor="@color/black"
-                android:textSize="20dp" />
-        </RelativeLayout>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"></ListView>
 
-        <ListView
-            android:id="@+id/accountList"
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="30dp"
+                android:id="@+id/deleteAccountBtn"
+                android:background="@color/white"
+                android:text="Delete Account"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_marginBottom="40dp"
+                android:textColor="@color/red" />
+
+        </LinearLayout>
+    </ScrollView>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:paddingBottom="10dp">
+
+        <Button
+            android:id="@+id/backBtn"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"></ListView>
+            android:layout_alignParentLeft="true"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:background="@color/black"
+            android:text="BACK"
+            android:textColor="@color/white" />
 
-        <ListView
-            android:id="@+id/helpList"
+        <TextView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"></ListView>
+            android:layout_height="30dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="13dp"
+            android:text="FML"
+            android:textColor="@color/black"
+            android:textSize="20dp" />
+    </RelativeLayout>
 
-    </LinearLayout>
 
     <no.twomonkeys.sneek.app.components.block.BlockController
+        android:id="@+id/blockController"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/blockController">
-    </no.twomonkeys.sneek.app.components.block.BlockController>
+        android:layout_height="match_parent"></no.twomonkeys.sneek.app.components.block.BlockController>
+
     <no.twomonkeys.sneek.app.components.change.ChangeController
+        android:id="@+id/changeController"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/changeController">
+        android:layout_height="match_parent">
 
     </no.twomonkeys.sneek.app.components.change.ChangeController>
+
+    <no.twomonkeys.sneek.app.components.web.WebController
+        android:id="@+id/webController"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </no.twomonkeys.sneek.app.components.web.WebController>
 
 </RelativeLayout>

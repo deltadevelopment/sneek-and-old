@@ -142,4 +142,9 @@ public interface StoryApi {
             @Path("user_id") int user_id
     );
 
+    @DELETE("user/{user_id}")
+    Call<ResponseModel> deleteUser(
+            @Path("user_id") int user_id
+    );
+
 }
