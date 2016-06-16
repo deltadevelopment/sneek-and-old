@@ -35,8 +35,6 @@ public interface StoryApi {
     Call<ResponseModel> getStream(
             @Path("stream_id") int streamId
     );
-
-
     @GET("feed/{feed}")
     Call<ResponseModel> getFeed(
             @Path("feed") String feed
@@ -66,6 +64,9 @@ public interface StoryApi {
 
     @POST("user")
     Call<ResponseModel> postUser(@Body HashMap<String, HashMap> body);
+
+    @PUT("user/{user_id}")
+    Call<ResponseModel> putUser(@Body HashMap<String, HashMap> body, @Path("user_id") int user_id);
 
     @POST("following")
     Call<ResponseModel> postStalkUser(@Body HashMap<String, HashMap> body);

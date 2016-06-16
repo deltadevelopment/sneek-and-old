@@ -13,6 +13,8 @@
     <color name="gray">#aaaaaa</color>
     <color name="settingsGray">#f0eff5</color>
     <color name="settingsGrayText">#6e6d73</color>
+    <color name="borderColor">#ccd1d9</color>
+    <color name="successColor">#2ecc71</color>
 
 
     <string name="validation_username_space">No spaces, please</string>
@@ -20,6 +22,9 @@
     <string name="validation_username_alphanumeric">Only numbers and letters from A-Z</string>
     <string name="validation_username_exists">Already taken</string>
     <string name="validation_password_incorrect">Wrong password</string>
+
+
+    <string name="validation_password_length">Must be between 6 and 20 characters</string>
 
     <string name="block_user_h">Blocking user</string>
     <string name="block_user_b">By blocking this user, the user will not be able to see any of your moments and you will not be able see any of his. This will take effect next time you refresh the feed. Are you sure you want to block this user?</string>
@@ -40,5 +45,22 @@
 
     <string name="log_out_h">Log out</string>
     <string name="log_out_b">Are you sure you want to log out?</string>
+    <string name="change_pass_info">In case you have really bad memory or other stuff that might not even be remotely related to that you can change your password here.</string>
+
+    <string name="new_pass_txt">New password</string>
+    <string name="new_email_txt">New email</string>
+    <string name="repeat_pass_txt">Repeat password</string>
+
+    <string name="validation_loc_pass">Does not match</string>
+    <string name="validation_loc_email">Not valid</string>
+
+    <string name="pass_saved">Password was changed</string>
+    <string name="email_saved">Email was changed</string>
+    <string name="change_pass_txt">Change password</string>
+    <string name="change_email_txt">Change email</string>
+    <string name="change_email_info">Save your email address so you don\'t lose access to your account.</string>
+
+
+    <string name="validation_email_format">Not valid</string>
 
 </resources>

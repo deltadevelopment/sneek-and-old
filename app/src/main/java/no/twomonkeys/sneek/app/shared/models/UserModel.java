@@ -4,10 +4,13 @@ import android.util.Log;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import no.twomonkeys.sneek.app.shared.APIs.StoryApi;
 import no.twomonkeys.sneek.app.shared.MapCallback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.GenericContract;
 import no.twomonkeys.sneek.app.shared.helpers.NetworkHelper;
@@ -18,13 +21,17 @@ import no.twomonkeys.sneek.app.shared.helpers.NetworkHelper;
 public class UserModel extends CRUDModel {
     private int id;
     private boolean is_following;
-    private String username, password;
+    private String username;
     private int year_born, followers_count;
     private String email;
     private UserSession userSession;
     private StoryModel storyModel;
     private BlockModel blockModel;
     private UserFlagModel userFlagModel;
+    private boolean shouldRepeatPassword;
+    private String password, passwordAgain;
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
     public interface UserModelCallback {
         void callbackCall(UserModel userModel);
@@ -99,6 +106,13 @@ public class UserModel extends CRUDModel {
         return username;
     }
 
+    public void setShouldRepeatPassword(boolean shouldRepeatPassword) {
+        this.shouldRepeatPassword = shouldRepeatPassword;
+    }
+
+    public void setPasswordAgain(String passwordAgain) {
+        this.passwordAgain = passwordAgain;
+    }
 
     public static void exists(String username, SimpleCallback scb, final UserExistsCallback uec) {
         MapCallback callback = new MapCallback() {
@@ -170,5 +184,77 @@ public class UserModel extends CRUDModel {
     public String getEmail() {
 
         return email;
+    }
+
+    public void update(final SimpleCallback scb) {
+        validate(scb, new SimpleCallback2() {
+            @Override
+            public void callbackCall() {
+                HashMap innerMap = new HashMap();
+
+
+                if (password != null) {
+                    innerMap.put("password", password);
+                }
+                if (email != null) {
+                    innerMap.put("email", email);
+                }
+                HashMap<String, HashMap> map = new HashMap();
+                map.put("user", innerMap);
+
+                NetworkHelper.sendRequest(NetworkHelper.getNetworkService().putUser(map, id),
+                        GenericContract.generic_parse(),
+                        onDataReturned(),
+                        scb);
+            }
+        });
+    }
+
+    //Validation
+
+    private ErrorModel getLocalErrors() {
+        ErrorModel errorModel = new ErrorModel(DataHelper.getContext());
+        if (shouldRepeatPassword) {
+            if (!passwordIsValid()) {
+                errorModel.addError("validation_loc_pass", "password");
+                errorModel.addError("validation_loc_pass", "passwordAgain");
+            }
+        }
+        if (username != null) {
+            if (!emailIsValid()) {
+                errorModel.addError("validation_loc_email", "email");
+            }
+        }
+        return errorModel.hasErrors() ? errorModel : null;
+    }
+
+
+    public void validate(SimpleCallback scb, SimpleCallback2 scb2) {
+        ErrorModel errors = getLocalErrors();
+        if (errors != null) {
+            scb.callbackCall(errors);
+        } else {
+            scb2.callbackCall();
+        }
+    }
+
+    private boolean passwordIsValid() {
+        if (password.equals(passwordAgain)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    private boolean emailIsValid() {
+        if (email == null) {
+            return true;
+        }
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
+        return matcher.find();
     }
 }

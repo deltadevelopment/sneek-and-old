@@ -2,6 +2,7 @@ package no.twomonkeys.sneek.app.shared.models;
 
 
 import android.content.Context;
+import android.util.Log;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class ErrorModel {
     public ErrorModel(Context context) {
         this.context = context;
     }
+
     public ErrorModel(Context context, Map JSONDictionary) {
         this.context = context;
         build(JSONDictionary);
@@ -38,7 +40,7 @@ public class ErrorModel {
             if (errorDictionary != null) {
                 traverseErrors(errorDictionary);
             } else if (errorsDictionary != null) {
-               traverseErrors(errorsDictionary);
+                traverseErrors(errorsDictionary);
             }
         }
     }
@@ -46,7 +48,7 @@ public class ErrorModel {
     public void traverseErrors(Map errorDictionary) {
         for (Object key : errorDictionary.keySet()) {
             ArrayList<String> keyErrors = (ArrayList) errorDictionary.get((String) key);
-            addError(keyErrors.get(0), (String)key);
+            addError(keyErrors.get(0), (String) key);
         }
     }
 
@@ -70,9 +72,15 @@ public class ErrorModel {
     }
 
     public String getLocalizedString(String string) {
+        Log.v("String is"," string " + string);
         int text_id = context.getResources().getIdentifier(string, "string", context.getPackageName());
         return context.getString(text_id);
     }
 
-
+    public boolean hasErrors() {
+        if (errorsMutable == null) {
+            return false;
+        }
+        return errorsMutable.size() > 0 ? true : false;
+    }
 }

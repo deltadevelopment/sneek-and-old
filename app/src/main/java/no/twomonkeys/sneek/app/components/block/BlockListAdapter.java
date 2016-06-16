@@ -12,8 +12,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import no.twomonkeys.sneek.R;
+import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
+import no.twomonkeys.sneek.app.shared.models.ErrorModel;
 import no.twomonkeys.sneek.app.shared.models.SettingsModel;
 import no.twomonkeys.sneek.app.shared.models.UserModel;
 
@@ -24,6 +26,12 @@ public class BlockListAdapter extends ArrayAdapter<UserModel> {
     TextView usernameTextView;
     Button unblockBtn;
 
+    public interface BlockTapped {
+        void onTapped(UserModel userModel);
+    }
+
+    public BlockTapped unblockTapped;
+
     public BlockListAdapter(Context context, ArrayList<UserModel> blockedUsers) {
         super(context, R.layout.settings_row, blockedUsers);
 
@@ -31,7 +39,7 @@ public class BlockListAdapter extends ArrayAdapter<UserModel> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Log.v("chaning","CHANING");
+        Log.v("chaning", "CHANING");
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View view = inflater.inflate(R.layout.block_row, parent, false);
 
@@ -39,14 +47,23 @@ public class BlockListAdapter extends ArrayAdapter<UserModel> {
         unblockBtn = (Button) view.findViewById(R.id.unblockBtn);
         UIHelper.layoutBtnRelativeSize(getContext(), unblockBtn, "Unblock");
 
+
+        final UserModel userModel = getItem(position);
+
+
         unblockBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                userModel.getBlockModel().delete(new SimpleCallback() {
+                    @Override
+                    public void callbackCall(ErrorModel errorModel) {
+                        if (errorModel != null) {
+                            unblockTapped.onTapped(userModel);
+                        }
+                    }
+                });
             }
         });
-
-        UserModel userModel = getItem(position);
 
         usernameTextView.setText(userModel.getUsername());
 

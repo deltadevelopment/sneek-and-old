@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.block.BlockController;
+import no.twomonkeys.sneek.app.components.change.ChangeController;
 import no.twomonkeys.sneek.app.components.settings.SettingsAdapter;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
@@ -34,6 +35,7 @@ public class SettingsActivity extends Activity {
     ListView accountList, helpList;
     TextView accountHeadView, helpHeadView;
     BlockController blockController;
+    ChangeController changeController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +92,12 @@ public class SettingsActivity extends Activity {
                 int indexPostion = position - 1;
                 SettingsModel settingsModel = accountListArray.get(indexPostion);
                 Log.v("tag", "position " + indexPostion);
+                if (indexPostion == 1) {
+                    changeController.animateInPassword();
+                } else if (indexPostion == 2) {
+                    //swap to email here
+                    changeController.animateInEmail();
+                }
                 if (indexPostion == 3) {
                     blockController.animateIn();
                 }
@@ -108,6 +116,9 @@ public class SettingsActivity extends Activity {
 
         blockController = (BlockController) findViewById(R.id.blockController);
         blockController.setVisibility(View.GONE);
+
+        changeController = (ChangeController) findViewById(R.id.changeController);
+        changeController.setVisibility(View.GONE);
     }
 
 

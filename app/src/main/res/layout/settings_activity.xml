@@ -62,7 +62,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/blockController">
-
     </no.twomonkeys.sneek.app.components.block.BlockController>
+    <no.twomonkeys.sneek.app.components.change.ChangeController
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/changeController">
+
+    </no.twomonkeys.sneek.app.components.change.ChangeController>
 
 </RelativeLayout>

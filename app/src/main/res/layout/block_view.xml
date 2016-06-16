@@ -4,7 +4,7 @@
     android:id="@+id/reportView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/settingsGray"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -46,5 +46,6 @@
         android:layout_height="match_parent"
         android:text="No blocked users"
         android:id="@+id/blockedInfoTextView"/>
+
 
 </LinearLayout>

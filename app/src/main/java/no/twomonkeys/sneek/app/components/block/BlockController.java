@@ -74,6 +74,14 @@ public class BlockController extends RelativeLayout {
         blockedInfoTextView = (TextView) findViewById(R.id.blockedInfoTextView);
         blockedList.setVisibility(GONE);
 
+        listAdapter.unblockTapped = new BlockListAdapter.BlockTapped() {
+            @Override
+            public void onTapped(UserModel userModel) {
+                blockedUsers.remove(userModel);
+                listAdapter.notifyDataSetChanged();
+            }
+        };
+
     }
 
     private void refreshBlockedUsers() {
@@ -81,11 +89,10 @@ public class BlockController extends RelativeLayout {
             @Override
             public void callbackCall(ArrayList arrayList) {
                 blockedUsers.addAll(arrayList);
-                if (blockedUsers.size() > 0){
+                if (blockedUsers.size() > 0) {
                     blockedList.setVisibility(VISIBLE);
                     blockedInfoTextView.setVisibility(GONE);
-                }
-                else{
+                } else {
                     blockedList.setVisibility(GONE);
                     blockedInfoTextView.setVisibility(VISIBLE);
                 }
