@@ -56,8 +56,14 @@
             class="no.twomonkeys.sneek.app.components.feed.TopBarFragment"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_alignParentBottom="true" />
+            android:layout_alignParentTop="true" />
 
+        <fragment
+            android:id="@+id/bottomBarFragment"
+            class="no.twomonkeys.sneek.app.components.feed.BottomBarFragment"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true" />
 
         <ImageButton
             android:id="@+id/placeholderButton"
@@ -96,12 +102,7 @@
         android:layout_height="match_parent"
         android:background="@color/red" />
 
-    <fragment
-        android:id="@+id/menuFragment"
-        class="no.twomonkeys.sneek.app.components.menu.MenuFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="50dp" />
+
 
     <fragment
         android:id="@+id/storyFragment"

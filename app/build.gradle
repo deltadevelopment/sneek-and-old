@@ -11,6 +11,9 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    dexOptions {
+        jumboMode true
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -24,7 +27,8 @@ android {
         pickFirst  'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.properties'
         pickFirst  'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.xml'
     }
-    sourceSets { main { jni.srcDirs = ['src/main/jni', 'src/main/jniLibs/'] } }
+    //sourceSets { main { jni.srcDirs = ['src/main/jni', 'src/main/jniLibs/'] } }
+    sourceSets { main { jni.srcDirs = [] } }
 }
 
 dependencies {

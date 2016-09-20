@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <fragment
+        android:id="@+id/friendsTopFragment"
+        class="no.twomonkeys.sneek.app.components.friends.FriendsFragment"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+        tools:layout="@layout/friends_top_fragment" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Following"
+        android:id="@+id/textFollowing"
+        android:layout_below="@+id/friendsTopFragment"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="40dp"
+        android:layout_marginLeft="24dp"
+        android:textColor="#808080"/>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Suggested"
+        android:id="@+id/textSuggested"
+        android:layout_alignTop="@+id/textFollowing"
+        android:layout_toRightOf="@+id/textFollowing"
+        android:layout_toEndOf="@+id/textFollowing"
+        android:layout_marginLeft = "10pt"
+        android:textColor="#808080" />
+
+</RelativeLayout>

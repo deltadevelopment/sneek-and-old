@@ -32,7 +32,7 @@
             android:layout_height="40dp"
             android:fontFamily="sans-serif-light"
             android:gravity="center"
-            android:text="You should stalk something."
+            android:text="Follow someone."
             android:textSize="20dp" />
 
         <EditText
@@ -47,7 +47,7 @@
             android:fontFamily="sans-serif"
             android:textStyle="normal"
             android:gravity="center"
-            android:hint="Stalk something"
+            android:hint="Search for a user"
             android:imeOptions="actionNone"
             android:inputType="textEmailAddress"
             android:lines="2"

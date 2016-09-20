@@ -448,10 +448,10 @@ public class StalkController extends RelativeLayout {
             finalSearchString = stringStripped;
         }
         if (stringStripped.length() == 0 && hasAtMention()) {
-            noUsersTextView.setText("no users txt");
+            noUsersTextView.setText("No users found");
             showNotValid();
         } else if (!searchTxtIsValid()) {
-            noUsersTextView.setText("no users txt");
+            noUsersTextView.setText("No users found");
             showNotValid();
         } else {
             UserModel.fetch(finalSearchString, new UserModel.UserModelCallback() {

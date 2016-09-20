@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
     private FeedAdapter feedAdapter;
     private float mPrevY;
     private TopBarFragment topBar;
-    private MenuFragment menuFragment;
     private CameraFragment cameraFragment;
     private float x1, y1, y2, x2, dx, dy;
     private boolean showing;
@@ -183,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
         Log.v(TAG,"Screen sise " + UIHelper.screenWidth(this));
 
         //Object initialization
-        menuFragment = (MenuFragment) fragmentManager.findFragmentById(R.id.menuFragment);
         cameraFragment = (CameraFragment) fragmentManager.findFragmentById(R.id.cameraFragment);
         cameraFragment.onCancelClb = new SimpleCallback2() {
             @Override
@@ -255,32 +253,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        menuFragment.callback = new Callback() {
-            @Override
-            public void callbackCall() {
-
-            }
-
-            @Override
-            public void callbackCall(int row) {
-                animateOut();
-                switch (row) {
-                    case 0: {
-                        showStalkScreen();
-                        break;
-                    }
-                    case 1: {
-                        refreshItems();
-                        break;
-                    }
-                    case 2: {
-                        Intent i = new Intent(MainActivity.this, SettingsActivity.class);
-                        startActivity(i);
-                        break;
-                    }
-                }
-            }
-        };
 
         recyclerView = (RecyclerView) layout.findViewById(R.id.recycleView);
         feedAdapter = new FeedAdapter(this);
@@ -625,11 +597,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void moveMenu(MotionEvent m) {
-        menuFragment.dragRight(m.getRawX());
-        changeOpacity();
-        updateAlpha(menuFragment.percentageScrolled());
-    }
+
 
     public void moveCamera(MotionEvent m) {
         cameraFragment.drag(m.getRawX());
@@ -693,7 +661,6 @@ public class MainActivity extends AppCompatActivity {
 
                     cameraFragment.startMove(ev.getRawX());
                     wrapperDx = wrapper.getX() - ev.getRawX();
-                    menuFragment.startMove(ev.getRawX());
                     scrollDy = recyclerView.getY() - ev.getRawY();
                     lastX = ev.getRawX();
                     break;
@@ -830,6 +797,7 @@ public class MainActivity extends AppCompatActivity {
                 moveDown(ev);
                 break;
             }
+            /**
             case LEFT: {
                 moveLeft(ev);
                 break;
@@ -838,9 +806,10 @@ public class MainActivity extends AppCompatActivity {
                 moveRight(ev);
                 break;
             }
+             */
         }
     }
-
+/**
     void moveLeft(MotionEvent m) {
         if (!menuIsVisible) {
             moveCamera(m);
@@ -856,6 +825,7 @@ public class MainActivity extends AppCompatActivity {
             moveCamera(m);
         }
     }
+ */
 
     void moveUp(MotionEvent motionEvent) {
 
@@ -874,7 +844,6 @@ public class MainActivity extends AppCompatActivity {
 
         // refreshSwipeLayout.setEnabled(false);
 
-        menuFragment.animateIn();
         topBar.animateOut();
         homeBtn.animate().alpha(0).setDuration(150);
         cameraFragment.stopCamera();
@@ -888,7 +857,6 @@ public class MainActivity extends AppCompatActivity {
         overlayShadow.setBackgroundDrawable(cd);
         //refreshSwipeLayout.setEnabled(true);
 
-        menuFragment.animateOut();
         topBar.animateIn();
         //homeBtn.animate().alpha(255).setDuration(150);
 
@@ -1009,13 +977,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    void changeOpacity() {
-        if (menuFragment.shouldChangeColor()) {
-            ColorDrawable cd = new ColorDrawable(0xFF000000);
-            cd.setAlpha(menuFragment.percentageColor());
-            overlayShadow.setBackgroundDrawable(cd);
-        }
-    }
+
 
     private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
 

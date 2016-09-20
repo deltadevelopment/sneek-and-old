@@ -1,6 +1,6 @@
 [
     {
-        "outputFile": "/Users/simenlie/AndroidStudioProjects/Sneek/libs/VidEffects-master/build/intermediates/res/merged/release/values/values.xml",
+        "outputFile": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\build\\intermediates\\res\\merged\\release\\values\\values.xml",
         "map": [
             {
                 "to": {
@@ -11,13 +11,13 @@
                     "endOffset": 98
                 },
                 "from": {
-                    "file": "/Users/simenlie/AndroidStudioProjects/Sneek/libs/VidEffects-master/res/values/strings.xml",
+                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\res\\values\\strings.xml",
                     "position": {
                         "startLine": 3,
                         "startColumn": 4,
-                        "startOffset": 56,
+                        "startOffset": 59,
                         "endColumn": 47,
-                        "endOffset": 99
+                        "endOffset": 102
                     }
                 }
             },
@@ -31,14 +31,14 @@
                     "endOffset": 389
                 },
                 "from": {
-                    "file": "/Users/simenlie/AndroidStudioProjects/Sneek/libs/VidEffects-master/res/values/styles.xml",
+                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\res\\values\\styles.xml",
                     "position": {
                         "startLine": 6,
                         "startColumn": 4,
-                        "startOffset": 186,
+                        "startOffset": 192,
                         "endLine": 12,
                         "endColumn": 12,
-                        "endOffset": 472
+                        "endOffset": 484
                     }
                 }
             },
@@ -52,14 +52,14 @@
                     "endOffset": 549
                 },
                 "from": {
-                    "file": "/Users/simenlie/AndroidStudioProjects/Sneek/libs/VidEffects-master/res/values/styles.xml",
+                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\res\\values\\styles.xml",
                     "position": {
                         "startLine": 15,
                         "startColumn": 4,
-                        "startOffset": 510,
+                        "startOffset": 525,
                         "endLine": 17,
                         "endColumn": 12,
-                        "endOffset": 665
+                        "endOffset": 682
                     }
                 }
             }
