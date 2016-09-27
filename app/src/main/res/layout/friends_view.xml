@@ -17,6 +17,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Following"
+        android:clickable="true"
         android:id="@+id/textFollowing"
         android:layout_below="@+id/friendsTopFragment"
         android:layout_alignParentLeft="true"
@@ -31,11 +32,27 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Suggested"
+        android:clickable = "true"
         android:id="@+id/textSuggested"
         android:layout_alignTop="@+id/textFollowing"
         android:layout_toRightOf="@+id/textFollowing"
         android:layout_toEndOf="@+id/textFollowing"
         android:layout_marginLeft = "10pt"
         android:textColor="#808080" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/textFollowing"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/friendsScroll"
+            android:layout_gravity="center_horizontal" />
+    </LinearLayout>
 
 </RelativeLayout>
