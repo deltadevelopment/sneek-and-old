@@ -20,6 +20,7 @@ import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 /**
  * Created by Sondre on 27.09.2016.
  */
+/**
 public class SettingsFragment extends android.support.v4.app.Fragment  {
     public TextView settingsTitle;
     public TextView settingsBack;
@@ -34,3 +35,4 @@ public class SettingsFragment extends android.support.v4.app.Fragment  {
         return view;
     }
 }
+*/

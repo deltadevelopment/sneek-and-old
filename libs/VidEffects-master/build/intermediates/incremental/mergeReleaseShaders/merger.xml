@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="main"><source path="C:\Users\Sondre\Documents\GitHub\sneek-and\libs\VidEffects-master\src\main\shaders"/></dataSet><dataSet config="release"><source path="C:\Users\Sondre\Documents\GitHub\sneek-and\libs\VidEffects-master\src\release\shaders"/></dataSet></merger>
+<merger version="3"><dataSet config="main"><source path="C:\Users\Sondre\Documents\GitHub\sneek-and-old\libs\VidEffects-master\src\main\shaders"/></dataSet><dataSet config="release"><source path="C:\Users\Sondre\Documents\GitHub\sneek-and-old\libs\VidEffects-master\src\release\shaders"/></dataSet></merger>
