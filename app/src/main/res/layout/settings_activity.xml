@@ -16,24 +16,31 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:weightSum="1">
+
 
             <ListView
                 android:id="@+id/accountList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="80dp"></ListView>
+                android:layout_marginTop="100dp"
+                android:background="@android:color/white">
+            </ListView>
+
 
             <ListView
                 android:id="@+id/helpList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"></ListView>
+                android:background="@android:color/white"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                ></ListView>
 
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="45dp"
                 android:id="@+id/deleteAccountBtn"
                 android:background="@color/white"
                 android:text="Delete Account"
@@ -47,15 +54,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:paddingBottom="10dp">
+        android:paddingBottom="10dp"
+        android:id="@+id/relativeLayout">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="k"
+            android:text="BkBtn"
             android:clickable="true"
-            android:textSize = "25dp"
+            android:textSize = "25sp"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:id="@+id/BackBtn"
@@ -69,7 +77,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Settings"
-            android:textSize = "25dp"
+            android:textSize = "25sp"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:id="@+id/settingsTitleBtn"
             android:layout_alignParentTop="true"
@@ -78,7 +86,7 @@
     </RelativeLayout>
 
 
-    <no.twomonkeys.sneek.app.components.block.BlockController
+    <!--<no.twomonkeys.sneek.app.components.block.BlockController
         android:id="@+id/blockController"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></no.twomonkeys.sneek.app.components.block.BlockController>
@@ -93,8 +101,11 @@
     <no.twomonkeys.sneek.app.components.web.WebController
         android:id="@+id/webController"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
     </no.twomonkeys.sneek.app.components.web.WebController>
-
+-->
 </RelativeLayout>

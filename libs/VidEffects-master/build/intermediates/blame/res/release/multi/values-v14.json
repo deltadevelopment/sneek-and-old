@@ -1,6 +1,6 @@
 [
     {
-        "outputFile": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\build\\intermediates\\res\\merged\\release\\values-v14\\values-v14.xml",
+        "outputFile": "/Users/deltadev/sneek-and-old/libs/VidEffects-master/build/intermediates/res/merged/release/values-v14/values-v14.xml",
         "map": [
             {
                 "to": {
@@ -12,14 +12,14 @@
                     "endOffset": 201
                 },
                 "from": {
-                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\res\\values-v14\\styles.xml",
+                    "file": "/Users/deltadev/sneek-and-old/libs/VidEffects-master/res/values-v14/styles.xml",
                     "position": {
                         "startLine": 7,
                         "startColumn": 4,
-                        "startOffset": 227,
+                        "startOffset": 220,
                         "endLine": 9,
                         "endColumn": 12,
-                        "endOffset": 375
+                        "endOffset": 366
                     }
                 }
             }

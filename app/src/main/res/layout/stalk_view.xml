@@ -13,11 +13,11 @@
         android:layout_gravity="center"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="15dp"
-        android:textSize="30dp"
+        android:textSize="25sp"
         android:background="@color/white"
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
-        android:text="k"
+        android:text="BkBtn"
         android:textColor="@color/red" />
 
     <LinearLayout
@@ -34,7 +34,7 @@
             android:fontFamily="sans-serif-light"
             android:gravity="center"
             android:text="Follow someone."
-            android:textSize="20dp" />
+            android:textSize="20sp" />
 
         <EditText
             android:id="@+id/stalkEditText"
@@ -59,7 +59,7 @@
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textColorHint="@color/gray"
-            android:textSize="25dp" />
+            android:textSize="25sp" />
 
         <TextView
             android:id="@+id/noUsersTextView"
@@ -80,7 +80,7 @@
         android:gravity="center"
         android:text="0 stalkers"
         android:textColor="@color/black"
-        android:textSize="17dp" />
+        android:textSize="17sp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -91,6 +91,6 @@
         android:layout_alignBottom="@+id/stalkBackBtn"
         android:layout_centerHorizontal="true"
         android:textColor="@color/red"
-        android:textSize = "25dp"/>
+        android:textSize = "25sp"/>
 
 </RelativeLayout>

@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/libs/VidEffects-master/VidEffects-master.iml" filepath="$PROJECT_DIR$/libs/VidEffects-master/VidEffects-master.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/libs/libs.iml" filepath="$PROJECT_DIR$/libs/libs.iml" />
-      <module fileurl="file://$PROJECT_DIR$/sneek-and.iml" filepath="$PROJECT_DIR$/sneek-and.iml" />
       <module fileurl="file://$PROJECT_DIR$/sneek-and-old.iml" filepath="$PROJECT_DIR$/sneek-and-old.iml" />
     </modules>
   </component>

@@ -31,7 +31,7 @@ import no.twomonkeys.sneek.app.shared.models.SettingsModel;
 import no.twomonkeys.sneek.app.shared.models.UserModel;
 
 /**
- * Created by simenlie on 14.06.16.
+ * Created by simenlie on 14.06.16
  */
 public class SettingsActivity extends Activity {
     Button backBtn;
@@ -85,7 +85,7 @@ public class SettingsActivity extends Activity {
         helpList.addHeaderView(header2, null, false);
 
         helpHeadView = (TextView) header2.findViewById(R.id.headerView);
-        helpHeadView.setText("SCROLL OF DEATH");
+        helpHeadView.setText("MORE");
 
         ListAdapter listAdapter2 = new SettingsAdapter(this, helpListArray);
         helpList.setAdapter(listAdapter2);
@@ -121,7 +121,7 @@ public class SettingsActivity extends Activity {
                 webController.animateIn();
             }
         });
-
+        /*
         blockController = (BlockController) findViewById(R.id.blockController);
         blockController.setVisibility(View.GONE);
 
@@ -130,6 +130,7 @@ public class SettingsActivity extends Activity {
 
         webController = (WebController) findViewById(R.id.webController);
         webController.setVisibility(View.GONE);
+        */
 
         setListViewHeightBasedOnChildren(helpList);
         setListViewHeightBasedOnChildren(accountList);
