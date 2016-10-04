@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback2;

@@ -1,6 +1,6 @@
 [
     {
-        "outputFile": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and-old\\libs\\VidEffects-master\\build\\intermediates\\res\\merged\\release\\values\\values.xml",
+        "outputFile": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\build\\intermediates\\res\\merged\\release\\values\\values.xml",
         "map": [
             {
                 "to": {
@@ -11,7 +11,7 @@
                     "endOffset": 98
                 },
                 "from": {
-                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and-old\\libs\\VidEffects-master\\res\\values\\strings.xml",
+                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\res\\values\\strings.xml",
                     "position": {
                         "startLine": 3,
                         "startColumn": 4,
@@ -31,7 +31,7 @@
                     "endOffset": 389
                 },
                 "from": {
-                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and-old\\libs\\VidEffects-master\\res\\values\\styles.xml",
+                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\res\\values\\styles.xml",
                     "position": {
                         "startLine": 6,
                         "startColumn": 4,
@@ -52,7 +52,7 @@
                     "endOffset": 549
                 },
                 "from": {
-                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and-old\\libs\\VidEffects-master\\res\\values\\styles.xml",
+                    "file": "C:\\Users\\Sondre\\Documents\\GitHub\\sneek-and\\libs\\VidEffects-master\\res\\values\\styles.xml",
                     "position": {
                         "startLine": 15,
                         "startColumn": 4,

@@ -95,8 +95,8 @@ public class StalkController extends RelativeLayout {
         getStalkBtn();
         getNoUsersTextView();
         getStalkEditText();
-        getStalkBackBtn();
-        getStalkLoadingView();
+       // getStalkBackBtn();
+        //getStalkLoadingView();
         getStalkersCountText();
         setY(UIHelper.screenHeight(getContext()));
         setVisibility(INVISIBLE);
@@ -181,7 +181,7 @@ public class StalkController extends RelativeLayout {
 
     private Button getStalkBtn() {
         if (stalkBtn == null) {
-            Button stalkBtn = (Button) findViewById(R.id.stalkStalkBtn);
+            Button stalkBtn = (Button) findViewById(R.id.stalkBtn);
             stalkBtn.setVisibility(GONE);
             UIHelper.layoutBtn(getContext(), stalkBtn, "STALK");
             stalkBtn.setOnClickListener(new OnClickListener() {
@@ -394,7 +394,7 @@ public class StalkController extends RelativeLayout {
         return stalkEditText;
     }
 
-
+/**
     private Button getStalkBackBtn() {
         if (stalkBackBtn == null) {
             Button stalkBackBtn = (Button) findViewById(R.id.stalkBackBtn);
@@ -409,7 +409,8 @@ public class StalkController extends RelativeLayout {
         }
         return stalkBackBtn;
     }
-
+ */
+/**
     private LoadingView getStalkLoadingView() {
         if (stalkLoadingView == null) {
             LoadingView stalkLoadingView = (LoadingView) findViewById(R.id.stalkLoadingView);
@@ -420,6 +421,7 @@ public class StalkController extends RelativeLayout {
         }
         return stalkLoadingView;
     }
+ */
 
 
     private void search() {
