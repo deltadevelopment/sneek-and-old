@@ -46,7 +46,7 @@
                 android:text="Delete Account"
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_marginBottom="40dp"
-                android:textColor="@color/red" />
+                android:textColor="@color/colorAccent" />
 
         </LinearLayout>
     </ScrollView>
@@ -67,19 +67,18 @@
             android:id="@+id/settingsTitleBtn"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:textColor="#FF6347" />
+            android:textColor="@color/colorAccent" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Bk"
-            android:textSize = "14sp"
-            android:layout_marginLeft="17dp"
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:id="@+id/backBtn"
-            android:textColor="#FF6347"
-            android:layout_marginStart="17dp"
-            android:layout_alignTop="@+id/settingsTitleBtn"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:background="@color/transparent"
+            android:src="@drawable/minimizex3"
+            android:tint="@color/colorAccent"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignBottom="@+id/settingsTitleBtn" />

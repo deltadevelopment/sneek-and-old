@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -34,7 +35,7 @@ import no.twomonkeys.sneek.app.shared.models.UserModel;
  * Created by simenlie on 14.06.16
  */
 public class SettingsActivity extends Activity {
-    Button backBtn;
+    ImageButton backBtn;
     ListView accountList, helpList;
     TextView accountHeadView, helpHeadView;
     BlockController blockController;
@@ -60,7 +61,7 @@ public class SettingsActivity extends Activity {
         helpListArray.add(new SettingsModel("Privacy Policy", SettingsModel.SettingsType.NAVIGATION));
         helpListArray.add(new SettingsModel("Terms of Service", SettingsModel.SettingsType.NAVIGATION));
 
-        backBtn = (Button) findViewById(R.id.backBtn);
+        backBtn = (ImageButton) findViewById(R.id.backBtn);
 
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
