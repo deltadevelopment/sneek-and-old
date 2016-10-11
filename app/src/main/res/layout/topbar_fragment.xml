@@ -10,7 +10,7 @@
     android:paddingRight="0dp"
     android:paddingTop="0dp">
 
-    <TextView
+    <Button
         android:id="@+id/moreBtn"
         android:text="srcIcon"
         android:layout_width="wrap_content"
@@ -20,11 +20,11 @@
         android:layout_alignBottom="@+id/cameraBtn"
         android:layout_alignParentTop="true"
         android:clickable="true"
-        android:onClick=""
+
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
 
-    <TextView
+    <Button
         android:id="@+id/cameraBtn"
         android:text="myProfile"
         android:layout_width="wrap_content"
@@ -37,7 +37,7 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
 
-    <TextView
+    <Button
         android:text="sneek"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

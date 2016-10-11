@@ -92,7 +92,7 @@ public class StalkController extends RelativeLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        getStalkBtn();
+       // getStalkBtn();
         getNoUsersTextView();
         getStalkEditText();
        // getStalkBackBtn();
@@ -178,7 +178,7 @@ public class StalkController extends RelativeLayout {
             }
         });
     }
-
+    /**
     private Button getStalkBtn() {
         if (stalkBtn == null) {
             Button stalkBtn = (Button) findViewById(R.id.stalkBtn);
@@ -194,7 +194,7 @@ public class StalkController extends RelativeLayout {
         }
         return stalkBtn;
     }
-
+    */
     private TextView getNoUsersTextView() {
         if (noUsersTextView == null) {
             TextView noUsersTextView = (TextView) findViewById(R.id.noUsersTextView);

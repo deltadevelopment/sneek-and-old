@@ -34,6 +34,7 @@ public class SettingsAdapter extends ArrayAdapter<SettingsModel> {
         titleTextView = (TextView) view.findViewById(R.id.titleTextView);
         titleTextView.setText(settingsModel.getTitle());
         summaryTextView = (TextView) view.findViewById(R.id.summaryTextView);
+
         if (settingsModel.getType() == SettingsModel.SettingsType.INFORMATION) {
             summaryTextView.setText(DataHelper.getUsername());
             summaryTextView.setVisibility(View.VISIBLE);

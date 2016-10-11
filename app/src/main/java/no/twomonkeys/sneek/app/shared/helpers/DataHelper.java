@@ -13,6 +13,7 @@ import java.util.Map;
 import no.twomonkeys.sneek.app.components.MainActivity;
 import no.twomonkeys.sneek.app.components.StartActivity;
 import no.twomonkeys.sneek.app.shared.models.StoryModel;
+import no.twomonkeys.sneek.app.shared.models.UserModel;
 
 /**
  * Created by simenlie on 11.05.16.

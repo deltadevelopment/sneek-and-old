@@ -16,7 +16,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by simenlie on 12.05.16.
  */
 public class ServiceGenerator {
-    public static final String API_BASE_URL = "https://dev.snikksnakk.net/v1/";
+    public static final String API_BASE_URL = "https://dev.sneek.me/v1/";
 
     private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
@@ -39,7 +39,7 @@ public class ServiceGenerator {
 
                     // Request customization: add request headers
                     Request.Builder requestBuilder = original.newBuilder()
-                            .header("X-AUTH-TOKEN", authToken)
+                            .header("X-AUTH-TOKEN", "d6d420eeb2cb5e359ee978ef3cf8e7f3")
                             .method(original.method(), original.body());
 
                     Request request = requestBuilder.build();

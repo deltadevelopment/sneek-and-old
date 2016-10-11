@@ -14,8 +14,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean menuWasVisible;
     private boolean storyIsVisible;
     private ImageButton homeBtn;
+    private Button moreBtn;
     private ImageButton placeholderBtn;
     private SwipeRefreshLayout refreshSwipeLayout;
     private VelocityTracker mTracker;
@@ -167,15 +168,18 @@ public class MainActivity extends AppCompatActivity {
         placeholderBtn.setColorFilter(Color.parseColor("#27ffff"));
 
         fragmentManager = getSupportFragmentManager();
-
+        moreBtn = (Button) findViewById(R.id.moreBtn);
         emptyView = (TextView) findViewById(R.id.empty_view);
         stalkBtn = (Button) findViewById(R.id.feedStalkBtn);
         stalkBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showStalkScreen();
+                Intent i = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(i);
             }
         });
+
+
         UIHelper.layoutBtn(this, stalkBtn, "STALK");
         noContentLayout = (LinearLayout) findViewById(R.id.noContentLayout);
 
@@ -309,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
         videoView.start();
 
         test();
+
         StalkModel.fetchAll(new SimpleCallback() {
             @Override
             public void callbackCall(ErrorModel errorModel) {
@@ -451,7 +456,7 @@ public class MainActivity extends AppCompatActivity {
         //Remove top bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().setStatusBarColor(getResources().getColor(R.color.cyan));
+       // getWindow().setStatusBarColor(getResources().getColor(R.color.cyan));
         // getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
     }
 
@@ -491,7 +496,7 @@ public class MainActivity extends AppCompatActivity {
         placeholderBtn.animate().alpha(255).setDuration(150);
         shouldAnimate = true;
         animateLoader();
-
+/*
         feedAdapter.updateData(new SimpleCallback2() {
             @Override
             public void callbackCall() {
@@ -511,6 +516,7 @@ public class MainActivity extends AppCompatActivity {
                 isRefreshing = false;
             }
         });
+        */
     }
 
 

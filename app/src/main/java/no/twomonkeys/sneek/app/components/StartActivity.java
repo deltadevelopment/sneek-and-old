@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import no.twomonkeys.sneek.R;
 import no.twomonkeys.sneek.app.components.MainActivity;
+import no.twomonkeys.sneek.app.components.settings.SettingsActivity;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 
 /**
@@ -25,11 +26,20 @@ public class StartActivity extends Activity {
         */
         DataHelper.setStartActivity(this);
         DataHelper.setContext(this);
+        /*
         if (DataHelper.getAuthToken() == null) {
             openLoginActivity();
         } else {
             openMainActivity();
         }
+*/
+
+        Intent getMainScreenIntent = new Intent(this, SettingsActivity.class);
+        final int result = 1;
+
+        getMainScreenIntent.putExtra("callingActivity", "SettingsAcvtivity");
+
+        startActivity(getMainScreenIntent);
 
     }
 

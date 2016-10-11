@@ -63,10 +63,11 @@ public class NetworkHelper {
     public static StoryApi getNetworkService()
     {
         String authToken = DataHelper.getAuthToken();
+        authToken = "94a155d6a4f438d9e545ed78cd1e4d0c";
         if (authToken != auth_token)
         {
             auth_token = authToken;
-            networkService = ServiceGenerator.createService(StoryApi.class, DataHelper.getAuthToken());
+            networkService = ServiceGenerator.createService(StoryApi.class, authToken);
         }
 
         return networkService;
@@ -81,7 +82,7 @@ public class NetworkHelper {
         if (response.code() == 401)
         {
             //Log out
-            DataHelper.startActivity.logout();
+           // DataHelper.startActivity.logout();
         }
         Log.d(TAG, "onResponse - BODY : " + response.body());
 

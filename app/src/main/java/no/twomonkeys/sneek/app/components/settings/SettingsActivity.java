@@ -61,12 +61,14 @@ public class SettingsActivity extends Activity {
         helpListArray.add(new SettingsModel("Terms of Service", SettingsModel.SettingsType.NAVIGATION));
 
         backBtn = (Button) findViewById(R.id.backBtn);
+
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
+
         accountList = (ListView) findViewById(R.id.accountList);
         helpList = (ListView) findViewById(R.id.helpList);
 
@@ -77,20 +79,21 @@ public class SettingsActivity extends Activity {
 
         accountHeadView = (TextView) header.findViewById(R.id.headerView);
         accountHeadView.setText("ACCOUNT");
+        accountList.setBackgroundColor(getResources().getColor(android.R.color.transparent));
 
         ListAdapter listAdapter = new SettingsAdapter(this, accountListArray);
         accountList.setAdapter(listAdapter);
 
         ViewGroup header2 = (ViewGroup) inflater.inflate(R.layout.header, helpList, false);
         helpList.addHeaderView(header2, null, false);
-
+        helpList.setBackgroundColor(getResources().getColor(android.R.color.transparent));
         helpHeadView = (TextView) header2.findViewById(R.id.headerView);
         helpHeadView.setText("MORE");
 
         ListAdapter listAdapter2 = new SettingsAdapter(this, helpListArray);
         helpList.setAdapter(listAdapter2);
 
-        UIHelper.layoutBtnRelative(this, backBtn, "BACK");
+       // UIHelper.layoutBtnRelative(this, backBtn, "BACK");
 
         accountList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -137,6 +140,7 @@ public class SettingsActivity extends Activity {
 
         deleteAccountBtn = (Button) findViewById(R.id.deleteAccountBtn);
         final SettingsActivity self = this;
+
         deleteAccountBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -167,6 +171,16 @@ public class SettingsActivity extends Activity {
                         .show();
             }
         });
+        final UserModel userModel = new UserModel();
+            userModel.setId(96);
+        userModel.fetch(new SimpleCallback() {
+            @Override
+            public void callbackCall(ErrorModel errorModel) {
+                Log.v("USERNAME","usernm " + userModel.getUsername());
+                DataHelper.storeUsername(userModel.getUsername());
+            }
+        });
+
     }
 
 
