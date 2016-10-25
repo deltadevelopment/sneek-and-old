@@ -3,6 +3,10 @@ package no.twomonkeys.sneek.app.components.settings;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,7 +18,11 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.ArrayList;
 
@@ -24,6 +32,7 @@ import no.twomonkeys.sneek.app.components.change.ChangeController;
 import no.twomonkeys.sneek.app.components.settings.SettingsAdapter;
 import no.twomonkeys.sneek.app.components.web.WebController;
 import no.twomonkeys.sneek.app.shared.SimpleCallback;
+import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.AuthHelper;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
@@ -36,6 +45,8 @@ import no.twomonkeys.sneek.app.shared.models.UserModel;
  */
 public class SettingsActivity extends Activity {
     ImageButton backBtn;
+    SimpleDraweeView profilePicture;
+    ProgressBar profilePictureProgress;
     ListView accountList, helpList;
     TextView accountHeadView, helpHeadView;
     BlockController blockController;
@@ -46,7 +57,7 @@ public class SettingsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Fresco.initialize(this);
         setContentView(R.layout.settings_activity);
         final ArrayList<SettingsModel> accountListArray = new ArrayList<>();
         ArrayList<SettingsModel> helpListArray = new ArrayList<>();
@@ -61,6 +72,9 @@ public class SettingsActivity extends Activity {
         helpListArray.add(new SettingsModel("Privacy Policy", SettingsModel.SettingsType.NAVIGATION));
         helpListArray.add(new SettingsModel("Terms of Service", SettingsModel.SettingsType.NAVIGATION));
 
+
+        profilePicture = (SimpleDraweeView) findViewById(R.id.profilePicture);
+        profilePictureProgress = (ProgressBar) findViewById(R.id.profilePictureProgress);
         backBtn = (ImageButton) findViewById(R.id.backBtn);
 
         backBtn.setOnClickListener(new View.OnClickListener() {
@@ -125,7 +139,7 @@ public class SettingsActivity extends Activity {
                 webController.animateIn();
             }
         });
-        /*
+
         blockController = (BlockController) findViewById(R.id.blockController);
         blockController.setVisibility(View.GONE);
 
@@ -134,7 +148,7 @@ public class SettingsActivity extends Activity {
 
         webController = (WebController) findViewById(R.id.webController);
         webController.setVisibility(View.GONE);
-        */
+
 
         setListViewHeightBasedOnChildren(helpList);
         setListViewHeightBasedOnChildren(accountList);
@@ -172,6 +186,8 @@ public class SettingsActivity extends Activity {
                         .show();
             }
         });
+        profilePicture.setVisibility(View.INVISIBLE);
+        profilePictureProgress.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
         final UserModel userModel = new UserModel();
             userModel.setId(96);
         userModel.fetch(new SimpleCallback() {
@@ -179,6 +195,26 @@ public class SettingsActivity extends Activity {
             public void callbackCall(ErrorModel errorModel) {
                 Log.v("USERNAME","usernm " + userModel.getUsername());
                 DataHelper.storeUsername(userModel.getUsername());
+
+
+                if (userModel.getProfile_picture_key() != null) {
+                    userModel.loadPhoto(profilePicture, new SimpleCallback2() {
+                        @Override
+                        public void callbackCall() {
+                            profilePictureProgress.setVisibility(View.INVISIBLE);
+                            profilePicture.setVisibility(View.VISIBLE);
+                        }
+
+                    });
+
+                }
+                else {
+                    Resources res = getResources();
+                    Drawable drawable = res.getDrawable(R.drawable.circle);
+                    profilePicture.setImageDrawable(drawable);
+                    profilePictureProgress.setVisibility(View.INVISIBLE);
+                    profilePicture.setVisibility(View.VISIBLE);
+                }
             }
         });
 

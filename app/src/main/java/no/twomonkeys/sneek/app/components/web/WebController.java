@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -22,7 +23,7 @@ import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 public class WebController extends RelativeLayout {
 
     WebView webView;
-    Button backbtn;
+    ImageButton backbtn;
     TextView titleView;
     String webUrl;
     public SimpleCallback2 scb2;
@@ -53,8 +54,8 @@ public class WebController extends RelativeLayout {
         super.onFinishInflate();
 
         titleView = (TextView) findViewById(R.id.titleView);
-        backbtn = (Button) findViewById(R.id.backBtnWeb);
-        UIHelper.layoutBtnRelative(getContext(), backbtn, "BACK");
+        backbtn = (ImageButton) findViewById(R.id.backBtnWeb);
+        //UIHelper.layoutBtnRelative(getContext(), backbtn, "BACK");
         backbtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

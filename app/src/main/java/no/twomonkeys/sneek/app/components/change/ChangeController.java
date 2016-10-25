@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -36,8 +37,9 @@ import no.twomonkeys.sneek.app.shared.views.MessageView;
  */
 public class ChangeController extends RelativeLayout {
 
-    Button backBtn, saveBtn;
-    EditText firstEditText, secondEditText;
+    ImageButton backBtn;
+    Button saveBtn;
+    EditText firstEditText, secondEditText, emailEditText;
     boolean passwordMode;
     UserModel userModel;
     TextView firstError, secondError, changeInfoTxt, headerTextView;
@@ -69,15 +71,15 @@ public class ChangeController extends RelativeLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        backBtn = (Button) findViewById(R.id.backBtn3);
-        UIHelper.layoutBtnRelative(getContext(), backBtn, "BACK");
+        backBtn = (ImageButton) findViewById(R.id.backBtn3);
+        //UIHelper.layoutBtnRelative(getContext(), backBtn, "BACK");
         backBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 animateOut();
             }
         });
-
+        emailEditText = (EditText) findViewById(R.id.emailEditText);
         firstEditText = (EditText) findViewById(R.id.firstEditText);
         secondEditText = (EditText) findViewById(R.id.secondEditText);
         firstEditText.addTextChangedListener(new TextWatcher() {
@@ -128,7 +130,7 @@ public class ChangeController extends RelativeLayout {
                 save();
             }
         });
-        UIHelper.layoutBtn(getContext(), saveBtn, "SAVE");
+    //  UIHelper.layoutBtn(getContext(), saveBtn, "SAVE");
         enableSave();
 
         loadingView = (LoadingView) findViewById(R.id.loadingView);
@@ -168,22 +170,25 @@ public class ChangeController extends RelativeLayout {
         headerTextView.setText(getContext().getString(R.string.change_pass_txt));
         firstEditText.setHint(getContext().getString(R.string.new_pass_txt));
         changeInfoTxt.setText(getContext().getString(R.string.change_pass_info));
-
+        emailEditText.setVisibility(GONE);
         firstEditText.setHint(getContext().getString(R.string.new_pass_txt));
         secondEditText.setHint(getContext().getString(R.string.repeat_pass_txt));
         secondEditText.setVisibility(VISIBLE);
+        firstEditText.setVisibility(VISIBLE);
         firstEditText.setText("");
-
+        secondEditText.setText("");
         animateIn();
     }
 
     public void animateInEmail() {
         passwordMode = false;
         headerTextView.setText(getContext().getString(R.string.change_email_txt));
-        firstEditText.setHint(getContext().getString(R.string.new_email_txt));
+        emailEditText.setHint(getContext().getString(R.string.new_email_txt));
         changeInfoTxt.setText(getContext().getString(R.string.change_email_info));
         secondEditText.setVisibility(GONE);
-        firstEditText.setText(DataHelper.getEmail());
+        firstEditText.setVisibility(GONE);
+        emailEditText.setVisibility(VISIBLE);
+        emailEditText.setText(DataHelper.getEmail());
         animateIn();
     }
 
@@ -203,7 +208,10 @@ public class ChangeController extends RelativeLayout {
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(firstEditText.getWindowToken(), 0);
         imm.hideSoftInputFromWindow(secondEditText.getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(emailEditText.getWindowToken(), 0);
         setVisibility(GONE);
+        firstError.setVisibility(GONE);
+        secondError.setVisibility(GONE);
     }
 
     public void save() {
@@ -238,7 +246,7 @@ public class ChangeController extends RelativeLayout {
                 if (errorModel == null) {
                     //Success
                     if (!passwordMode) {
-                        DataHelper.storeEmail(firstEditText.getText().toString());
+                        DataHelper.storeEmail(emailEditText.getText().toString());
                     } else {
                         firstEditText.setText("");
                         secondEditText.setText("");

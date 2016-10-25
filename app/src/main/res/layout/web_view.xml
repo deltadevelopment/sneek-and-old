@@ -8,31 +8,37 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:background="@color/white"
-        android:paddingBottom="10dp">
-
-        <Button
+        >
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_marginTop="56dp"
+            android:background="@drawable/toolbar_dropshadow" />
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="30dp"
             android:id="@+id/backBtnWeb"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_gravity="center"
-            android:layout_marginTop="10dp"
-            android:background="@color/black"
-            android:text="BACK"
-            android:textColor="@color/white" />
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:background="@color/transparent"
+            android:src="@drawable/minimizex3"
+            android:rotation="90"
+            android:tint="@color/colorAccent"
+
+             />
 
         <TextView
             android:id="@+id/titleView"
             android:layout_width="wrap_content"
             android:layout_height="30dp"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="15dp"
-            android:text="HELP"
-            android:textColor="@color/black"
-            android:textSize="18dp" />
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:text="Help"
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp" />
     </RelativeLayout>
 
     <WebView

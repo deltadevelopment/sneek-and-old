@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -25,7 +26,7 @@ import no.twomonkeys.sneek.app.shared.models.UserModel;
  */
 public class BlockController extends RelativeLayout {
 
-    Button backBtn;
+    ImageButton backBtn;
     ListView blockedList;
     ArrayList<UserModel> blockedUsers;
     BlockListAdapter listAdapter;
@@ -58,8 +59,8 @@ public class BlockController extends RelativeLayout {
 
         blockedUsers = new ArrayList<>();
 
-        backBtn = (Button) findViewById(R.id.backBtn2);
-        UIHelper.layoutBtnRelative(getContext(), backBtn, "BACK");
+        backBtn = (ImageButton) findViewById(R.id.backBtn2);
+        //UIHelper.layoutBtnRelative(getContext(), backBtn, "BACK");
         backBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -1,6 +1,20 @@
 package no.twomonkeys.sneek.app.shared.models;
 
+import android.graphics.drawable.Animatable;
+import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.facebook.common.logging.FLog;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.controller.BaseControllerListener;
+import com.facebook.drawee.controller.ControllerListener;
+import com.facebook.drawee.interfaces.DraweeController;
+import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.image.ImageInfo;
+import com.facebook.imagepipeline.image.QualityInfo;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +41,8 @@ public class UserModel extends CRUDModel {
     private UserSession userSession;
     private StoryModel storyModel;
     private BlockModel blockModel;
+    private String profile_picture_key;
+    private String profile_picture_url;
     private UserFlagModel userFlagModel;
     private boolean shouldRepeatPassword;
     private String password, passwordAgain;
@@ -72,6 +88,8 @@ public class UserModel extends CRUDModel {
         followers_count = integerFromObject(map.get("followers_count"));
         email = (String) map.get("email");
         is_following = booleanFromObject(map.get("is_following"));
+        profile_picture_key = (String) map.get("profile_picture_key");
+        profile_picture_url = (String) map.get("profile_picture_url");
         Log.v("FOLLOWING IS ", "foll" + map.get("is_following") + " " + is_following);
         if (map.get("user_session") != null) {
             Log.v("USer session build", "yeah build");
@@ -264,5 +282,64 @@ public class UserModel extends CRUDModel {
         }
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
         return matcher.find();
+    }
+
+    public String getProfile_picture_key() {
+        return profile_picture_key;
+    }
+
+    public void loadPhoto(final SimpleDraweeView sdv, final SimpleCallback2 scb) {
+        Uri uri;
+
+        DataHelper.addCacheHelp(profile_picture_key, profile_picture_url);
+        uri = Uri.parse(profile_picture_url);
+
+        ControllerListener controllerListener = new BaseControllerListener<ImageInfo>() {
+            @Override
+            public void onFinalImageSet(
+                    String id,
+                    @Nullable ImageInfo imageInfo,
+                    @Nullable Animatable anim) {
+
+                scb.callbackCall();
+                if (imageInfo == null) {
+                    return;
+                }
+                QualityInfo qualityInfo = imageInfo.getQualityInfo();
+                FLog.d("Final image received! " +
+                                "Size %d x %d",
+                        "Quality level %d, good enough: %s, full quality: %s",
+                        imageInfo.getWidth(),
+                        imageInfo.getHeight(),
+                        qualityInfo.getQuality(),
+                        qualityInfo.isOfGoodEnoughQuality(),
+                        qualityInfo.isOfFullQuality());
+            }
+
+            @Override
+            public void onIntermediateImageSet(String id, @Nullable ImageInfo imageInfo) {
+                // FLog.d("Intermediate image received")
+                Log.v("Img Re", "Recieved");
+            }
+
+            @Override
+            public void onFailure(String id, Throwable throwable) {
+                FLog.e(getClass(), throwable, "Error loading %s", id);
+            }
+        };
+
+
+        ImageRequest request = ImageRequestBuilder.newBuilderWithSource(uri)
+                .setAutoRotateEnabled(true)
+                .build();
+
+        DraweeController controller = Fresco.newDraweeControllerBuilder()
+                .setUri(uri)
+                .setTapToRetryEnabled(true)
+                .setImageRequest(request)
+                .setOldController(sdv.getController())
+                .setControllerListener(controllerListener)
+                .build();
+        sdv.setController(controller);
     }
 }

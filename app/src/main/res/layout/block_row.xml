@@ -1,28 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/usernameTextView"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="10dp"
-        android:textColor="@color/black"
-        android:text="userName"
-        android:textSize="17dp" />
+        android:layout_height="60dp"
+        android:background="@color/white"
 
-    <Button
-        android:id="@+id/unblockBtn"
-        style="?android:attr/borderlessButtonStyle"
+        android:id="@+id/relativeLayout">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_marginTop="56dp"
+            android:background="@drawable/toolbar_dropshadow" />
+    <TextView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
-        android:background="@color/black"
-        android:text="unblock"
-        android:textColor="@color/white" />
+        android:layout_height="30dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Blocked users"
+        android:textSize = "18sp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:id="@+id/blockedTitleBtn"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/colorAccent" />
+
+    <ImageButton
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:id="@+id/backBtn"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:background="@color/transparent"
+        android:src="@drawable/minimizex3"
+        android:tint="@color/colorAccent"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignBottom="@+id/blockedTitleBtn" />
 
 </RelativeLayout>
