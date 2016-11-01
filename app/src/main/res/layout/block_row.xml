@@ -2,11 +2,31 @@
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@color/white"
-
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
+        android:layout_height="45dp"
         android:id="@+id/relativeLayout">
-        <View
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/usernameTextView"
+        android:textColor="@color/black"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        />
+    <Button
+        android:layout_width="75dp"
+        android:layout_height="30dp"
+        android:layout_alignParentRight="true"
+        android:id="@+id/unblockBtn"
+        android:textColor="@color/colorAccent"
+        android:textAllCaps="false"
+        android:background="@drawable/unblockbtn"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:text="Unblock"/>
+  <!--      <View
             android:layout_width="match_parent"
             android:layout_height="5dp"
             android:layout_marginTop="56dp"
@@ -36,5 +56,5 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignBottom="@+id/blockedTitleBtn" />
-
+-->
 </RelativeLayout>

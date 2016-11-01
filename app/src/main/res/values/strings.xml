@@ -30,6 +30,8 @@
     <string name="block_user_b">By blocking this user, the user will not be able to see any of your moments and you will not be able see any of his. This will take effect next time you refresh the feed. Are you sure you want to block this user?</string>
     <string name="cancel_txt">Cancel</string>
     <string name="block_txt">Block</string>
+    <string name="noblocked_txt">No blocked users</string>
+    <string name="blockedusers_txt">USERS YOU HAVE BLOCKED</string>
 
     <string name="ok_txt">Ok</string>
     <string name="delete_moment_title">Delete moment</string>

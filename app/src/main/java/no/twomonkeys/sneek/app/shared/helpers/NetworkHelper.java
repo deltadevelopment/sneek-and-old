@@ -63,7 +63,7 @@ public class NetworkHelper {
     public static StoryApi getNetworkService()
     {
         String authToken = DataHelper.getAuthToken();
-        authToken = "94a155d6a4f438d9e545ed78cd1e4d0c";
+        authToken = "0e8361ed9ea6ea0f6b6715e305e43309";
         if (authToken != auth_token)
         {
             auth_token = authToken;

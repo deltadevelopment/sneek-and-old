@@ -3,11 +3,15 @@ package no.twomonkeys.sneek.app.components.settings;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,6 +57,9 @@ public class SettingsActivity extends Activity {
     ChangeController changeController;
     WebController webController;
     Button deleteAccountBtn;
+    Button changePicBtn;
+    private static final int SELECT_PICTURE = 1;
+    private String selectedImagePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +78,10 @@ public class SettingsActivity extends Activity {
         helpListArray.add(new SettingsModel("Help", SettingsModel.SettingsType.NAVIGATION));
         helpListArray.add(new SettingsModel("Privacy Policy", SettingsModel.SettingsType.NAVIGATION));
         helpListArray.add(new SettingsModel("Terms of Service", SettingsModel.SettingsType.NAVIGATION));
+
+
+
+
 
 
         profilePicture = (SimpleDraweeView) findViewById(R.id.profilePicture);
@@ -189,7 +200,7 @@ public class SettingsActivity extends Activity {
         profilePicture.setVisibility(View.INVISIBLE);
         profilePictureProgress.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
         final UserModel userModel = new UserModel();
-            userModel.setId(96);
+            userModel.setId(103);
         userModel.fetch(new SimpleCallback() {
             @Override
             public void callbackCall(ErrorModel errorModel) {
@@ -209,18 +220,50 @@ public class SettingsActivity extends Activity {
 
                 }
                 else {
-                    Resources res = getResources();
-                    Drawable drawable = res.getDrawable(R.drawable.circle);
-                    profilePicture.setImageDrawable(drawable);
+                    //Resources res = getResources();
+                    //Drawable drawable = res.getDrawable(R.drawable.circle);
+                    //profilePicture.setImageDrawable(drawable);
                     profilePictureProgress.setVisibility(View.INVISIBLE);
                     profilePicture.setVisibility(View.VISIBLE);
                 }
             }
         });
+        findViewById(R.id.changePicBtn).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE);
+            }
+        });
+
 
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            if (requestCode == SELECT_PICTURE) {
+                Uri selectedImageUri = data.getData();
+                selectedImagePath = getPath(selectedImageUri);
+                profilePicture.setImageURI(selectedImageUri);
+            }
+        }
+    }
 
+    public String getPath(Uri uri) {
+        if (uri == null) {
+            //TODO user feedback
+            return null;
+        }
+        String[] projection = {MediaStore.Images.Media.DATA};
+        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        if (cursor != null) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        }
+        return uri.getPath();
+    }
     public void popLogOutScreen() {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.log_out_h)

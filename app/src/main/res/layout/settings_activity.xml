@@ -75,6 +75,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/profilePicture"
+                    android:background="@drawable/circular"
                     />
                 <ProgressBar
                     android:layout_width="match_parent"
@@ -103,7 +104,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="@android:color/white">
+                android:background="@color/white"
+                android:divider="@drawable/textlines"
+                android:dividerHeight="1dp"
+                >
             </ListView>
 
 
@@ -111,8 +115,11 @@
                 android:id="@+id/helpList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
+                android:background="@color/white"
                 android:layout_marginTop="35dp"
+                android:divider="@drawable/textlines"
+                android:dividerHeight="1dp"
+                android:paddingTop="1dp"
                 ></ListView>
 
             <Button

@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListAdapter;
@@ -31,6 +32,7 @@ public class BlockController extends RelativeLayout {
     ArrayList<UserModel> blockedUsers;
     BlockListAdapter listAdapter;
     TextView blockedInfoTextView;
+    TextView blockedListHeader;
 
     public BlockController(Context context) {
         super(context);
@@ -69,11 +71,13 @@ public class BlockController extends RelativeLayout {
         });
         blockedList = (ListView) findViewById(R.id.blockedList);
 
+        blockedInfoTextView = (TextView) findViewById(R.id.blockedInfoTextView);
+        blockedInfoTextView.setVisibility(VISIBLE);
         listAdapter = new BlockListAdapter(getContext(), blockedUsers);
         blockedList.setAdapter(listAdapter);
-
-        blockedInfoTextView = (TextView) findViewById(R.id.blockedInfoTextView);
         blockedList.setVisibility(GONE);
+        blockedListHeader = (TextView) findViewById(R.id.usersBlockedTextView);
+        blockedListHeader.setVisibility(GONE);
 
         listAdapter.unblockTapped = new BlockListAdapter.BlockTapped() {
             @Override
@@ -93,9 +97,11 @@ public class BlockController extends RelativeLayout {
                 if (blockedUsers.size() > 0) {
                     blockedList.setVisibility(VISIBLE);
                     blockedInfoTextView.setVisibility(GONE);
+                    blockedListHeader.setVisibility(VISIBLE);
                 } else {
                     blockedList.setVisibility(GONE);
                     blockedInfoTextView.setVisibility(VISIBLE);
+                    blockedListHeader.setVisibility(GONE);
                 }
                 blockedList.invalidateViews();
                 listAdapter.notifyDataSetChanged();
@@ -112,5 +118,6 @@ public class BlockController extends RelativeLayout {
         blockedUsers.removeAll(blockedUsers);
         setVisibility(GONE);
     }
+
 
 }

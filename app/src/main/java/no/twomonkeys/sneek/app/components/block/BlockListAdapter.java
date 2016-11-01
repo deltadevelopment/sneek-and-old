@@ -39,13 +39,14 @@ public class BlockListAdapter extends ArrayAdapter<UserModel> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Log.v("chaning", "CHANING");
+        //Log.v("chaning", "CHANING");
         LayoutInflater inflater = LayoutInflater.from(getContext());
+
         View view = inflater.inflate(R.layout.block_row, parent, false);
 
         usernameTextView = (TextView) view.findViewById(R.id.usernameTextView);
         unblockBtn = (Button) view.findViewById(R.id.unblockBtn);
-        UIHelper.layoutBtnRelativeSize(getContext(), unblockBtn, "Unblock");
+      //  UIHelper.layoutBtnRelativeSize(getContext(), unblockBtn, "Unblock");
 
 
         final UserModel userModel = getItem(position);
