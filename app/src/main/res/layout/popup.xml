@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@color/white">
+
+        <Button
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:text="cambtn"
+            android:id="@+id/testBtn"
+            android:layout_alignParentTop="true"
+            android:layout_alignLeft="@+id/fileBtn"
+            android:layout_alignStart="@+id/fileBtn"
+            android:layout_marginTop="55dp" />
+
+        <Button
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:id="@+id/fileBtn"
+            android:text="Filechooser"
+            android:layout_below="@+id/testBtn"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="46dp" />
+    </RelativeLayout>
+</RelativeLayout>

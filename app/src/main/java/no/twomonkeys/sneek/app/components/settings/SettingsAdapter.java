@@ -1,6 +1,7 @@
 package no.twomonkeys.sneek.app.components.settings;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,8 +39,11 @@ public class SettingsAdapter extends ArrayAdapter<SettingsModel> {
         if (settingsModel.getType() == SettingsModel.SettingsType.INFORMATION) {
             summaryTextView.setText(DataHelper.getUsername());
             summaryTextView.setVisibility(View.VISIBLE);
+            summaryTextView.setTextColor(Color.parseColor("#000000"));
         } else {
-            summaryTextView.setVisibility(View.GONE);
+            summaryTextView.setText(">");
+            summaryTextView.setTextSize(22);
+            summaryTextView.setTextColor(Color.parseColor("#696969"));
         }
 
         return view;

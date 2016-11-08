@@ -2,10 +2,16 @@
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:paddingTop="1dp"
-        android:paddingBottom="1dp"
+        android:paddingTop="@null"
+        android:paddingBottom="@null"
         android:layout_height="45dp"
         android:id="@+id/relativeLayout">
+   <!-- <View
+        android:layout_width="match_parent"
+        android:layout_height="1.5dp"
+        android:padding="@null"
+        android:background="@drawable/textlines" /> -->
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,6 +32,11 @@
         android:layout_centerVertical="true"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
         android:text="Unblock"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@null"
+        android:background="@drawable/listbackground" />
   <!--      <View
             android:layout_width="match_parent"
             android:layout_height="5dp"

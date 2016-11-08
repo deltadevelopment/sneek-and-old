@@ -76,8 +76,10 @@
             android:id="@+id/blockedList"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:divider="@drawable/textlines"
-            android:dividerHeight="1dp"
+            android:divider="@color/transparent"
+            android:dividerHeight="0dp"
+            android:padding="@null"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:background="@color/white"></ListView>
 
     </LinearLayout>

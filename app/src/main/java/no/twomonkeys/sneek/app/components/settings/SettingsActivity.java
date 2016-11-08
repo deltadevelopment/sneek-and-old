@@ -6,13 +6,21 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,10 +30,13 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.drawable.RoundedBitmapDrawable;
+import com.facebook.drawee.generic.RoundingParams;
 import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.ArrayList;
@@ -39,6 +50,7 @@ import no.twomonkeys.sneek.app.shared.SimpleCallback;
 import no.twomonkeys.sneek.app.shared.SimpleCallback2;
 import no.twomonkeys.sneek.app.shared.helpers.AuthHelper;
 import no.twomonkeys.sneek.app.shared.helpers.DataHelper;
+import no.twomonkeys.sneek.app.shared.helpers.NetworkHelper;
 import no.twomonkeys.sneek.app.shared.helpers.UIHelper;
 import no.twomonkeys.sneek.app.shared.models.ErrorModel;
 import no.twomonkeys.sneek.app.shared.models.SettingsModel;
@@ -61,6 +73,7 @@ public class SettingsActivity extends Activity {
     private static final int SELECT_PICTURE = 1;
     private String selectedImagePath;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,12 +92,12 @@ public class SettingsActivity extends Activity {
         helpListArray.add(new SettingsModel("Privacy Policy", SettingsModel.SettingsType.NAVIGATION));
         helpListArray.add(new SettingsModel("Terms of Service", SettingsModel.SettingsType.NAVIGATION));
 
-
-
-
-
-
         profilePicture = (SimpleDraweeView) findViewById(R.id.profilePicture);
+        int overlayColor = getResources().getColor(R.color.settingsGray);
+        RoundingParams roundingParams = RoundingParams.asCircle();
+        roundingParams.setOverlayColor(overlayColor);
+        profilePicture.getHierarchy().setRoundingParams(roundingParams);
+
         profilePictureProgress = (ProgressBar) findViewById(R.id.profilePictureProgress);
         backBtn = (ImageButton) findViewById(R.id.backBtn);
 
@@ -119,7 +132,7 @@ public class SettingsActivity extends Activity {
         ListAdapter listAdapter2 = new SettingsAdapter(this, helpListArray);
         helpList.setAdapter(listAdapter2);
 
-       // UIHelper.layoutBtnRelative(this, backBtn, "BACK");
+
 
         accountList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -228,12 +241,12 @@ public class SettingsActivity extends Activity {
                 }
             }
         });
+
+
+
         findViewById(R.id.changePicBtn).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE);
+                callPopup();
             }
         });
 
@@ -305,5 +318,62 @@ public class SettingsActivity extends Activity {
         params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
         listView.setLayoutParams(params);
     }
+    private void callPopup() {
+        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext()
+                .getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = layoutInflater.inflate(R.layout.popup, null);
+
+        final PopupWindow popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, true);
+
+        popupWindow.setTouchable(true);
+        popupWindow.setFocusable(true);
+
+        popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 0);
+        ((Button) popupView.findViewById(R.id.fileBtn)).setOnClickListener(new View.OnClickListener() {
+            public void onClick (View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE);
+                popupWindow.dismiss();
+
+                //TODO upload new profile picture
+                /*
+                NetworkHelper networkHelper = new NetworkHelper();
+                networkHelper.uploadFile(File, URL, callback);
+                */
+
+            }
+        });
+        ((Button) popupView.findViewById(R.id.testBtn)).setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+                //TODO Open camera with profile picture 'filter'
+                System.out.println("Open camera with filter here");
+                popupWindow.dismiss();
+            }
+
+        });
+    }
+    /*
+    public Bitmap getClip(Bitmap bitmap) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final Paint paint = new Paint();
+        final Rect rect = new Rect (0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        canvas.drawCircle(bitmap.getWidth() / 2, bitmap.getHeight() / 2, bitmap.getWidth() / 2,
+                paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        //profilePicture = (SimpleDraweeView) findViewById(R.id.profilePicture);
+        //profilePicture.setImageDrawable(new BitmapDrawable(output));
+        return output;
+    }
+    */
 
 }

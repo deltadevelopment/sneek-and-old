@@ -65,8 +65,8 @@
 
 
             <FrameLayout
-                android:layout_width="85dp"
-                android:layout_height="85dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
                 android:layout_marginTop="20dp"
                 android:layout_gravity="center_horizontal"
                 android:background="@drawable/circular">
@@ -104,9 +104,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:dividerHeight="-2dp"
                 android:background="@color/white"
-                android:divider="@drawable/textlines"
-                android:dividerHeight="1dp"
                 >
             </ListView>
 
@@ -116,10 +115,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@color/white"
-                android:layout_marginTop="35dp"
-                android:divider="@drawable/textlines"
-                android:dividerHeight="1dp"
-                android:paddingTop="1dp"
+                android:layout_marginTop="30dp"
+                android:dividerHeight="-2dp"
                 ></ListView>
 
             <Button
@@ -127,9 +124,8 @@
                 android:layout_height="40dp"
                 android:layout_marginTop="35dp"
                 android:id="@+id/deleteAccountBtn"
-                android:background="@color/white"
+                android:background="@drawable/deleteacc_btn"
                 android:text="Delete Account"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_marginBottom="40dp"
                 android:textColor="@color/colorAccent" />
 

@@ -1,6 +1,8 @@
 package no.twomonkeys.sneek.app.components.block;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,6 +45,7 @@ public class BlockListAdapter extends ArrayAdapter<UserModel> {
         LayoutInflater inflater = LayoutInflater.from(getContext());
 
         View view = inflater.inflate(R.layout.block_row, parent, false);
+        Drawable drawable = view.getBackground();
 
         usernameTextView = (TextView) view.findViewById(R.id.usernameTextView);
         unblockBtn = (Button) view.findViewById(R.id.unblockBtn);
